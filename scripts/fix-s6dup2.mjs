@@ -1,0 +1,12 @@
+import fs from "node:fs";
+const path = "client/src/data/pythonCurriculum.ts";
+let t = fs.readFileSync(path, "utf8");
+const r1 = /"2 — If conditions: program takes decisions",\s*\r?\n\s*"Program takes different decisions according to different conditions using if block\./;
+const r2 = /"2 — If conditions: program takes decisions",\s*\r?\n\s*"Program takes different decisions according to different conditions using if and : then the indented code\./;
+console.log("r1 found:", r1.test(t), "r2 found:", r2.test(t));
+t = t.replace(r1, '"2 — If in blocks: the same decision idea",\n  "Program takes different decisions according to different conditions using if block.');
+t = t.replace(r2, '"3 — If in Python: condition, colon, indented code",\n  "Program takes different decisions according to different conditions using if and : then the indented code.');
+fs.writeFileSync(path, t);
+const start = t.indexOf('id: "s6"');
+const end = t.indexOf('id: "s7"');
+for (const m of t.slice(start, end).matchAll(/"(\d+ —[^"]{0,60})/g)) console.log(m[1]);

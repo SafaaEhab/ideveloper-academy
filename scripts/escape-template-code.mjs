@@ -1,0 +1,10 @@
+import fs from "node:fs";
+const path = "scripts/update-python-first-four.mjs";
+let text = fs.readFileSync(path, "utf8");
+const marker = "const replacement = String.raw`";
+const start = text.indexOf(marker) + marker.length;
+const end = text.lastIndexOf("`;\n\nfs.writeFileSync");
+if (start <= marker.length - 1 || end <= start) throw new Error("Template boundaries not found");
+const body = text.slice(start, end).replaceAll("`", "\\`");
+fs.writeFileSync(path, text.slice(0, start) + body + text.slice(end));
+console.log("Escaped embedded template literals");
