@@ -1,4 +1,4 @@
-// Scratch curriculum: 3-month journey (Apple, Shark, Ping Pong, Calculator).
+// Scratch curriculum: 4-month journey (Intro + Apple, Shark, Ping Pong, Calculator).
 export type CurriculumSection = {
   title: string;
   body: string;
@@ -66,16 +66,575 @@ const s = (
 });
 export const coreLessons: CurriculumLesson[] = [
   {
-    id: "s1",
+    id: "s0",
     number: 1,
     month: 1,
     phase: 1,
+    kind: "core",
+    title: "What is Programming and Scratch?",
+    subtitle:
+      "Computers, instructions, blocks, and a tour of the Scratch screen",
+    intro:
+      "In this session, we start from zero: what computers are for, what programming means, what we can make with it — robots, apps, games, websites — how we give instructions with blocks or text, what Scratch is, and where everything lives on the Scratch screen. Then we try basic blocks, the Costume tab, the Sound tab, a quick look at Motion blocks, and how to save our game.",
+    accent: "from-sky-500/20 to-blue-500/5",
+    heroImage: "/curriculum/scratch/logoscratch.png",
+    learningGoal:
+      "Explain what programming is, what Scratch is, name the three Scratch screen partitions, and try basic, costume, sound, and motion blocks.",
+    successCriteria: [
+      "Say what programming means: give the computer instructions to do a task",
+      "Name three things we make with programming: robots, apps and games, websites",
+      "Tell Blocks vs Text and name Python, JavaScript, C, C++",
+      "Point to the Blocks area, Code area, and Stage on the Scratch screen",
+      "Add and delete a sprite and change the backdrop",
+      "Open Costumes and Sounds tabs and tell what each one changes",
+    ],
+    commonMistake:
+      "Thinking the computer understands us without clear instructions, or dragging blocks into the wrong screen partition and wondering why nothing runs.",
+    sections: [
+      s(
+        "1 — Computers",
+        "Start with the computers we will use for programming.\n• A computer can be a Laptop or a Desktop — both follow our instructions.\n• A computer alone does nothing until we tell it what to do.\n",
+        "",
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1789768783/ss13.1.png",
+        ]
+      ),
+      s(
+        "2 — What is Programming?",
+        "Start with why we need programming.\n",
+        // حط هنا لينك صورة الحوار (الست بتقول I want you to make something واللابتوب بيرد Ok, give me instructions)
+        "",
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1789768783/ss13.2.png",
+        ]
+      ),
+      s(
+        "3 — What Can We Make? Robots",
+        "",
+        // حط هنا لينك صورة الروبوت الأبيض
+        "",
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1789768783/ss13.3.png",
+        ]
+      ),
+      s(
+        "4 — What Can We Make? Apps and Games",
+        "",
+        // حط هنا لينك صورة الموبايل (شبكة الأيقونات + إيد ماسكة فولدر Games)
+        "",
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1789768783/ss13.4.png",
+        ]
+      ),
+      s(
+        "5 — What Can We Make? Websites",
+        "",
+        "",
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1789768783/ss13.5.png",
+        ]
+
+        // حط هنا لينك صورة لوجوهات المواقع (Yahoo Wikipedia Facebook Google YouTube ...)
+      ),
+      s(
+        "6 — How to Give Instructions? Blocks or Text",
+        "How to give instruction? Two ways:\n• Blocks\n• Text"
+      ),
+      s(
+        "7 — Programming Languages and Blocks",
+        "",
+        "",
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1789768783/ss13.6.png",
+        ]
+
+        // حط هنا لينك صورة اللابتوب المبتسم (Give me instructions with languages I can understand)
+      ),
+
+      s(
+        "8 — Screen Overview",
+        "",
+        "",
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1789768783/ss13.7.png",
+        ]
+        // حط هنا لينك صورة الشاشة الكاملة (Scratch window مع Motion الزرقا والقطة على الستيج)
+      ),
+      s(
+        "9 — Screen Part 1: Blocks Area",
+        "",
+        "",
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1789768783/ss13.10.png",
+        ]
+        // حط هنا لينك صورة البلوكات مقربة (Motion الزرقا) + صورة بلوكات الـ Sound البينك - المستخدم هيجيب اللينكين من برا
+      ),
+      s(
+        "10 — Screen Part 2: Code Area",
+        "",
+        "",
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1789768783/ss13.11.png",
+        ]
+
+        // حط هنا لينك صورة منطقة الكود الفاضية (الخلفية المنقطة)
+      ),
+      s(
+        "11 — Screen Part 3: Stage",
+        "",
+        "",
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1789768783/ss13.9.png",
+        ]
+        // حط هنا لينك صورة الستيج مقربة (القطة في النص + بيانات Sprite1 تحتها)
+      ),
+      s(
+        "12 — Delete Sprite",
+        "",
+        "",
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1789768783/ss13.18.png",
+        ]
+
+        // حط هنا لينك صورة إضافة/مسح السبريت (الجزء تحت الستيج فيه Sprite1 + أيقونة القطة) - ممكن نفس صورة الستيج والشاشة الكاملة
+      ),
+      s("13 — Change Backdrops", "", "", [
+        "https://res.cloudinary.com/alhiemg0/image/upload/v1789768783/ss13.19.png",
+      ]),
+      s("14 — Change Sprites", "", "", [
+        "https://res.cloudinary.com/alhiemg0/image/upload/v1789768783/ss13.20.png",
+      ]),
+      s(
+        "15 — Costume Tab",
+        "",
+        "",
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1789768783/ss13.12.png",
+        ]
+
+        // حط هنا لينك صورة Costumes tab (القطة الكبيرة في النص + costume1 و costume2 على الشمال)
+      ),
+      s(
+        "16 — Sound Tab",
+        "",
+        "",
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1789768783/ss13.13.png",
+        ]
+
+        // حط هنا لينك صورة Sounds tab (الموجة البنفسجي Meow + أزرار Faster Slower Louder ...)
+      ),
+      s(
+        "17 — Motion Blocks Overview",
+        "Motion = the blue blocks that move your sprite — our main toolkit.\n",
+        // حط هنا لينك صورة Motion blocks مقربة (نفس صورة Part 1)
+        "",
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1789768783/ss13.10.png",
+        ],
+        undefined,
+        undefined,
+        // 🎥 القسم ده شرح فيديو - ابعت لينك الفيديو وهيتحط مكان القوسين الفاضيين
+        []
+      ),
+      s(
+        "18 — Motion 1: move 10 steps",
+        "",
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        // فيديو شرح move 10 steps - بيشتغل بمشغل تحت الشرح
+        [
+          "https://res.cloudinary.com/alhiemg0/video/upload/v1789768858/ss13.14.mp4",
+        ]
+      ),
+      s(
+        "19 — Motion 2: turn clockwise 15 degrees and turn counter-clockwise 15 degrees",
+        "",
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        // فيديو شرح turn 15 degrees - بيشتغل بمشغل تحت الشرح
+        [
+          "https://res.cloudinary.com/alhiemg0/video/upload/v1789768858/ss13.15.mp4",
+        ]
+      ),
+      s(
+        "20 — How to Save Your Game",
+        "How to save game to your computer:\n1. Click on File at the top.\n2. Click on Save to your computer.\n3. Rename your file and click on Save.\nDo this every session so your game is never lost."
+      ),
+      s(
+        "21 — Homework: My First Stage",
+        "HOMEWORK: Build your first stage scene.\n1. Delete the Cat, add a sprite you like, and choose any backdrop.\n2. Build:  move 10 steps + turn clockwise 15 degrees + turn counter-clockwise 15 degrees.\n• Press Green Flag and watch your sprite walk forward and spin both ways.\n• File > Save to your computer so your work is never lost."
+      ),
+    ],
+    challenge:
+      "HOMEWORK: My First Stage — delete the Cat, add your own sprite, and pick any backdrop. Build: move 10 steps + turn clockwise 15 degrees + turn counter-clockwise 15 degrees. Press Green Flag to test it, then File > Save to your computer. Tell your coach: what is programming, where is the Code Area, and what does move 10 steps do?",
+    quiz: [
+      q(
+        "What is programming?",
+        [
+          "Watching videos on the computer",
+          "Giving the computer instructions to do a specific task",
+          "Drawing a computer",
+          "Saving a file only",
+        ],
+        1,
+        "Programming is instructions: you ask for something, the computer follows your steps."
+      ),
+      q(
+        "Scratch blocks are made by which programming language?",
+        ["Python", "C++", "JavaScript", "No language"],
+        2,
+        "Blocks are built with real text languages — Scratch blocks are made by JavaScript."
+      ),
+      q(
+        "Where do you drag and drop your blocks to build the program?",
+        [
+          "On the Stage",
+          "In the left Blocks list only",
+          "In the middle Code Area",
+          "In the File menu",
+        ],
+        2,
+        "Pick blocks on the left, drag them into the middle Code Area and snap them together."
+      ),
+      q(
+        "Which group moves your sprite, and which block walks it forward?",
+        [
+          "Looks — say Hello! for 2 seconds",
+          "Control — wait 1 seconds",
+          "Motion — move 10 steps",
+          "Events — when green flag clicked alone",
+        ],
+        2,
+        "Motion is blue and moves sprites. Move 10 steps walks forward; Events only starts the code."
+      ),
+    ],
+  },
+  {
+    id: "smotion",
+    number: 2,
+    month: 1,
+    phase: 1,
+    kind: "core",
+    title: "Motion Blocks - Part 2",
+    subtitle: "go to, glide, change x by, and change y by",
+    intro:
+      "In this session, we continue Motion — the blue blocks that move your sprite. We learn go to random position, go to x: y:, glide to random position, glide to x: y:, change x by, and change y by. Drag each block to the Code Area, press Green Flag, and watch the Cat jump and slide on the Stage.",
+    accent: "from-sky-500/20 to-blue-500/5",
+    // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
+    heroImage: "/curriculum/scratch/logoscratch.png",
+    learningGoal:
+      "Use go to, glide, change x by, and change y by to move the sprite anywhere on the Stage.",
+    successCriteria: [
+      "Jump anywhere with go to random position",
+      "Land on an exact spot with go to x: y:",
+      "Slide smoothly with glide 1 secs to random position",
+      "Slide to an exact spot with glide 1 secs to x: y:",
+      "Step right and left with change x by 10",
+      "Step up and down with change y by 10",
+    ],
+    commonMistake:
+      "Mixing up go to and glide — go to jumps instantly while glide slides slowly — or mixing up X (sideways) with Y (up and down).",
+    sections: [
+      s(
+        "1 — go to random position",
+        "Start with go to random position — the jump block.\n• It sends your sprite to any spot on the Stage instantly.\n• Drag it to the Code Area, snap it under when green flag clicked, and press Green Flag.\n• Press Green Flag many times and watch the Cat jump everywhere.",
+        undefined,
+        // حط هنا لينك صورة go to random position
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1789772563/ss14.1.png",
+        ],
+        undefined,
+        undefined,
+        // حط هنا لينك الفيديو بتاع go to random position
+        [
+          "https://res.cloudinary.com/alhiemg0/video/upload/v1789772669/ss14.2.mp4",
+        ]
+      ),
+      s(
+        "2 — go to x: y:",
+        "Start with go to x: y: — the exact spot block.\n• X moves the sprite right and left, Y moves it up and down.\n• Try x: -132 y: 57, run with Green Flag, and the Cat jumps to that exact spot.\n• Change the numbers and watch the Cat land somewhere new.",
+        undefined,
+        // حط هنا لينك صورة go to x: y:
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1789772563/ss14.3.png",
+        ],
+        undefined,
+        undefined,
+        // حط هنا لينك الفيديو بتاع go to x: y:
+        [
+          "https://res.cloudinary.com/alhiemg0/video/upload/v1789772563/ss14.4.mp4",
+        ]
+      ),
+      s(
+        "3 — glide 1 secs to random position",
+        "Start with glide 1 secs to random position — the smooth slide block.\n• Unlike go to which jumps instantly, glide slides the sprite slowly for 1 secs.\n• Run it and watch the Cat swim across the Stage to a surprise spot.\n• Change 1 to 3 secs and watch it slide slower.",
+        undefined,
+        // حط هنا لينك صورة glide 1 secs to random position
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1789772563/ss14.5.png",
+        ],
+        undefined,
+        undefined,
+        // حط هنا لينك الفيديو بتاع glide 1 secs to random position
+        [
+          "https://res.cloudinary.com/alhiemg0/video/upload/v1789772563/ss14.6.mp4",
+        ]
+      ),
+      s(
+        "4 — glide 1 secs to x: y:",
+        "Start with glide 1 secs to x: y: — slide to an exact spot.\n• The Cat slides smoothly for 1 secs until it reaches x: 135 y: -91.\n• Run it, then change the numbers and the secs and compare the trips.",
+        undefined,
+        // حط هنا لينك صورة glide 1 secs to x: y:
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1789772563/ss14.7.png",
+        ],
+        undefined,
+        undefined,
+        // حط هنا لينك الفيديو بتاع glide 1 secs to x: y:
+        [
+          "https://res.cloudinary.com/alhiemg0/video/upload/v1789772563/ss14.8.mp4",
+        ]
+      ),
+      s(
+        "5 — change x by 10",
+        "Start with change x by 10 — the sideways step block.\n• +10 moves the sprite 10 steps to the right, -10 moves it 10 steps to the left.\n• Run it many times and watch the Cat walk right across the Stage.\n• Try -10 and watch it walk back left.",
+        undefined,
+        // حط هنا لينك صورة change x by 10
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1789772563/ss14.9.png",
+        ],
+        undefined,
+        undefined,
+        // حط هنا لينك الفيديو بتاع change x by 10
+        [
+          "https://res.cloudinary.com/alhiemg0/video/upload/v1789772563/ss14.10.mp4",
+        ]
+      ),
+      s(
+        "6 — change y by 10",
+        "Start with change y by 10 — the up and down step block.\n• +10 moves the sprite 10 steps up, -10 moves it 10 steps down.\n• Run it many times and watch the Cat climb up the Stage.\n• Try -10 and watch it fall back down.",
+        undefined,
+        // حط هنا لينك صورة change y by 10
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1789772563/ss14.11.png",
+        ],
+        undefined,
+        undefined,
+        // حط هنا لينك الفيديو بتاع change y by 10
+        [
+          "https://res.cloudinary.com/alhiemg0/video/upload/v1789772563/ss14.12.mp4",
+        ]
+      ),
+      s(
+        "7 — Homework: Slide and Jump",
+        "HOMEWORK: Make the Cat travel across the Stage.\n• Build: when green flag clicked + go to x: -132 y: 57 + glide 1 secs to x: 135 y: -91 + change x by 10 + change y by 10.\n• Press Green Flag and watch your sprite jump, then slide, then step.\n• File > Save to your computer so your work is never lost."
+      ),
+    ],
+    challenge:
+      "HOMEWORK: Make the Cat travel — Green Flag + go to x: -132 y: 57 + glide 1 secs to x: 135 y: -91 + change x by 10 + change y by 10. Press Green Flag, watch it jump then slide then step, then File > Save to your computer. Tell your coach: what is the difference between go to and glide, and what does change y by 10 do?",
+    quiz: [
+      q(
+        "What is the difference between go to random position and glide 1 secs to random position?",
+        [
+          "Both slide slowly across the Stage",
+          "go to jumps instantly, glide slides smoothly in 1 secs",
+          "glide jumps instantly, go to slides slowly",
+          "Both need x and y numbers",
+        ],
+        1,
+        "Go to teleports in one frame. Glide animates the trip over the secs you type."
+      ),
+      q(
+        "Which block sends the sprite to an exact spot on the Stage?",
+        [
+          "go to random position",
+          "go to x: -132 y: 57",
+          "change x by 10",
+          "move 10 steps",
+        ],
+        1,
+        "X and Y numbers pick the exact landing spot. Random position picks it for you."
+      ),
+      q(
+        "You run change x by 10 four times. Where does the sprite go?",
+        [
+          "40 steps up",
+          "40 steps to the right",
+          "40 steps to the left",
+          "Back to the start",
+        ],
+        1,
+        "X is sideways. +10 goes right every run, so 4 runs = 40 steps right. -10 would go left."
+      ),
+      q(
+        "You want the sprite to climb up. Which block?",
+        [
+          "change x by 10",
+          "change y by -10",
+          "change y by 10",
+          "glide 1 secs to random position",
+        ],
+        2,
+        "Y is up and down. +10 climbs up, -10 falls down. X moves sideways."
+      ),
+    ],
+  },
+  {
+    id: "slooks",
+    number: 3,
+    month: 1,
+    phase: 1,
+    kind: "core",
+    title: "Looks, Sounds and Events",
+    subtitle:
+      "say Hello!, switch costume, play sound, and start with Green Flag",
+    intro:
+      "In this session, we make our sprite talk, change its look, and make sounds. We learn say Hello! for 2 seconds, switch costume to costume2, play sound Meow until done, and when green flag clicked that starts every code. Snap them with the Motion blocks you know and watch the Cat come alive on the Stage.",
+    accent: "from-sky-500/20 to-blue-500/5",
+    // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
+    heroImage: "/curriculum/scratch/logoscratch.png",
+    learningGoal:
+      "Make the sprite talk, change costume, and play sounds, starting everything with Green Flag.",
+    successCriteria: [
+      "Talk with say Hello! for 2 seconds",
+      "Change look with switch costume to costume2",
+      "Play Meow with play sound Meow until done",
+      "Start every stack with when green flag clicked",
+      "Combine them with Motion blocks in one story",
+    ],
+    commonMistake:
+      "Forgetting when green flag clicked on top so nothing runs, or expecting the sprite to talk and move at the same time instead of one block after another.",
+    sections: [
+      s(
+        "1 — say Hello! for 2 seconds",
+        "Start with say Hello! for 2 seconds — the talking block.\n• It makes your sprite say Hello! in a speech bubble for 2 seconds.\n• Drag it to the Code Area, snap it under when green flag clicked, and press Green Flag.\n• Change Hello! to your name and 2 to 4 seconds and try again.",
+        undefined,
+        // حط هنا لينك صورة say Hello! for 2 seconds
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1789774473/ss15.1.png",
+        ],
+        undefined,
+        undefined,
+        // حط هنا لينك الفيديو بتاع say Hello! for 2 seconds
+        [
+          "https://res.cloudinary.com/alhiemg0/video/upload/v1789774473/ss15.2.mp4",
+        ]
+      ),
+      s(
+        "2 — switch costume to costume2",
+        "Start with switch costume to costume2 — the new look block.\n• It changes your sprite to a different drawing instantly.\n• Run it and watch the Cat change shape on the Stage.\n• Open the Costumes tab first to see costume1 and costume2, then come back and run it.",
+        undefined,
+        // حط هنا لينك صورة switch costume to costume2
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1789774473/ss15.3.png",
+        ],
+        undefined,
+        undefined,
+        // حط هنا لينك الفيديو بتاع switch costume to costume2
+        [
+          "https://res.cloudinary.com/alhiemg0/video/upload/v1789774473/ss15.4.mp4",
+        ]
+      ),
+      s(
+        "3 — play sound Meow until done",
+        "Start with play sound Meow until done — the voice block.\n• It plays the Meow sound fully before the next block runs.\n• Run it and listen to the Cat meow from the Sounds tab.\n• Try it after a move block: the Cat moves first, then meows.",
+        undefined,
+        // حط هنا لينك صورة play sound Meow until done
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1789774473/ss15.5.png",
+        ],
+        undefined,
+        undefined,
+        // حط هنا لينك الفيديو بتاع play sound Meow until done
+        [
+          "https://res.cloudinary.com/alhiemg0/video/upload/v1789774473/ss15.6.mp4",
+        ]
+      ),
+      s(
+        "4 — when green flag clicked",
+        "Start with when green flag clicked — the start button of every code.\n• Every stack begins with it: press the Green Flag and all the blocks under it run in order.\n• All our Motion, Looks and Sound blocks snap under it.\n• Without it on top, pressing Green Flag does nothing.",
+        undefined,
+        // حط هنا لينك صورة when green flag clicked
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1789774473/ss15.7.png",
+        ],
+        undefined,
+        undefined,
+        // حط هنا لينك الفيديو بتاع when green flag clicked
+        [
+          "https://res.cloudinary.com/alhiemg0/video/upload/v1789774473/ss15.8.mp4",
+        ]
+      ),
+      s(
+        "5 — Homework: The Cat's Trip Story",
+        "HOMEWORK: Make a small talking story with everything you learned in lessons 1, 2 and 3.\n• Choose any backdrop and any sprite.\n• Build: when green flag clicked + say Hello! for 2 seconds + go to x: -132 y: 57 + say I am here! for 2 seconds + glide 1 secs to x: 135 y: -91 + switch costume to costume2 + play sound Meow until done + say Bye! for 2 seconds.\n• Press Green Flag and watch your story play from start to end.\n• File > Save to your computer so your work is never lost."
+      ),
+    ],
+    challenge:
+      "HOMEWORK: The Cat's Trip story — pick any backdrop and sprite. Build: Green Flag + say Hello! for 2 seconds + go to x: -132 y: 57 + say I am here! for 2 seconds + glide 1 secs to x: 135 y: -91 + switch costume to costume2 + play sound Meow until done + say Bye! for 2 seconds. Press Green Flag, watch the full story, then File > Save to your computer. Tell your coach: which block talks, which block changes the look, and what starts every code?",
+    quiz: [
+      q(
+        "Which block makes your sprite talk on the Stage?",
+        [
+          "switch costume to costume2",
+          "play sound Meow until done",
+          "say Hello! for 2 seconds",
+          "when green flag clicked",
+        ],
+        2,
+        "Say shows a speech bubble with your words. Green Flag only starts the code."
+      ),
+      q(
+        "What does switch costume to costume2 do?",
+        [
+          "Plays the Meow sound",
+          "Moves the sprite 10 steps",
+          "Changes the sprite to a different drawing instantly",
+          "Starts the code with Green Flag",
+        ],
+        2,
+        "Costumes are different drawings of the same sprite. Switch jumps to costume2 at once."
+      ),
+      q(
+        "What does play sound Meow until done do?",
+        [
+          "It plays Meow fully before the next block runs",
+          "It moves the sprite while meowing",
+          "It changes the backdrop to Meow",
+          "It stops all sounds at once",
+        ],
+        0,
+        "Until done waits for the whole Meow to finish, then the next block runs."
+      ),
+      q(
+        "You press Green Flag and nothing happens. What is missing on top?",
+        [
+          "say Hello! for 2 seconds",
+          "move 10 steps",
+          "when green flag clicked",
+          "switch costume to costume2",
+        ],
+        2,
+        "Every stack must start with when green flag clicked. Without it, Green Flag runs nothing."
+      ),
+    ],
+  },
+  {
+    id: "s1",
+    number: 4,
+    month: 2,
+    phase: 2,
     kind: "core",
     title: "Apple Game - Part 1",
     subtitle: "Apple game — build the falling-apple setup",
     intro:
       "In this session, we build the Apple Collector game from the beginning. We prepare the game stage, choose the Blue Sky backdrop, add the Apple and Bowl sprites, create the Score and Lives variables, then build the Apple blocks that place the apple at the top and make it fall down.",
-    accent: "from-sky-500/20 to-cyan-500/5",
+    accent: "from-green-500/20 to-emerald-500/5",
     // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
     heroImage: "/curriculum/scratch/logoscratch.png",
     learningGoal:
@@ -263,8 +822,12 @@ export const coreLessons: CurriculumLesson[] = [
           ],
           optionImages: [
             undefined,
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1788974219/s13.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1788974219/s13.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1788974219/s13.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1788974219/s13.png",
+            ],
             [
               "https://res.cloudinary.com/alhiemg0/image/upload/v1788974219/s16.png",
               "https://res.cloudinary.com/alhiemg0/image/upload/v1788974219/s17.png",
@@ -288,12 +851,16 @@ export const coreLessons: CurriculumLesson[] = [
           ],
           optionImages: [
             undefined,
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1788974219/s14.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1788974219/s14.png",
+            ],
             [
               "https://res.cloudinary.com/alhiemg0/image/upload/v1788974219/s16.png",
               "https://res.cloudinary.com/alhiemg0/image/upload/v1788974219/s17.png",
             ],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1788974701/s2.2.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1788974701/s2.2.png",
+            ],
           ],
         }
       ),
@@ -318,15 +885,15 @@ export const coreLessons: CurriculumLesson[] = [
 
   {
     id: "s2",
-    number: 2,
-    month: 1,
-    phase: 1,
+    number: 5,
+    month: 2,
+    phase: 2,
     kind: "core",
     title: "Apple Game - Part 2",
     subtitle: "Apple game - conditions, lives, sound, and score",
     intro:
       "In this session, we finish the Apple Collector game. We check when the apple touches the ground, move it to a random position, remove a life when it is missed, end the game when all lives are lost, and reward the player with sound and score when the Bowl catches the apple.",
-    accent: "from-sky-500/20 to-cyan-500/5",
+    accent: "from-green-500/20 to-emerald-500/5",
     // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
     heroImage: "/curriculum/scratch/logoscratch.png",
     learningGoal:
@@ -460,9 +1027,15 @@ export const coreLessons: CurriculumLesson[] = [
             "https://res.cloudinary.com/alhiemg0/image/upload/v1788974700/s2.1.png",
           ],
           optionImages: [
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1788974720/s2.7.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1788974707/s2.5.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1788974700/s2.1.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1788974720/s2.7.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1788974707/s2.5.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1788974700/s2.1.png",
+            ],
             undefined,
           ],
         }
@@ -491,7 +1064,9 @@ export const coreLessons: CurriculumLesson[] = [
               "https://res.cloudinary.com/alhiemg0/image/upload/v1788974728/s2.9.png",
               "https://res.cloudinary.com/alhiemg0/image/upload/v1788974726/s2.10.png",
             ],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1788974722/s2.6.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1788974722/s2.6.png",
+            ],
             [
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789417669/s4.13.png",
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789417669/s4.15.png",
@@ -514,13 +1089,19 @@ export const coreLessons: CurriculumLesson[] = [
             "https://res.cloudinary.com/alhiemg0/image/upload/v1788974720/s2.7.png",
           ],
           optionImages: [
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1788974722/s2.6.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1788974707/s2.4.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1788974722/s2.6.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1788974707/s2.4.png",
+            ],
             [
               "https://res.cloudinary.com/alhiemg0/image/upload/v1788974701/s2.2.png",
               "https://res.cloudinary.com/alhiemg0/image/upload/v1788974725/s2.8.png",
             ],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1788974219/s14.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1788974219/s14.png",
+            ],
           ],
         }
       ),
@@ -554,15 +1135,15 @@ export const coreLessons: CurriculumLesson[] = [
 
   {
     id: "s3",
-    number: 3,
-    month: 1,
-    phase: 1,
+    number: 6,
+    month: 2,
+    phase: 2,
     kind: "core",
     title: "Apple Game - Part 3",
     subtitle: "Apple game - bowl movement and win mission",
     intro:
       "In this session, we control the Bowl. We start the Bowl's code, place it at the starting position, keep checking the keyboard in a forever loop, move it right and left with the arrow keys, then take the win mission when Score reaches 10.",
-    accent: "from-sky-500/20 to-cyan-500/5",
+    accent: "from-green-500/20 to-emerald-500/5",
     // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
     heroImage: "/curriculum/scratch/logoscratch.png",
     learningGoal:
@@ -671,7 +1252,9 @@ export const coreLessons: CurriculumLesson[] = [
           ],
           optionImages: [
             undefined,
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1788974880/s3.2.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1788974880/s3.2.png",
+            ],
             undefined,
             undefined,
           ],
@@ -728,12 +1311,16 @@ export const coreLessons: CurriculumLesson[] = [
             "https://res.cloudinary.com/alhiemg0/image/upload/v1788974895/s3.7.png",
           ],
           optionImages: [
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1788974878/s3.1.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1788974878/s3.1.png",
+            ],
             [
               "https://res.cloudinary.com/alhiemg0/image/upload/v1788974892/s3.5.png",
               "https://res.cloudinary.com/alhiemg0/image/upload/v1788974895/s3.7.png",
             ],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1788974880/s3.2.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1788974880/s3.2.png",
+            ],
             undefined,
           ],
         }
@@ -771,15 +1358,15 @@ export const coreLessons: CurriculumLesson[] = [
 
   {
     id: "s4",
-    number: 4,
-    month: 1,
-    phase: 1,
+    number: 7,
+    month: 2,
+    phase: 2,
     kind: "core",
     title: "Shark Game - Part 1",
     subtitle: "Shark game — swim in all directions",
     intro:
       "In this session, we start the Hungry Shark game. We choose the Underwater backdrop, add Fish, Shark 2 and Octopus sprites, then build all the Shark blocks to swim up, down, right and left, reset the Score, and stay inside the screen.",
-    accent: "from-green-500/20 to-emerald-500/5",
+    accent: "from-purple-500/20 to-fuchsia-500/5",
     // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
     heroImage: "/curriculum/scratch/logoscratch.png",
     learningGoal:
@@ -994,10 +1581,18 @@ export const coreLessons: CurriculumLesson[] = [
             "https://res.cloudinary.com/alhiemg0/image/upload/v1789417669/s4.16.png",
           ],
           optionImages: [
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789417669/s4.13.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789417669/s4.16.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789417669/s4.14.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789417669/s4.19.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789417669/s4.13.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789417669/s4.16.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789417669/s4.14.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789417669/s4.19.png",
+            ],
           ],
         }
       ),
@@ -1051,13 +1646,19 @@ export const coreLessons: CurriculumLesson[] = [
             "https://res.cloudinary.com/alhiemg0/image/upload/v1789417669/s4.20.png",
           ],
           optionImages: [
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789417669/s4.16.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789419361/s5.8.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789417669/s4.16.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789419361/s5.8.png",
+            ],
             [
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789417669/s4.20.png",
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789422544/s7.18.png",
             ],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789417669/s4.14.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789417669/s4.14.png",
+            ],
           ],
         }
       ),
@@ -1102,15 +1703,15 @@ export const coreLessons: CurriculumLesson[] = [
 
   {
     id: "s5",
-    number: 5,
-    month: 2,
-    phase: 2,
+    number: 8,
+    month: 3,
+    phase: 3,
     kind: "core",
     title: "Shark Game - Part 2",
     subtitle: "Shark game — eat fish, score points, change colors",
     intro:
       "In this session, we build the Hungry Shark game. First the Shark learns to sense the Fish and chomp with costumes, then we build the full Fish code: trigger, loop, sensing Shark 2, tiny wait, swim to random position, Score +1, and next costume.",
-    accent: "from-green-500/20 to-emerald-500/5",
+    accent: "from-purple-500/20 to-fuchsia-500/5",
     // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
     heroImage: "/curriculum/scratch/logoscratch.png",
     learningGoal:
@@ -1247,8 +1848,12 @@ export const coreLessons: CurriculumLesson[] = [
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789419361/s5.1.png",
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789419361/s5.5.png",
             ],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789419361/s5.1.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789419361/s5.5.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789419361/s5.1.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789419361/s5.5.png",
+            ],
           ],
         }
       ),
@@ -1305,10 +1910,18 @@ export const coreLessons: CurriculumLesson[] = [
             "https://res.cloudinary.com/alhiemg0/image/upload/v1789419361/s5.6.png",
           ],
           optionImages: [
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789419361/s5.7.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789419361/s5.6.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789419361/s5.9.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789419361/s5.3.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789419361/s5.7.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789419361/s5.6.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789419361/s5.9.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789419361/s5.3.png",
+            ],
           ],
         }
       ),
@@ -1332,9 +1945,15 @@ export const coreLessons: CurriculumLesson[] = [
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789419361/s5.2.png",
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789419361/s5.9.png",
             ],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789417669/s4.19.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789417669/s4.13.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789422544/s7.18.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789417669/s4.19.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789417669/s4.13.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789422544/s7.18.png",
+            ],
           ],
         }
       ),
@@ -1343,15 +1962,15 @@ export const coreLessons: CurriculumLesson[] = [
 
   {
     id: "s6",
-    number: 6,
-    month: 2,
-    phase: 2,
+    number: 9,
+    month: 3,
+    phase: 3,
     kind: "core",
     title: "Shark Game - Part 3",
     subtitle: "Octopus enemy — catch, escape, and mouse control",
     intro:
       "In this session, we add a new enemy to Hungry Shark. We build the full Octopus code: Green Flag trigger, forever loop, sensing Shark 2, tiny wait, next costume, escape to random position, and Score -1. Then we control Shark 2 with the mouse using point towards mouse-pointer and move 10 steps.",
-    accent: "from-green-500/20 to-emerald-500/5",
+    accent: "from-purple-500/20 to-fuchsia-500/5",
     // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
     heroImage: "/curriculum/scratch/logoscratch.png",
     learningGoal:
@@ -1497,9 +2116,15 @@ export const coreLessons: CurriculumLesson[] = [
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789419361/s5.8.png",
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789422015/s6.8.png",
             ],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789419361/s5.8.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789422544/s7.18.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789422025/s6.10.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789419361/s5.8.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789422544/s7.18.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789422025/s6.10.png",
+            ],
           ],
         }
       ),
@@ -1518,13 +2143,19 @@ export const coreLessons: CurriculumLesson[] = [
             "https://res.cloudinary.com/alhiemg0/image/upload/v1789422015/s6.5.png",
           ],
           optionImages: [
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789422015/s6.6.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789422015/s6.7.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789422015/s6.6.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789422015/s6.7.png",
+            ],
             [
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789422015/s6.4.png",
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789422015/s6.5.png",
             ],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789422015/s6.2.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789422015/s6.2.png",
+            ],
           ],
         }
       ),
@@ -1605,15 +2236,15 @@ export const coreLessons: CurriculumLesson[] = [
 
   {
     id: "s7",
-    number: 7,
-    month: 2,
-    phase: 2,
+    number: 10,
+    month: 3,
+    phase: 3,
     kind: "core",
     title: "Ping Pong Game - Part 1",
     subtitle: "Ball mastery — make the ball move and bounce!",
     intro:
       "In this session, we build Ball Mastery in the Ping Pong game (Session 2). We meet the Ball, choose the Neon Tunnel backdrop, add the Ball and Paddle sprites, draw the red line, then build the full Ball Blocks: Green Flag start, backdrop switch, starting position, diagonal direction, and forever moving with bounce, paddle hits, and sound.",
-    accent: "from-violet-500/20 to-purple-500/5",
+    accent: "from-red-500/20 to-rose-500/5",
     // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
     heroImage: "/curriculum/scratch/logoscratch.png",
     learningGoal:
@@ -1886,7 +2517,9 @@ export const coreLessons: CurriculumLesson[] = [
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789422544/s7.24.png",
             ],
             undefined,
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789422544/s7.21.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789422544/s7.21.png",
+            ],
             undefined,
           ],
         }
@@ -1908,14 +2541,20 @@ export const coreLessons: CurriculumLesson[] = [
             "https://res.cloudinary.com/alhiemg0/image/upload/v1789422544/s7.19.png",
           ],
           optionImages: [
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789422544/s7.14.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789422544/s7.21.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789422544/s7.14.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789422544/s7.21.png",
+            ],
             [
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789422544/s7.17.png",
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789422544/s7.18.png",
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789422544/s7.19.png",
             ],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789422544/s7.15.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789422544/s7.15.png",
+            ],
           ],
         }
       ),
@@ -1960,15 +2599,15 @@ export const coreLessons: CurriculumLesson[] = [
 
   {
     id: "s8",
-    number: 8,
-    month: 2,
-    phase: 2,
+    number: 11,
+    month: 3,
+    phase: 3,
     kind: "core",
     title: "Ping Pong Game - Part 2",
     subtitle: "Paddle mastery — move and control the game!",
     intro:
       "In this session, we build Paddle Mastery in the Ping Pong game. We meet the Paddle — the player-controlled bar — then build its full code: Green Flag trigger, forever keep checking, move right with the right arrow, and move left with the left arrow.",
-    accent: "from-violet-500/20 to-purple-500/5",
+    accent: "from-red-500/20 to-rose-500/5",
     // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
     heroImage: "/curriculum/scratch/logoscratch.png",
     learningGoal:
@@ -2083,13 +2722,19 @@ export const coreLessons: CurriculumLesson[] = [
             "https://res.cloudinary.com/alhiemg0/image/upload/v1789423328/s8.4.png",
           ],
           optionImages: [
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789423325/s8.2.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789423325/s8.2.png",
+            ],
             [
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789423326/s8.3.png",
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789423328/s8.4.png",
             ],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789422544/s7.20.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789422544/s7.18.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789422544/s7.20.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789422544/s7.18.png",
+            ],
           ],
         }
       ),
@@ -2125,7 +2770,9 @@ export const coreLessons: CurriculumLesson[] = [
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789423328/s8.4.png",
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789417669/s4.11.png",
             ],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789422544/s7.19.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789422544/s7.19.png",
+            ],
           ],
         }
       ),
@@ -2179,9 +2826,15 @@ export const coreLessons: CurriculumLesson[] = [
             "https://res.cloudinary.com/alhiemg0/image/upload/v1789423328/s8.8.png",
           ],
           optionImages: [
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789423326/s8.3.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1788974219/s2.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789422544/s7.19.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789423326/s8.3.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1788974219/s2.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789422544/s7.19.png",
+            ],
             [
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789423328/s8.5.png",
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789423328/s8.7.png",
@@ -2195,15 +2848,15 @@ export const coreLessons: CurriculumLesson[] = [
 
   {
     id: "s9",
-    number: 9,
-    month: 3,
-    phase: 3,
+    number: 12,
+    month: 4,
+    phase: 4,
     kind: "core",
     title: "Ping Pong Game - Part 3",
     subtitle: "Paddle mastery — move with the mouse and detect a loss!",
     intro:
       "In this session, we build Paddle Mastery in the Ping Pong game. We meet the Paddle — the player-controlled bar that follows the mouse — then build its mouse-control code: Green Flag trigger, forever keep checking, set x to mouse x, then detect a loss when the Ball touches the red edge and show Game Over with switch backdrop and stop all.",
-    accent: "from-violet-500/20 to-purple-500/5",
+    accent: "from-red-500/20 to-rose-500/5",
     // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
     heroImage: "/curriculum/scratch/logoscratch.png",
     learningGoal: "Move the paddle with the mouse smoothly and detect a loss!",
@@ -2365,7 +3018,9 @@ export const coreLessons: CurriculumLesson[] = [
           ],
           optionImages: [
             undefined,
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789424917/s10.6.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789424917/s10.6.png",
+            ],
             undefined,
             undefined,
           ],
@@ -2387,10 +3042,18 @@ export const coreLessons: CurriculumLesson[] = [
             "https://res.cloudinary.com/alhiemg0/image/upload/v1789424917/s10.8.png",
           ],
           optionImages: [
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789422544/s7.19.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789424917/s10.4.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789424917/s10.8.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789423328/s8.5.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789422544/s7.19.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789424917/s10.4.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789424917/s10.8.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789423328/s8.5.png",
+            ],
           ],
         }
       ),
@@ -2434,15 +3097,15 @@ export const coreLessons: CurriculumLesson[] = [
 
   {
     id: "s10",
-    number: 10,
-    month: 3,
-    phase: 3,
+    number: 13,
+    month: 4,
+    phase: 4,
     kind: "core",
     title: "Calculator - Part 1",
     subtitle: "Calculator setup — robot, backdrop, and variables",
     intro:
       "In this session, we start the Calculator project. We delete the Cat, choose the purple Space City backdrop, add the Retro Robot sprite, create three variables — First Number, The Operator, Second Number — then reset them to 0 and say welcome when Green Flag is clicked.",
-    accent: "from-orange-500/20 to-amber-500/5",
+    accent: "from-red-500/20 to-rose-500/5",
     // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
     heroImage: "/curriculum/scratch/logoscratch.png",
     learningGoal:
@@ -2588,7 +3251,9 @@ export const coreLessons: CurriculumLesson[] = [
             "https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.10.png",
           ],
           optionImages: [
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.10.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.10.png",
+            ],
             [
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789494711/ss2.3.png",
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789494711/ss2.5.png",
@@ -2618,13 +3283,19 @@ export const coreLessons: CurriculumLesson[] = [
             "https://res.cloudinary.com/alhiemg0/image/upload/v1789494711/ss2.1.png",
           ],
           optionImages: [
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.6.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.6.png",
+            ],
             [
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.11.png",
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789494711/ss2.1.png",
             ],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.2.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.4.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.2.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.4.png",
+            ],
           ],
         }
       ),
@@ -2643,10 +3314,18 @@ export const coreLessons: CurriculumLesson[] = [
             "https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.10.png",
           ],
           optionImages: [
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.11.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.2.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.10.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.4.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.11.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.2.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.10.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.4.png",
+            ],
           ],
         }
       ),
@@ -2655,15 +3334,15 @@ export const coreLessons: CurriculumLesson[] = [
 
   {
     id: "s11",
-    number: 11,
-    month: 3,
-    phase: 3,
+    number: 14,
+    month: 4,
+    phase: 4,
     kind: "core",
     title: "Calculator - Part 2",
     subtitle: "Calculator input — ask and save answers",
     intro:
       "In this session, we build the input loop. Inside forever the robot asks for the first number, the operator, and the second number — and saves each typed answer into its variable with set ... to answer.",
-    accent: "from-orange-500/20 to-amber-500/5",
+    accent: "from-red-500/20 to-rose-500/5",
     // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
     heroImage: "/curriculum/scratch/logoscratch.png",
     learningGoal:
@@ -2774,13 +3453,17 @@ export const coreLessons: CurriculumLesson[] = [
             "https://res.cloudinary.com/alhiemg0/image/upload/v1789494711/ss2.3.png",
           ],
           optionImages: [
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.2.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.2.png",
+            ],
             [
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789494711/ss2.2.png",
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789494711/ss2.3.png",
             ],
             undefined,
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.4.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.4.png",
+            ],
           ],
         }
       ),
@@ -2800,10 +3483,18 @@ export const coreLessons: CurriculumLesson[] = [
             "https://res.cloudinary.com/alhiemg0/image/upload/v1789494711/ss2.7.png",
           ],
           optionImages: [
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.2.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.11.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789494711/ss2.1.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789494711/ss2.7.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.2.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.11.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789494711/ss2.1.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789494711/ss2.7.png",
+            ],
           ],
         }
       ),
@@ -2826,9 +3517,15 @@ export const coreLessons: CurriculumLesson[] = [
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789494711/ss2.1.png",
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789494711/ss2.2.png",
             ],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.6.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.11.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789494711/ss2.4.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.6.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.11.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789494711/ss2.4.png",
+            ],
           ],
         }
       ),
@@ -2877,15 +3574,15 @@ export const coreLessons: CurriculumLesson[] = [
 
   {
     id: "s12",
-    number: 12,
-    month: 3,
-    phase: 3,
+    number: 15,
+    month: 4,
+    phase: 4,
     kind: "core",
     title: "Calculator - Part 3",
     subtitle: "Calculator operations — check the symbol and say the answer",
     intro:
       "In this session, we finish the Calculator. Inside forever, after the three answers are saved, four conditions check The Operator: if + say the sum, if - say the difference, if * say the product, if / say the quotient — each for 2 seconds.",
-    accent: "from-orange-500/20 to-amber-500/5",
+    accent: "from-red-500/20 to-rose-500/5",
     // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
     heroImage: "/curriculum/scratch/logoscratch.png",
     learningGoal:
@@ -2987,9 +3684,15 @@ export const coreLessons: CurriculumLesson[] = [
             "https://res.cloudinary.com/alhiemg0/image/upload/v1789495849/ss3.6.png",
           ],
           optionImages: [
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789495849/ss3.6.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789495849/ss3.2.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789495849/ss3.6.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789495849/ss3.6.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789495849/ss3.2.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789495849/ss3.6.png",
+            ],
             undefined,
           ],
         }
@@ -3010,13 +3713,19 @@ export const coreLessons: CurriculumLesson[] = [
             "https://res.cloudinary.com/alhiemg0/image/upload/v1789495849/ss3.3.png",
           ],
           optionImages: [
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789494711/ss2.1.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.11.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789494711/ss2.1.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.11.png",
+            ],
             [
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789495849/ss3.2.png",
               "https://res.cloudinary.com/alhiemg0/image/upload/v1789495849/ss3.3.png",
             ],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.2.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.2.png",
+            ],
           ],
         }
       ),
@@ -3036,9 +3745,15 @@ export const coreLessons: CurriculumLesson[] = [
           ],
           optionImages: [
             undefined,
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789495849/ss3.3.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789417669/s4.19.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789494711/ss2.2.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789495849/ss3.3.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789417669/s4.19.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789494711/ss2.2.png",
+            ],
           ],
         }
       ),
@@ -3057,10 +3772,16 @@ export const coreLessons: CurriculumLesson[] = [
             "https://res.cloudinary.com/alhiemg0/image/upload/v1789495849/ss3.1.png",
           ],
           optionImages: [
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.10.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.10.png",
+            ],
             undefined,
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.11.png"],
-            ["https://res.cloudinary.com/alhiemg0/image/upload/v1789495849/ss3.1.png"],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789493955/s1.11.png",
+            ],
+            [
+              "https://res.cloudinary.com/alhiemg0/image/upload/v1789495849/ss3.1.png",
+            ],
           ],
         }
       ),
@@ -3077,6 +3798,44 @@ const studioNotes: Record<
     commonMistake: string;
   }
 > = {
+  s0: {
+    learningGoal:
+      "Explain what programming is, what Scratch is, name the three Scratch screen partitions, and try basic, costume, and motion blocks.",
+    successCriteria: [
+      "Say what programming means: give the computer instructions to do a task",
+      "Name three things we make with programming: robots, apps and games, websites",
+      "Tell Blocks vs Text and name Python, JavaScript, C, C++",
+      "Point to the Blocks area, Code area, and Stage on the Scratch screen",
+      "Add and delete a sprite and change the backdrop",
+    ],
+    commonMistake:
+      "Thinking the computer understands us without clear instructions, or dragging blocks into the wrong screen partition and wondering why nothing runs.",
+  },
+  smotion: {
+    learningGoal:
+      "Use go to, glide, change x by, and change y by to move the sprite anywhere on the Stage.",
+    successCriteria: [
+      "Jump anywhere with go to random position",
+      "Land on an exact spot with go to x: y:",
+      "Slide smoothly with glide 1 secs",
+      "Step sideways with change x by 10",
+      "Step up and down with change y by 10",
+    ],
+    commonMistake:
+      "Mixing up go to and glide — go to jumps instantly while glide slides slowly — or mixing up X (sideways) with Y (up and down).",
+  },
+  slooks: {
+    learningGoal:
+      "Make the sprite talk, change costume, and play sounds, starting everything with Green Flag.",
+    successCriteria: [
+      "Talk with say Hello! for 2 seconds",
+      "Change look with switch costume to costume2",
+      "Play Meow with play sound Meow until done",
+      "Start every stack with when green flag clicked",
+    ],
+    commonMistake:
+      "Forgetting when green flag clicked on top so nothing runs, or expecting blocks to run together instead of one after another.",
+  },
   s1: {
     learningGoal:
       "Create the Apple Collector game setup and build the first falling-apple behavior.",
@@ -3268,22 +4027,29 @@ export const curriculumPhases = [
   {
     id: 1,
     month: 1,
-    en: "Apple Game + Shark Start",
-    meta: "Sessions 1–4",
+    en: "Welcome to Scratch",
+    meta: "Sessions 1–3",
     color: "from-sky-300 to-blue-400",
   },
   {
     id: 2,
     month: 2,
-    en: "Shark + Ping Pong",
-    meta: "Sessions 5–8",
+    en: "Apple Game + Shark Start",
+    meta: "Sessions 4–7",
     color: "from-emerald-300 to-green-400",
   },
   {
     id: 3,
     month: 3,
+    en: "Shark + Ping Pong",
+    meta: "Sessions 8–11",
+    color: "from-purple-300 to-fuchsia-400",
+  },
+  {
+    id: 4,
+    month: 4,
     en: "Ping Pong + Calculator",
-    meta: "Sessions 9–12",
-    color: "from-violet-300 to-purple-400",
+    meta: "Sessions 12–15",
+    color: "from-red-300 to-rose-400",
   },
 ];

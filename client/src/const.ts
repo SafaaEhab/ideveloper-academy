@@ -2,6 +2,12 @@ import { OAUTH_STATE_COOKIE, encodeOAuthState } from "@shared/const";
 
 export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 
+// Backend origin for split deployment (static frontend on Vercel + API
+// somewhere else). Empty = same origin (local dev / Render full-stack).
+// Set VITE_API_URL="https://your-api.onrender.com" on Vercel to use it.
+export const API_BASE_URL =
+  (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "") ?? "";
+
 // Start the Manus OAuth login. Call this from an event handler or effect at the
 // moment you want to navigate, e.g. `onClick={() => startLogin()}`.
 //
@@ -15,7 +21,7 @@ export { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 export const startLogin = () => {
   const oauthPortalUrl = import.meta.env.VITE_OAUTH_PORTAL_URL;
   const appId = import.meta.env.VITE_APP_ID;
-  const redirectUri = `${window.location.origin}/api/oauth/callback`;
+  const redirectUri = `${API_BASE_URL || window.location.origin}/api/oauth/callback`;
 
   const nonce = crypto.randomUUID();
   document.cookie = `${OAUTH_STATE_COOKIE}=${nonce}; Path=/; Max-Age=600; SameSite=None; Secure`;

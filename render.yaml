@@ -16,3 +16,11 @@ services:
         generateValue: true
       - key: ADMIN_EMAILS
         sync: false
+      - key: WEB_ORIGIN
+        sync: false
+      - key: OAUTH_SERVER_URL
+        sync: false
+      - key: VITE_APP_ID
+        sync: false
+      - key: OWNER_OPEN_ID
+        sync: false

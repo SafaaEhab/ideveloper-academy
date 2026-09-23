@@ -5,7 +5,7 @@ import { httpBatchLink, TRPCClientError } from "@trpc/client";
 import { createRoot } from "react-dom/client";
 import superjson from "superjson";
 import App from "./App";
-import { startLogin } from "./const";
+import { API_BASE_URL, startLogin } from "./const";
 import "./index.css";
 
 const queryClient = new QueryClient();
@@ -40,7 +40,7 @@ queryClient.getMutationCache().subscribe(event => {
 const trpcClient = trpc.createClient({
   links: [
     httpBatchLink({
-      url: "/api/trpc",
+      url: `${API_BASE_URL}/api/trpc`,
       transformer: superjson,
       headers() {
         // Preview auto-login fallback: when the browser blocks iframe cookies
