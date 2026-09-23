@@ -5,9 +5,9 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-# pnpm version is pinned in package.json (packageManager field)
+# install pnpm directly (corepack prompts for downloads in non-interactive builds)
 COPY package.json pnpm-lock.yaml ./
-RUN corepack enable && pnpm install --frozen-lockfile
+RUN npm install -g pnpm@10.4.1 && pnpm install --frozen-lockfile
 
 COPY . .
 RUN pnpm build
