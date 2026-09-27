@@ -91,9 +91,13 @@ describe("updated Python sessions 13 to 16", () => {
 });
 
 describe("lesson quizzes", () => {
-  it("ends every Python lesson with exactly 5 questions", () => {
-    expect(allPythonLessons.length).toBe(19);
+  it("ends every Python lesson with exactly 5 questions (lesson 20 is an empty placeholder)", () => {
+    expect(allPythonLessons.length).toBe(20);
     for (const lesson of allPythonLessons) {
+      if (lesson.id === "p8") {
+        expect(`${lesson.id}:${lesson.quiz.length}`).toBe(`${lesson.id}:0`);
+        continue;
+      }
       expect(`${lesson.id}:${lesson.quiz.length}`).toBe(`${lesson.id}:5`);
       for (const item of lesson.quiz) {
         expect(item.options.length).toBe(4);

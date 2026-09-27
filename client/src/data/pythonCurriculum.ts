@@ -1595,7 +1595,7 @@ export const coreLessons: CurriculumLesson[] = [
  {
  id: "s11",
  number: 11,
- month: 4,
+ month: 3,
  phase: 3,
  kind: "core",
  title: "Patterns and Numbers: Divisors, Lucky Numbers and Shapes",
@@ -1716,7 +1716,7 @@ export const coreLessons: CurriculumLesson[] = [
  {
  id: "s12",
  number: 12,
- month: 4,
+ month: 3,
  phase: 3,
  kind: "core",
  title: "While Loops: Repeat Until It Is Right",
@@ -2177,8 +2177,8 @@ export const problemSolvingLessons: CurriculumLesson[] = [
  {
   id: "p5b",
   number: 15,
-  month: 5,
-  phase: 5,
+  month: 4,
+  phase: 4,
  kind: "problem",
  title: "Creative Loops: Sequences, Pyramids and the PUM Game",
  subtitle: "Sequence and sum, pyramid, digit sums, PUM, and diamond",
@@ -2297,8 +2297,8 @@ export const problemSolvingLessons: CurriculumLesson[] = [
  {
   id: "p6a",
   number: 16,
-  month: 5,
-  phase: 5,
+  month: 4,
+  phase: 4,
  kind: "problem",
  title: "Printing and Accessing Lists",
  subtitle: "Group variables, store attendance, and read items",
@@ -2757,6 +2757,26 @@ export const problemSolvingLessons: CurriculumLesson[] = [
  ),
  ],
  },
+ {
+  id: "p8",
+  number: 20,
+  month: 5,
+  phase: 5,
+ kind: "problem",
+  title: "Coming Soon — Final Session",
+  subtitle: "Reserved for the last lesson — content not added yet",
+  intro:
+  "This session is intentionally left empty. Add the final lesson content here later.",
+ accent: "from-amber-300/25 to-orange-200/10",
+ sections: [
+  s(
+  "1 — Coming soon",
+  "Empty placeholder — the final lesson has not been added yet."
+  ),
+  ],
+ challenge: "Coming soon.",
+ quiz: [],
+ },
 ];
 const studioNotes: Record<
  string,
@@ -3045,14 +3065,14 @@ export const curriculumPhases = [
   id: 4,
   month: 4,
   en: "Applied Loops Practice",
-  meta: "Sessions 13–14",
+  meta: "Sessions 13–16",
   color: "from-red-300 to-rose-400",
   },
   {
   id: 5,
   month: 5,
   en: "Lists and Final Challenge",
-  meta: "Sessions 15–19",
+  meta: "Sessions 17–20",
   color: "from-amber-300 to-orange-400",
   },
 ];

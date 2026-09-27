@@ -38,7 +38,7 @@ export default function PythonLessonArt({ lesson, fallback, alt }: { lesson: Les
     <div className="mt-6 overflow-hidden rounded-2xl border border-border/60 bg-white shadow-sm">
       <div className="flex flex-wrap items-center gap-2 px-5 pt-5">
         <Badge variant="secondary" className="rounded-full">
-          Session {ghost} / 19
+          Session {ghost} / 20
         </Badge>
         <Badge variant="outline" className="rounded-full">
           Month {lesson.month}

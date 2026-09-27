@@ -625,8 +625,172 @@ export const coreLessons: CurriculumLesson[] = [
     ],
   },
   {
-    id: "s1",
+    id: "sevents",
     number: 4,
+    month: 1,
+    phase: 1,
+    kind: "core",
+    title: "Events and Control Blocks",
+    subtitle:
+      "when green flag clicked, when space key pressed, wait, repeat, forever, and if",
+    intro:
+      "In this session, we learn how to start our code and control it. We learn when green flag clicked, when space key pressed, wait 1 seconds, repeat 10, forever, and if then. Drag each block to the Code Area, press Green Flag, and watch the Cat start, wait, repeat, and choose on the Stage.",
+    accent: "from-sky-500/20 to-blue-500/5",
+    // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
+    heroImage: "/curriculum/scratch/logoscratch.png",
+    learningGoal:
+      "Start code with Events and control it with wait, repeat, forever, and if.",
+    successCriteria: [
+      "Start every stack with when green flag clicked",
+      "Start with a key using when space key pressed",
+      "Pause the code with wait 1 seconds",
+      "Repeat a fixed time with repeat 10",
+      "Repeat non-stop with forever",
+      "Make a choice with if then",
+    ],
+    commonMistake:
+      "Forgetting when green flag clicked on top so nothing runs, mixing up repeat 10 with forever, or putting blocks outside if then and wondering why they always run.",
+    sections: [
+      s(
+        "1 — when green flag clicked",
+        "Start with when green flag clicked — the start button of every code.\n• It sits on top and runs everything under it when you press the Green Flag.\n• Drag it to the Code Area, snap a Motion block under it, and press Green Flag.\n• Without it on top, pressing Green Flag does nothing.",
+        undefined,
+        // حط هنا لينك صورة when green flag clicked
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1790347895/sss1.png",
+        ],
+        undefined,
+        undefined,
+        // حط هنا لينك الفيديو بتاع when green flag clicked
+        [
+          "https://res.cloudinary.com/alhiemg0/video/upload/v1790347933/sss1.1.mp4",
+        ]
+      ),
+      s(
+        "2 — when space key pressed",
+        "Start with when space key pressed — the key start block.\n• It runs the code under it when you press space on the keyboard.\n• Click the small arrow to change space to up arrow, down arrow, right arrow, left arrow, any, a, b, or c.\n• Drag it to the Code Area, snap a block under it, and press space to try it.",
+        undefined,
+        // حط هنا لينك صورة when space key pressed
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1790347895/sss2.png",
+        ],
+        undefined,
+        undefined,
+        // حط هنا لينك الفيديو بتاع when space key pressed
+        [
+          "https://res.cloudinary.com/alhiemg0/video/upload/v1790347933/sss1.2.mp4",
+        ]
+      ),
+      s(
+        "3 — wait 1 seconds",
+        "Start with wait 1 seconds — the pause block.\n• It stops the code for 1 seconds, then the next block runs.\n• Snap it between two blocks and run with Green Flag to see the pause.\n• Change 1 to 3 seconds and watch the pause get longer.",
+        undefined,
+        // حط هنا لينك صورة wait 1 seconds
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1790347895/sss3.png",
+        ],
+        undefined,
+        undefined,
+        // حط هنا لينك الفيديو بتاع wait 1 seconds
+        [
+          "https://res.cloudinary.com/alhiemg0/video/upload/v1790347933/sss1.3.mp4",
+        ]
+      ),
+      s(
+        "4 — repeat 10",
+        "Start with repeat 10 — the count-repeat block.\n• It repeats the blocks inside it 10 times, then stops.\n• Drag it to the Code Area, put a move block inside it, and press Green Flag.\n• Change 10 to 4 and count how many times the sprite moves.",
+        undefined,
+        // حط هنا لينك صورة repeat 10
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1790347895/sss4.png",
+        ],
+        undefined,
+        undefined,
+        // حط هنا لينك الفيديو بتاع repeat 10
+        [
+          "https://res.cloudinary.com/alhiemg0/video/upload/v1790347933/sss1.4.mp4",
+        ]
+      ),
+      s(
+        "5 — forever",
+        "Start with forever — the non-stop repeat block.\n• It repeats the blocks inside it again and again and never stops.\n• Drag it to the Code Area, put a move block inside it, and press Green Flag.\n• Compare it with repeat 10: repeat stops after 10, forever keeps going.",
+        undefined,
+        // حط هنا لينك صورة forever
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1790347895/sss5.png",
+        ],
+        undefined,
+        undefined,
+        // حط هنا لينك الفيديو بتاع forever
+        [
+          "https://res.cloudinary.com/alhiemg0/video/upload/v1790347933/sss1.5.mp4",
+        ]
+      ),
+      s(
+        "6 — if then",
+        "Start with if then — the choice block.\n• It checks the hexagon condition: if True the blocks inside run, if False they are skipped.\n• Drag it to the Code Area, put a condition in the hexagon, and a block inside it.\n• Run it with Green Flag and change the condition to see it run once and skip once.",
+        undefined,
+        // حط هنا لينك صورة if then
+        [
+          "https://res.cloudinary.com/alhiemg0/image/upload/v1790347895/sss6.png",
+        ],
+        undefined,
+        undefined,
+        // حط هنا لينك الفيديو بتاع if then
+        []
+      ),
+      s(
+        "7 — Homework: Start, Wait and Repeat",
+        "HOMEWORK: Make the Cat start, wait, and repeat.\n• Build: when green flag clicked + move 10 steps + wait 1 seconds + repeat 10 with turn clockwise 15 degrees inside + forever with move 10 steps? No — use repeat for the dance, then if then for the final pose.\n• Simpler build: when green flag clicked + say Hello! for 2 seconds + wait 1 seconds + repeat 10 move 10 steps + if then with your own condition.\n• Press Green Flag and watch your sprite start, pause, repeat, then choose.\n• File > Save to your computer so your work is never lost."
+      ),
+    ],
+    challenge:
+      "HOMEWORK: Start, wait and repeat — Green Flag + say Hello! for 2 seconds + wait 1 seconds + repeat 10 with move 10 steps inside + if then with your own condition. Press Green Flag, watch it start then pause then repeat then choose, then File > Save to your computer. Tell your coach: which block starts every code, what does wait do, and what is the difference between repeat 10 and forever?",
+    quiz: [
+      q(
+        "Which block must sit on top so pressing Green Flag runs your code?",
+        ["wait 1 seconds", "repeat 10", "when green flag clicked", "if then"],
+        2,
+        "When green flag clicked is the starter. Without it on top, Green Flag runs nothing."
+      ),
+      q(
+        "You want the code to run when you press the b key. Which block?",
+        [
+          "when green flag clicked",
+          "when space key pressed then change it to b",
+          "wait 1 seconds",
+          "forever",
+        ],
+        1,
+        "When key pressed starts with a key. Click the arrow and change space to b, then pressing b runs it."
+      ),
+      q(
+        "What is the difference between repeat 10 and forever?",
+        [
+          "Both repeat non-stop and never end",
+          "repeat 10 repeats 10 times then stops, forever never stops",
+          "forever repeats 10 times then stops, repeat never stops",
+          "Both pause the code for 1 second",
+        ],
+        1,
+        "Repeat counts to 10 and ends. Forever has no count so it keeps repeating."
+      ),
+      q(
+        "You put a move block inside if then but it never runs. What is the reason?",
+        [
+          "wait 1 seconds is missing",
+          "The hexagon condition is False so the inside is skipped",
+          "repeat 10 is missing",
+          "when space key pressed is missing",
+        ],
+        1,
+        "If checks the hexagon first. True runs the inside, False skips it even if Green Flag is pressed."
+      ),
+    ],
+  },
+  {
+    id: "s1",
+    number: 5,
     month: 2,
     phase: 2,
     kind: "core",
@@ -885,7 +1049,7 @@ export const coreLessons: CurriculumLesson[] = [
 
   {
     id: "s2",
-    number: 5,
+    number: 6,
     month: 2,
     phase: 2,
     kind: "core",
@@ -1135,7 +1299,7 @@ export const coreLessons: CurriculumLesson[] = [
 
   {
     id: "s3",
-    number: 6,
+    number: 7,
     month: 2,
     phase: 2,
     kind: "core",
@@ -1358,7 +1522,7 @@ export const coreLessons: CurriculumLesson[] = [
 
   {
     id: "s4",
-    number: 7,
+    number: 8,
     month: 2,
     phase: 2,
     kind: "core",
@@ -1703,7 +1867,7 @@ export const coreLessons: CurriculumLesson[] = [
 
   {
     id: "s5",
-    number: 8,
+    number: 9,
     month: 3,
     phase: 3,
     kind: "core",
@@ -1962,7 +2126,7 @@ export const coreLessons: CurriculumLesson[] = [
 
   {
     id: "s6",
-    number: 9,
+    number: 10,
     month: 3,
     phase: 3,
     kind: "core",
@@ -2236,7 +2400,7 @@ export const coreLessons: CurriculumLesson[] = [
 
   {
     id: "s7",
-    number: 10,
+    number: 11,
     month: 3,
     phase: 3,
     kind: "core",
@@ -2599,7 +2763,7 @@ export const coreLessons: CurriculumLesson[] = [
 
   {
     id: "s8",
-    number: 11,
+    number: 12,
     month: 3,
     phase: 3,
     kind: "core",
@@ -2848,7 +3012,7 @@ export const coreLessons: CurriculumLesson[] = [
 
   {
     id: "s9",
-    number: 12,
+    number: 13,
     month: 4,
     phase: 4,
     kind: "core",
@@ -3097,7 +3261,7 @@ export const coreLessons: CurriculumLesson[] = [
 
   {
     id: "s10",
-    number: 13,
+    number: 14,
     month: 4,
     phase: 4,
     kind: "core",
@@ -3334,7 +3498,7 @@ export const coreLessons: CurriculumLesson[] = [
 
   {
     id: "s11",
-    number: 14,
+    number: 15,
     month: 4,
     phase: 4,
     kind: "core",
@@ -3574,7 +3738,7 @@ export const coreLessons: CurriculumLesson[] = [
 
   {
     id: "s12",
-    number: 15,
+    number: 16,
     month: 4,
     phase: 4,
     kind: "core",
@@ -3836,6 +4000,20 @@ const studioNotes: Record<
     commonMistake:
       "Forgetting when green flag clicked on top so nothing runs, or expecting blocks to run together instead of one after another.",
   },
+  sevents: {
+    learningGoal:
+      "Start code with Events and control it with wait, repeat, forever, and if.",
+    successCriteria: [
+      "Start every stack with when green flag clicked",
+      "Start with a key using when space key pressed",
+      "Pause the code with wait 1 seconds",
+      "Repeat a fixed time with repeat 10",
+      "Repeat non-stop with forever",
+      "Make a choice with if then",
+    ],
+    commonMistake:
+      "Forgetting when green flag clicked on top so nothing runs, mixing up repeat 10 with forever, or putting blocks outside if then and wondering why they always run.",
+  },
   s1: {
     learningGoal:
       "Create the Apple Collector game setup and build the first falling-apple behavior.",
@@ -4028,28 +4206,28 @@ export const curriculumPhases = [
     id: 1,
     month: 1,
     en: "Welcome to Scratch",
-    meta: "Sessions 1–3",
+    meta: "Sessions 1–4",
     color: "from-sky-300 to-blue-400",
   },
   {
     id: 2,
     month: 2,
     en: "Apple Game + Shark Start",
-    meta: "Sessions 4–7",
+    meta: "Sessions 5–8",
     color: "from-emerald-300 to-green-400",
   },
   {
     id: 3,
     month: 3,
     en: "Shark + Ping Pong",
-    meta: "Sessions 8–11",
+    meta: "Sessions 9–12",
     color: "from-purple-300 to-fuchsia-400",
   },
   {
     id: 4,
     month: 4,
     en: "Ping Pong + Calculator",
-    meta: "Sessions 12–15",
+    meta: "Sessions 13–16",
     color: "from-red-300 to-rose-400",
   },
 ];
