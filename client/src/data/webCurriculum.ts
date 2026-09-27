@@ -42,54 +42,97 @@ export const webLessons: WebLesson[] = [
     number: 1,
     month: 1,
     track: "HTML",
-    title: "Welcome to the Web!",
-    subtitle: "What is a website + your first HTML page",
-    intro: "Website = connected pages. HTML = the structure. Let's build it!",
+    title: "Web Basics & Your First Page",
+    subtitle: "What a website is, and how HTML builds it",
+    intro:
+      "A website is pages linked together. HTML is the language that gives those pages their structure — and you will write one today.",
     sections: [
       s(
-        "Website = linked pages",
-        "Pages with text, pictures, video.\nUse them to: share • connect • show work • shop.",
+        "What is a website?",
+        "A group of web pages linked together. Each page can hold text, pictures, videos and more.\n\nA website is an online space where you can:\n• share information\n• connect with others\n• show off your work\n• buy and sell things",
         undefined,
-        { emoji: "🌐", caption: "Like rooms connected by doors" }
+        {
+          emoji: "🌐",
+          images: ["/curriculum/html/session1/websites.png"],
+          caption: "One website = many connected pages",
+        }
       ),
       s(
         "Front-end vs Back-end",
-        "What you SEE vs hidden logic & data.\nWe build the front-end: HTML + CSS + JS.",
+        "Front-end = everything the user sees. It is built with three languages:\n\n• HTML — the structure\n• CSS — the colors and layout\n• JavaScript — the behavior\n\nBack-end = the hidden logic, servers and databases that a user never sees.",
         undefined,
-        { emoji: "🎨", caption: "Front = look • Back = brain" }
+        {
+          emoji: "🎨",
+          images: [
+            "/curriculum/html/session1/frontend.png",
+            "/curriculum/html/session1/backend.png",
+          ],
+          caption: "We build the front-end first",
+        }
       ),
       s(
-        "HTML = the skeleton",
-        "HyperText Markup Language — NOT programming.\nIt builds structure, like bones of the body.",
+        "What is HTML?",
+        "HTML stands for HyperText Markup Language. It is NOT a programming language — it is a markup language.\n\n• It is the standard language for creating web pages.\n• It describes the structure of a page.\n• It is built from elements.",
         undefined,
-        { emoji: "🦴", caption: "HTML = bones • CSS = clothes • JS = moves" }
+        {
+          emoji: "🦴",
+          images: [
+            "/curriculum/html/session1/page-wireframe.png",
+            "/curriculum/html/session1/html-css-js.png",
+          ],
+          caption: "HTML = bones · CSS = clothes · JS = moves",
+        }
       ),
       s(
-        "Element = 3 parts",
-        "Start tag + content + end tag.",
+        "Anatomy of an element",
+        "An element is a start tag, some content, and an end tag.\n\nThe element is everything from the start tag to the end tag.",
         `<h1>My First Heading</h1>`,
-        { emoji: "🧩", caption: "<tag> content </tag>" }
+        {
+          emoji: "🧩",
+          images: ["/curriculum/html/session1/element-anatomy.png"],
+          caption: "<tagname> content </tagname>",
+        }
       ),
       s(
-        "Page skeleton",
-        "html wraps all • head = info • body = what you see.",
-        `<!doctype html>\n<html>\n  <head><title>My Page</title></head>\n  <body>\n    <h1>Hello!</h1>\n    <p>My first page.</p>\n  </body>\n</html>`,
-        { emoji: "🏠", caption: "head = brain • body = face" }
+        "The structure of every page",
+        "<!DOCTYPE html> → this document is HTML5\n<html> → the root element\n<head> → meta information about the page\n<title> → the page title\n<body> → everything the user can see\n\nElements can be inside each other, or below each other.",
+        `<!DOCTYPE html>\n<html>\n  <head>\n    <title>Page Title</title>\n  </head>\n  <body>\n    <h1>My First Heading</h1>\n    <p>My first paragraph.</p>\n  </body>\n</html>`,
+        {
+          emoji: "🏠",
+          images: [
+            "/curriculum/html/session1/page-structure.png",
+            "/curriculum/html/session1/nesting.png",
+            "/curriculum/html/session1/rendered-output.png",
+          ],
+          caption: "head = info you cannot see · body = what you see",
+        }
       ),
       s(
-        "See HTML in Google",
-        "Right-click → Inspect → find <title> → change it!",
+        "See the HTML of any website",
+        "You can read the HTML of Google, or any site, yourself.\n\n1. Right-click anywhere on the page.\n2. Choose Inspect.\n3. The Elements panel opens with the live HTML.\n\nFind <title>, edit the text, and the tab title changes instantly.",
         undefined,
-        { emoji: "🔍", caption: "1. Right-click  2. Inspect" }
+        {
+          emoji: "🔍",
+          images: [
+            "/curriculum/html/session1/inspect-menu.png",
+            "/curriculum/html/session1/devtools-title.png",
+          ],
+          caption: "Right-click → Inspect → edit the <title>",
+        }
       ),
     ],
     challenge:
-      "1) Download VS Code  2) Create index.html  3) Add h1 with your name + p about your hobby.",
+      "Download VS Code, create a file called index.html, and build your first page: a <title>, an <h1> with your name, and a <p> about your hobby. Then search for what the <!DOCTYPE html> declaration does.",
     quiz: q(
-      "What builds page structure?",
-      ["HTML", "A mouse", "A password", "A speaker"],
-      0,
-      "HTML builds structure — like bones."
+      "What does HTML stand for?",
+      [
+        "High Text Markup Language",
+        "HyperText Markup Language",
+        "HyperText Making Language",
+        "Home Tool Markup Language",
+      ],
+      1,
+      "HTML = HyperText Markup Language, the standard language for page structure."
     ),
     color: "from-cyan-500/20 to-blue-500/5",
   },
@@ -98,33 +141,78 @@ export const webLessons: WebLesson[] = [
     number: 2,
     month: 1,
     track: "HTML",
-    title: "Headings, Paragraphs & Lines",
-    subtitle: "Organize a page so it is easy to read",
+    title: "Headings, Paragraphs, Breaks & Rules",
+    subtitle: "Turn plain text into a page that is easy to read",
     intro:
-      "Headings create a clear reading map. Paragraphs hold ideas, line breaks create a new line, and horizontal rules separate big sections.",
+      "Headings build the reading map, <p> holds one idea per block, <br> breaks a line, and <hr> separates sections. Four tags, one readable page.",
     sections: [
       s(
-        "A heading ladder",
-        "Use h1 for the main page title, then h2 and h3 for smaller sections. Keep the order logical.",
-        `<h1>My Space</h1>\n<h2>My Games</h2>\n<p>I love building puzzles.</p>`
+        "Headings: h1 to h6",
+        "Headings are the titles and subtitles you want to display.\n\n• <h1> is the most important heading.\n• <h6> is the least important.\n\nUse one <h1> per page, then step down in order.",
+        `<body>\n  <h1>Heading 1</h1>\n  <h2>Heading 2</h2>\n  <h3>Heading 3</h3>\n  <h4>Heading 4</h4>\n  <h5>Heading 5</h5>\n  <h6>Heading 6</h6>\n</body>`,
+        {
+          emoji: "🗂️",
+          images: ["/curriculum/html/session2/headings-code.png"],
+          caption: "The browser already gives h1–h6 different sizes",
+        }
       ),
       s(
-        "Readable paragraphs",
-        "A paragraph is one idea. Do not put the entire page inside one huge paragraph."
+        "Paragraphs: the <p> element",
+        "Everything inside <p> is displayed as one continuous block of text — the browser wraps it for you when it reaches the edge of the screen.\n\nOne paragraph = one idea. Never put a whole page inside a single <p>.",
+        `<body>\n  <p>\n    Lorem, ipsum dolor sit amet consectetur adipisicing elit.\n    Eum unde asperiores, porro, qui est, non laudantium labore.\n  </p>\n</body>`,
+        {
+          emoji: "📝",
+          images: [
+            "/curriculum/html/session2/paragraph-code.png",
+            "/curriculum/html/session2/paragraph-output.png",
+          ],
+          caption: "Long text still flows as one block",
+        }
       ),
       s(
-        "Breaks and separators",
-        "Use br for a meaningful line break and hr when two sections need a visual boundary.",
-        `Line one<br>Line two\n<hr>`
+        "Line breaks: the <br> element",
+        "<br> defines a line break. Use it when you need a new line WITHOUT starting a new paragraph.\n\nIt is an empty tag, so it has no end tag.",
+        `<body>\n  <p>This is <br> a paragraph <br> with line breaks</p>\n</body>`,
+        {
+          emoji: "⏎",
+          images: [
+            "/curriculum/html/session2/linebreak-code.png",
+            "/curriculum/html/session2/linebreak-output.png",
+          ],
+          caption: "Empty tag → no closing </br>",
+        }
+      ),
+      s(
+        "Horizontal rules: the <hr> element",
+        "<hr> is a thematic break, shown as a horizontal line.\n\nUse it to separate content, or to mark a clear change between two sections.\n\nLike <br>, it is an empty tag with no end tag.",
+        `<body>\n  <h1>This is Heading 1</h1>\n  <p>This is some text.</p>\n  <hr>\n  <h2>This is Heading 2</h2>\n  <p>This is some more text.</p>\n  <hr>\n</body>`,
+        {
+          emoji: "➖",
+          images: [
+            "/curriculum/html/session2/rule-code.png",
+            "/curriculum/html/session2/rule-output.png",
+          ],
+          caption: "Empty tag → no closing </hr>",
+        }
+      ),
+      s(
+        "Activity: build a mini portfolio",
+        "Combine all four tags into one page:\n\n1. <h1> for the page title.\n2. <h2> for About Me and My Hobbies.\n3. <p> for the details.\n4. <br> for your name, age and school.\n5. <hr> between the sections.\n\nThen run it in the live playground.",
+        `<h1>Welcome to My Portfolio</h1>\n<p>This is a simple portfolio page.</p>\n<hr>\n<h2>About Me</h2>\n<p>Hello my name is Ahmed<br>I am 14 years old<br>I am a student at iDeveloper</p>\n<hr>\n<h2>My Hobbies</h2>\n<p>Coding<br>Football<br>Drawing</p>\n<hr>`,
+        {
+          emoji: "🏆",
+          images: ["/curriculum/html/session2/activity-output.png"],
+          caption: "Headings + paragraphs + br + hr, all together",
+        }
       ),
     ],
     challenge:
-      "Build a mini profile with one h1, two h2 headings, and three short paragraphs.",
+      "Build the portfolio page above in your own index.html. Homework: search for meta elements and be ready to answer — what are meta elements, what do they do, and what types exist?",
     quiz: q(
-      "Which tag represents the main heading?",
-      ["<p>", "<h1>", "<br>", "<hr>"],
-      1,
-      "h1 is the main heading of a page."
+      "Which tag gives a line break without starting a new paragraph?",
+      ["<p>", "<hr>", "<br>", "<h6>"],
+      2,
+      "<br> is an empty tag that forces a new line inside the current block."
     ),
     color: "from-sky-500/20 to-indigo-500/5",
   },

@@ -9,7 +9,6 @@
  *
  * No data leaves the browser — the PDF is produced and downloaded locally.
  */
-import { jsPDF } from "jspdf";
 
 export const ACADEMY_LOGO =
   "https://res.cloudinary.com/alhiemg0/image/upload/f_auto,q_auto/logo.png";
@@ -624,15 +623,24 @@ export async function issueCertificate(input: CertificateInput): Promise<IssuedC
     return null;
   }
 
-  const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4", compress: true });
-  pdf.addImage(dataUrl, "PNG", 0, 0, 297, 210, undefined, "FAST");
-  pdf.setProperties({
-    title: `${ACADEMY_NAME} — ${input.courseName} Certificate`,
-    subject: `Issued to ${input.studentName}`,
-    author: ACADEMY_NAME,
-    creator: ACADEMY_NAME,
-  });
-  pdf.save(fileName);
+  try {
+    // jsPDF is only needed at graduation time, so it is fetched on demand
+    // instead of shipping ~350 kB in the initial bundle.
+    const { jsPDF } = await import("jspdf");
+    const pdf = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4", compress: true });
+    pdf.addImage(dataUrl, "PNG", 0, 0, 297, 210, undefined, "FAST");
+    pdf.setProperties({
+      title: `${ACADEMY_NAME} — ${input.courseName} Certificate`,
+      subject: `Issued to ${input.studentName}`,
+      author: ACADEMY_NAME,
+      creator: ACADEMY_NAME,
+    });
+    pdf.save(fileName);
+  } catch (error) {
+    // Never surface as an unhandled rejection — the caller shows a retry toast.
+    console.error("[certificate] could not build the PDF", error);
+    return null;
+  }
 
   return { fileName, serial, issuedOn };
 }

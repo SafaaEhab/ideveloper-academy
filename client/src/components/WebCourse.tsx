@@ -10,7 +10,6 @@ import {
   Lightbulb,
   MousePointerClick,
   Palette,
-  Play,
   RotateCcw,
   Server,
   ShoppingCart,
@@ -22,11 +21,20 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { webLessons, webTracks, type WebLesson } from "@/data/webCurriculum";
 import CertificateClaim from "@/components/CertificateClaim";
+import WebCodeRunner from "@/components/WebCodeRunner";
+import WebFigure from "@/components/WebFigure";
 import { useCourseCertificate } from "@/hooks/useCourseCertificate";
 import { CERTIFICATE_COURSES } from "@/lib/certificateCourses";
 
@@ -42,7 +50,6 @@ const text = {
   map: "Lesson map",
   mistake: "Common mistake radar",
   example: "Try the example",
-  run: "Run example",
   copy: "Copy code",
   mission: "Your mission",
   extra: "Optional extra practice",
@@ -280,6 +287,10 @@ export default function WebCourse({ studentName, accessCode }: WebCourseProps) {
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [submitted, setSubmitted] = useState(false);
   const [completed, setCompleted] = useState<string[]>([]);
+  const [zoomed, setZoomed] = useState<{ src: string; alt: string } | null>(
+    null
+  );
+  const zoomImage = (src: string, alt: string) => setZoomed({ src, alt });
   const lesson = webLessons.find(item => item.id === activeId) ?? webLessons[0];
   const visibleLessons = useMemo(
     () => webLessons.filter(item => item.track === activeTrack),
@@ -623,14 +634,13 @@ export default function WebCourse({ studentName, accessCode }: WebCourseProps) {
                           )}
                           <SectionVisual lessonId={lesson.id} index={index} />
                           {item.images && item.images.length > 0 && (
-                            <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                            <div className="mt-4 grid gap-3 sm:grid-cols-2">
                               {item.images.map(src => (
-                                <img
+                                <WebFigure
                                   key={src}
                                   src={src}
                                   alt={item.title}
-                                  loading="lazy"
-                                  className="w-full rounded-2xl border border-border/60 bg-white object-contain p-2"
+                                  onZoom={zoomImage}
                                 />
                               ))}
                             </div>
@@ -655,22 +665,14 @@ export default function WebCourse({ studentName, accessCode }: WebCourseProps) {
                               <pre className="overflow-x-auto whitespace-pre-wrap p-5 text-sm leading-7">
                                 <code>{item.code}</code>
                               </pre>
-                              <div className="border-t border-white/10 p-4">
-                                <Button
-                                  type="button"
-                                  size="sm"
-                                  variant="secondary"
-                                  onClick={() =>
-                                    toast.success(
-                                      "Nice! The example is ready to try"
-                                    )
-                                  }
-                                >
-                                  <Play className="me-2 h-4 w-4" />
-                                  {text.run}
-                                </Button>
-                              </div>
                             </div>
+                          )}
+                          {item.code && (
+                            <WebCodeRunner
+                              code={item.code}
+                              lessonId={lesson.id}
+                              sectionIndex={index}
+                            />
                           )}
                         </div>
                       )}
@@ -800,6 +802,26 @@ export default function WebCourse({ studentName, accessCode }: WebCourseProps) {
           </Card>
         </section>
       </div>
+      <Dialog
+        open={Boolean(zoomed)}
+        onOpenChange={open => !open && setZoomed(null)}
+      >
+        <DialogContent className="max-w-5xl">
+          <DialogHeader>
+            <DialogTitle>{zoomed?.alt}</DialogTitle>
+            <DialogDescription>
+              Click anywhere outside the image to close it.
+            </DialogDescription>
+          </DialogHeader>
+          {zoomed && (
+            <img
+              src={zoomed.src}
+              alt={zoomed.alt}
+              className="max-h-[75vh] w-full rounded-xl border border-border/60 bg-white object-contain p-2"
+            />
+          )}
+        </DialogContent>
+      </Dialog>
     </section>
   );
 }

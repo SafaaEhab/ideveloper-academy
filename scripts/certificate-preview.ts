@@ -1,3 +1,12 @@
+/**
+ * Design harness for the certificate layout.
+ *
+ *   npx esbuild scripts/certificate-preview.ts --bundle --format=iife --outfile=<dir>/preview.js
+ *   # then open <dir>/index.html (copy of scripts/preview-template.html) in a browser
+ *
+ * Renders several name/course combinations so Arabic shaping, long-name
+ * shrinking and the per-course copy can all be eyeballed at once.
+ */
 import { renderCertificateCanvas } from "../client/src/lib/certificate";
 import { CERTIFICATE_COURSES } from "../client/src/lib/certificateCourses";
 
