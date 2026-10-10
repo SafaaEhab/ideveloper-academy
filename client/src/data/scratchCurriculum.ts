@@ -77,7 +77,7 @@ export const coreLessons: CurriculumLesson[] = [
     intro:
       "In this session, we start from zero: what computers are for, what programming means, what we can make with it — robots, apps, games, websites — how we give instructions with blocks or text, what Scratch is, and where everything lives on the Scratch screen. Then we try basic blocks, the Costume tab, the Sound tab, a quick look at Motion blocks, and how to save our game.",
     accent: "from-sky-500/20 to-blue-500/5",
-    heroImage: "/curriculum/scratch/logoscratch.png",
+    heroImage: "https://res.cloudinary.com/alhiemg0/image/upload/logoscratch.png",
     learningGoal:
       "Explain what programming is, what Scratch is, name the three Scratch screen partitions, and try basic, costume, sound, and motion blocks.",
     successCriteria: [
@@ -326,7 +326,7 @@ export const coreLessons: CurriculumLesson[] = [
       "In this session, we continue Motion — the blue blocks that move your sprite. We learn go to random position, go to x: y:, glide to random position, glide to x: y:, change x by, and change y by. Drag each block to the Code Area, press Green Flag, and watch the Cat jump and slide on the Stage.",
     accent: "from-sky-500/20 to-blue-500/5",
     // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
-    heroImage: "/curriculum/scratch/logoscratch.png",
+    heroImage: "https://res.cloudinary.com/alhiemg0/image/upload/logoscratch.png",
     learningGoal:
       "Use go to, glide, change x by, and change y by to move the sprite anywhere on the Stage.",
     successCriteria: [
@@ -497,7 +497,7 @@ export const coreLessons: CurriculumLesson[] = [
       "In this session, we make our sprite talk, change its look, and make sounds. We learn say Hello! for 2 seconds, switch costume to costume2, play sound Meow until done, and when green flag clicked that starts every code. Snap them with the Motion blocks you know and watch the Cat come alive on the Stage.",
     accent: "from-sky-500/20 to-blue-500/5",
     // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
-    heroImage: "/curriculum/scratch/logoscratch.png",
+    heroImage: "https://res.cloudinary.com/alhiemg0/image/upload/logoscratch.png",
     learningGoal:
       "Make the sprite talk, change costume, and play sounds, starting everything with Green Flag.",
     successCriteria: [
@@ -637,7 +637,7 @@ export const coreLessons: CurriculumLesson[] = [
       "In this session, we learn how to start our code and control it. We learn when green flag clicked, when space key pressed, wait 1 seconds, repeat 10, forever, and if then. Drag each block to the Code Area, press Green Flag, and watch the Cat start, wait, repeat, and choose on the Stage.",
     accent: "from-sky-500/20 to-blue-500/5",
     // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
-    heroImage: "/curriculum/scratch/logoscratch.png",
+    heroImage: "https://res.cloudinary.com/alhiemg0/image/upload/logoscratch.png",
     learningGoal:
       "Start code with Events and control it with wait, repeat, forever, and if.",
     successCriteria: [
@@ -800,7 +800,7 @@ export const coreLessons: CurriculumLesson[] = [
       "In this session, we build the Apple Collector game from the beginning. We prepare the game stage, choose the Blue Sky backdrop, add the Apple and Bowl sprites, create the Score and Lives variables, then build the Apple blocks that place the apple at the top and make it fall down.",
     accent: "from-green-500/20 to-emerald-500/5",
     // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
-    heroImage: "/curriculum/scratch/logoscratch.png",
+    heroImage: "https://res.cloudinary.com/alhiemg0/image/upload/logoscratch.png",
     learningGoal:
       "Create the Apple Collector setup and build the first falling-apple behavior.",
     successCriteria: [
@@ -1059,7 +1059,7 @@ export const coreLessons: CurriculumLesson[] = [
       "In this session, we finish the Apple Collector game. We check when the apple touches the ground, move it to a random position, remove a life when it is missed, end the game when all lives are lost, and reward the player with sound and score when the Bowl catches the apple.",
     accent: "from-green-500/20 to-emerald-500/5",
     // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
-    heroImage: "/curriculum/scratch/logoscratch.png",
+    heroImage: "https://res.cloudinary.com/alhiemg0/image/upload/logoscratch.png",
     learningGoal:
       "Complete the Apple Collector logic using conditions, random position, Lives, sound, and Score.",
     successCriteria: [
@@ -1309,7 +1309,7 @@ export const coreLessons: CurriculumLesson[] = [
       "In this session, we control the Bowl. We start the Bowl's code, place it at the starting position, keep checking the keyboard in a forever loop, move it right and left with the arrow keys, then take the win mission when Score reaches 10.",
     accent: "from-green-500/20 to-emerald-500/5",
     // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
-    heroImage: "/curriculum/scratch/logoscratch.png",
+    heroImage: "https://res.cloudinary.com/alhiemg0/image/upload/logoscratch.png",
     learningGoal:
       "Move the Bowl with the arrow keys and set a win mission at Score 10.",
     successCriteria: [
@@ -1532,7 +1532,7 @@ export const coreLessons: CurriculumLesson[] = [
       "In this session, we start the Hungry Shark game. We choose the Underwater backdrop, add Fish, Shark 2 and Octopus sprites, then build all the Shark blocks to swim up, down, right and left, reset the Score, and stay inside the screen.",
     accent: "from-purple-500/20 to-fuchsia-500/5",
     // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
-    heroImage: "/curriculum/scratch/logoscratch.png",
+    heroImage: "https://res.cloudinary.com/alhiemg0/image/upload/logoscratch.png",
     learningGoal:
       "Build the Hungry Shark stage and program Shark 2 to swim in all directions with Score reset and edge bounce.",
     successCriteria: [
@@ -1877,7 +1877,7 @@ export const coreLessons: CurriculumLesson[] = [
       "In this session, we build the Hungry Shark game. First the Shark learns to sense the Fish and chomp with costumes, then we build the full Fish code: trigger, loop, sensing Shark 2, tiny wait, swim to random position, Score +1, and next costume.",
     accent: "from-purple-500/20 to-fuchsia-500/5",
     // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
-    heroImage: "/curriculum/scratch/logoscratch.png",
+    heroImage: "https://res.cloudinary.com/alhiemg0/image/upload/logoscratch.png",
     learningGoal:
       "Program the Shark to sense and eat the Fish, and program the Fish to escape, score points, and change colors.",
     successCriteria: [
@@ -2136,7 +2136,7 @@ export const coreLessons: CurriculumLesson[] = [
       "In this session, we add a new enemy to Hungry Shark. We build the full Octopus code: Green Flag trigger, forever loop, sensing Shark 2, tiny wait, next costume, escape to random position, and Score -1. Then we control Shark 2 with the mouse using point towards mouse-pointer and move 10 steps.",
     accent: "from-purple-500/20 to-fuchsia-500/5",
     // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
-    heroImage: "/curriculum/scratch/logoscratch.png",
+    heroImage: "https://res.cloudinary.com/alhiemg0/image/upload/logoscratch.png",
     learningGoal:
       "Program the Octopus enemy to catch the Shark, and control the Shark with the mouse.",
     successCriteria: [
@@ -2410,7 +2410,7 @@ export const coreLessons: CurriculumLesson[] = [
       "In this session, we build Ball Mastery in the Ping Pong game (Session 2). We meet the Ball, choose the Neon Tunnel backdrop, add the Ball and Paddle sprites, draw the red line, then build the full Ball Blocks: Green Flag start, backdrop switch, starting position, diagonal direction, and forever moving with bounce, paddle hits, and sound.",
     accent: "from-red-500/20 to-rose-500/5",
     // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
-    heroImage: "/curriculum/scratch/logoscratch.png",
+    heroImage: "https://res.cloudinary.com/alhiemg0/image/upload/logoscratch.png",
     learningGoal:
       "Build the Ball code: stage, position, direction, and forever bouncing.",
     successCriteria: [
@@ -2773,7 +2773,7 @@ export const coreLessons: CurriculumLesson[] = [
       "In this session, we build Paddle Mastery in the Ping Pong game. We meet the Paddle — the player-controlled bar — then build its full code: Green Flag trigger, forever keep checking, move right with the right arrow, and move left with the left arrow.",
     accent: "from-red-500/20 to-rose-500/5",
     // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
-    heroImage: "/curriculum/scratch/logoscratch.png",
+    heroImage: "https://res.cloudinary.com/alhiemg0/image/upload/logoscratch.png",
     learningGoal:
       "Move the Paddle left and right with the arrow keys inside forever.",
     successCriteria: [
@@ -3022,7 +3022,7 @@ export const coreLessons: CurriculumLesson[] = [
       "In this session, we build Paddle Mastery in the Ping Pong game. We meet the Paddle — the player-controlled bar that follows the mouse — then build its mouse-control code: Green Flag trigger, forever keep checking, set x to mouse x, then detect a loss when the Ball touches the red edge and show Game Over with switch backdrop and stop all.",
     accent: "from-red-500/20 to-rose-500/5",
     // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
-    heroImage: "/curriculum/scratch/logoscratch.png",
+    heroImage: "https://res.cloudinary.com/alhiemg0/image/upload/logoscratch.png",
     learningGoal: "Move the paddle with the mouse smoothly and detect a loss!",
     successCriteria: [
       "Meet the Paddle that follows the mouse to keep the ball in play",
@@ -3271,7 +3271,7 @@ export const coreLessons: CurriculumLesson[] = [
       "In this session, we start the Calculator project. We delete the Cat, choose the purple Space City backdrop, add the Retro Robot sprite, create three variables — First Number, The Operator, Second Number — then reset them to 0 and say welcome when Green Flag is clicked.",
     accent: "from-red-500/20 to-rose-500/5",
     // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
-    heroImage: "/curriculum/scratch/logoscratch.png",
+    heroImage: "https://res.cloudinary.com/alhiemg0/image/upload/logoscratch.png",
     learningGoal:
       "Set up the Calculator stage, robot, variables, reset, and welcome message.",
     successCriteria: [
@@ -3508,7 +3508,7 @@ export const coreLessons: CurriculumLesson[] = [
       "In this session, we build the input loop. Inside forever the robot asks for the first number, the operator, and the second number — and saves each typed answer into its variable with set ... to answer.",
     accent: "from-red-500/20 to-rose-500/5",
     // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
-    heroImage: "/curriculum/scratch/logoscratch.png",
+    heroImage: "https://res.cloudinary.com/alhiemg0/image/upload/logoscratch.png",
     learningGoal:
       "Ask for two numbers and an operator in a forever loop and save each answer.",
     successCriteria: [
@@ -3748,7 +3748,7 @@ export const coreLessons: CurriculumLesson[] = [
       "In this session, we finish the Calculator. Inside forever, after the three answers are saved, four conditions check The Operator: if + say the sum, if - say the difference, if * say the product, if / say the quotient — each for 2 seconds.",
     accent: "from-red-500/20 to-rose-500/5",
     // دي صورة سكراتش الخلفية للدرس - نفس صورة الكورس
-    heroImage: "/curriculum/scratch/logoscratch.png",
+    heroImage: "https://res.cloudinary.com/alhiemg0/image/upload/logoscratch.png",
     learningGoal:
       "Check The Operator with four if conditions and say each result for 2 seconds.",
     successCriteria: [

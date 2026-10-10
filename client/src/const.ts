@@ -11,6 +11,10 @@ export const API_BASE_URL =
 // Start the Manus OAuth login. Call this from an event handler or effect at the
 // moment you want to navigate, e.g. `onClick={() => startLogin()}`.
 //
+// When no OAuth provider is configured (self-hosted / Vercel deploys), this
+// sends the visitor to the built-in email + password page instead, so every
+// "Sign in" button in the app keeps working either way.
+//
 // It has SIDE EFFECTS — it mints a one-time nonce, writes the __Host- state
 // cookie, and navigates immediately — so the cookie nonce always matches the
 // `state` it sends. Do NOT call it during render (no `href={startLogin()}` /
@@ -21,6 +25,13 @@ export const API_BASE_URL =
 export const startLogin = () => {
   const oauthPortalUrl = import.meta.env.VITE_OAUTH_PORTAL_URL;
   const appId = import.meta.env.VITE_APP_ID;
+  const returnTo = `${window.location.pathname}${window.location.search}`;
+
+  if (!oauthPortalUrl || !appId) {
+    window.location.href = `/login?returnTo=${encodeURIComponent(returnTo)}`;
+    return;
+  }
+
   const redirectUri = `${API_BASE_URL || window.location.origin}/api/oauth/callback`;
 
   const nonce = crypto.randomUUID();

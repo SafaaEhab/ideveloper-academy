@@ -21,16 +21,22 @@ import {
 } from "@/components/ui/sidebar";
 import { startLogin } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { CalendarDays, LayoutDashboard, LogOut, PanelLeft, Users } from "lucide-react";
+import { CalendarClock, CalendarDays, LayoutDashboard, LogOut, Megaphone, PanelLeft, ShieldCheck, Trophy, Users } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation, useSearchParams } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
 import { Button } from "./ui/button";
 
+// Every item is a screen of the same /admin page, selected with `?tab=`, so the
+// sidebar can deep-link and a refresh keeps the admin where they were.
 const menuItems = [
-  { icon: LayoutDashboard, label: "Workspace", path: "/admin" },
-  { icon: Users, label: "Students", path: "/admin" },
-  { icon: CalendarDays, label: "Groups & schedules", path: "/admin" },
+  { icon: LayoutDashboard, label: "Workspace", tab: "overview" },
+  { icon: Users, label: "Students", tab: "students" },
+  { icon: CalendarDays, label: "Groups", tab: "groups" },
+  { icon: CalendarClock, label: "Schedule calendar", tab: "schedule" },
+  { icon: Trophy, label: "Achievements", tab: "achievements" },
+  { icon: Megaphone, label: "Announcement", tab: "announcements" },
+  { icon: ShieldCheck, label: "Admins", tab: "admins" },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -107,11 +113,14 @@ function DashboardLayoutContent({
 }: DashboardLayoutContentProps) {
   const { user, logout } = useAuth();
   const [location, setLocation] = useLocation();
+  const [searchParams] = useSearchParams();
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
   const [isResizing, setIsResizing] = useState(false);
   const sidebarRef = useRef<HTMLDivElement>(null);
-  const activeMenuItem = menuItems.find(item => item.path === location);
+  // Read the tab off the query string so the highlight matches the open screen.
+  const activeTab = searchParams.get("tab") ?? "overview";
+  const activeMenuItem = menuItems.find(item => item.tab === activeTab);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -180,12 +189,12 @@ function DashboardLayoutContent({
           <SidebarContent className="gap-0">
             <SidebarMenu className="px-2 py-1">
               {menuItems.map(item => {
-                const isActive = location === item.path;
+                const isActive = location === "/admin" && item.tab === activeTab;
                 return (
-                  <SidebarMenuItem key={item.label}>
+                  <SidebarMenuItem key={item.tab}>
                     <SidebarMenuButton
                       isActive={isActive}
-                      onClick={() => setLocation(item.path)}
+                      onClick={() => setLocation(`/admin?tab=${item.tab}`)}
                       tooltip={item.label}
                       className={`h-10 transition-all font-normal`}
                     >

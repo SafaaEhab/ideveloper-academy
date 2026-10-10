@@ -6,6 +6,8 @@ dist/
 .manus-logs/
 cloudflared.exe
 .vercel
+# Scratch scripts from ad-hoc debugging sessions.
+_tmp-*
 .env
 .env.local
 .env.*.local

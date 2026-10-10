@@ -16,4 +16,11 @@ export const ENV = {
   isProduction: process.env.NODE_ENV === "production",
   forgeApiUrl: process.env.BUILT_IN_FORGE_API_URL ?? "",
   forgeApiKey: process.env.BUILT_IN_FORGE_API_KEY ?? "",
+  cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME ?? "",
+  cloudinaryApiKey: process.env.CLOUDINARY_API_KEY ?? "",
+  cloudinaryApiSecret: process.env.CLOUDINARY_API_SECRET ?? "",
+  gmailUser: process.env.GMAIL_USER ?? "",
+  gmailAppPassword: process.env.GMAIL_APP_PASSWORD ?? "",
+  ownerEmail: process.env.OWNER_EMAIL ?? "",
+  siteUrl: (process.env.SITE_URL ?? "").replace(/\/$/, ""),
 };

@@ -1,6 +1,6 @@
 import { allPythonLessons } from "@/data/pythonCurriculum";
 import { allScratchLessons } from "@/data/scratchCurriculum";
-import { webLessons } from "@/data/webCurriculum";
+import { allWebLessons } from "@/data/webCurriculum";
 import type { CertificateCourse } from "@/lib/certificate";
 
 type MonthBearing = { month: number };
@@ -37,7 +37,7 @@ export const CERTIFICATE_COURSES: Record<string, CertificateCourse> = {
     "Web",
     "Web Development with HTML, CSS & JavaScript",
     "From the first tag to interactive web experiences",
-    webLessons
+    allWebLessons
   ),
 };
 

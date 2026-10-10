@@ -23,6 +23,13 @@
   --input: 222 227 236;
   --ring: 30 92 214;
   --radius: 1rem;
+
+  /* Brand palette sampled straight from the iDeveloper logo: the black disc, the
+     white lettering, the light grey ring, and the navy used for the "D". */
+  --brand-ink: 0 0 0;
+  --brand-paper: 255 255 255;
+  --brand-mist: 224 224 224;
+  --brand-navy: 31 78 156;
 }
 .dark {
   --background: 10 13 20;
@@ -71,6 +78,10 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 0.35rem);
   --font-sans: 'Space Grotesk', 'Cairo', sans-serif;
+  --color-brand-ink: rgb(var(--brand-ink));
+  --color-brand-paper: rgb(var(--brand-paper));
+  --color-brand-mist: rgb(var(--brand-mist));
+  --color-brand-navy: rgb(var(--brand-navy));
 }
 
 * { border-color: rgb(var(--border)); }
@@ -80,3 +91,8 @@ body { margin: 0; background: rgb(var(--background)); color: rgb(var(--foregroun
 button { transition: transform 160ms cubic-bezier(.23,1,.32,1), box-shadow 160ms ease, background-color 160ms ease; }
 button:active { transform: scale(.97); }
 ::selection { background: rgb(var(--primary) / .2); }
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0); opacity: .55; }
+  50% { transform: translateY(-14px); opacity: 1; }
+}

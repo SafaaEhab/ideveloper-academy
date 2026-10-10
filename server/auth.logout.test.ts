@@ -54,7 +54,9 @@ describe("auth.logout", () => {
     expect(clearedCookies[0]?.options).toMatchObject({
       maxAge: -1,
       secure: true,
-      sameSite: "none",
+      // Same-origin logout must not hand out a SameSite=None cookie, which
+      // would let any other site trigger a sign-out.
+      sameSite: "lax",
       httpOnly: true,
       path: "/",
     });

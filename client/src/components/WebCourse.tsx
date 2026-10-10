@@ -1,276 +1,207 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  BookOpen,
   CheckCircle2,
   ChevronDown,
   ChevronUp,
   Code2,
-  Database,
-  Eye,
-  Globe,
-  Lightbulb,
-  MousePointerClick,
-  Palette,
+  Map,
   RotateCcw,
-  Server,
-  ShoppingCart,
-  Sparkles,
-  Target,
-  Users,
+  Trophy,
+  X,
   Zap,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
-import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { webLessons, webTracks, type WebLesson } from "@/data/webCurriculum";
 import CertificateClaim from "@/components/CertificateClaim";
-import WebCodeRunner from "@/components/WebCodeRunner";
-import WebFigure from "@/components/WebFigure";
+import CurriculumFigure from "@/components/CurriculumFigure";
+import HomeworkBoard from "@/components/HomeworkBoard";
+import LessonArt, { MarkMini } from "@/components/LessonArt";
+import WebCodeRunner, { runsByItself } from "@/components/WebCodeRunner";
 import { useCourseCertificate } from "@/hooks/useCourseCertificate";
 import { CERTIFICATE_COURSES } from "@/lib/certificateCourses";
+import {
+  allWebLessons,
+  curriculumPhases,
+  TRACK_LABEL,
+  WEB_MONTHS,
+  type WebLesson,
+} from "@/data/webCurriculum";
 
 const text = {
-  title: "My Web journey",
-  sub: "Learn HTML, CSS, and JavaScript by making real things",
-  roadmap: "Web roadmap",
-  lesson: "Lesson",
-  month: "Month",
-  goal: "Today’s goal",
-  toolkit: "Toolkit",
-  think: "Think first",
-  map: "Lesson map",
-  mistake: "Common mistake radar",
+  curriculum: "Curriculum map",
+  sub: "A six-month journey from your first tag to interactive web pages",
+  roadmap: "Six-month roadmap",
+  phase: "Phase",
+  lesson: "Session",
   example: "Try the example",
-  copy: "Copy code",
-  mission: "Your mission",
-  extra: "Optional extra practice",
+  run: "Run example",
+  copied: "Code copied",
+  activityBlank:
+    "The picture for this activity has not been added yet. Build it in the editor below — it starts empty.",
+  activityEditor: "Your code — the editor is empty",
+  yourCode: "Your code — write it and press Run",
   quiz: "Check your understanding",
-  result: "Show my result",
-  reset: "Reset quiz",
+  readSource: "Read:",
+  submitQuiz: "Show my result",
+  resetQuiz: "Reset quiz",
   correct: "Correct answer",
-  retry: "Read the guide and try again",
-  complete: "Mark lesson complete",
-  completed: "lesson completed",
-  sessions: "sessions",
+  tryAgain: "Read the guide and try again",
+  complete: "Mark session complete",
+  completed: "session completed",
   progress: "Your progress",
+  empty: "Web Development — sessions coming soon",
+  emptyBody:
+    "This student is enrolled in Web Development. The HTML, CSS and JavaScript sessions will appear here once the track is published.",
 };
 
-function ElementDiagram() {
-  return (
-    <div className="mt-4 overflow-hidden rounded-2xl border border-border/60 bg-white dark:bg-slate-950">
-      <div className="flex flex-col gap-2 p-4 sm:flex-row sm:items-stretch">
-        <div className="flex-1 rounded-xl bg-cyan-500/15 px-3 py-4 text-center">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-300">
-            1 · Opening tag
-          </div>
-          <div className="mt-2 font-mono text-lg font-bold text-cyan-700 dark:text-cyan-200">
-            &lt;h1&gt;
-          </div>
-        </div>
-        <div className="flex-1 rounded-xl bg-emerald-500/15 px-3 py-4 text-center">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 dark:text-emerald-300">
-            2 · Content
-          </div>
-          <div className="mt-2 text-lg font-bold">My First Heading</div>
-        </div>
-        <div className="flex-1 rounded-xl bg-cyan-500/15 px-3 py-4 text-center">
-          <div className="text-[11px] font-bold uppercase tracking-wider text-cyan-700 dark:text-cyan-300">
-            3 · Closing tag
-          </div>
-          <div className="mt-2 font-mono text-lg font-bold text-cyan-700 dark:text-cyan-200">
-            &lt;/h1&gt;
-          </div>
-        </div>
-      </div>
-      <div className="border-t border-border/60 bg-muted/40 px-4 py-2 text-center text-xs font-semibold text-muted-foreground">
-        Together = one element 🧩
-      </div>
-    </div>
-  );
-}
+/** Track badge label, resolved the way the Python page labels core / problem. */
+const trackOf = (lesson: WebLesson) => TRACK_LABEL[lesson.kind] ?? lesson.kind;
 
-function PageSkeletonDiagram() {
-  return (
-    <div className="mt-4 rounded-2xl border-2 border-orange-400/60 bg-orange-500/5 p-3">
-      <div className="rounded-xl bg-orange-500/15 px-3 py-1 font-mono text-sm font-bold text-orange-700 dark:text-orange-300">
-        &lt;html&gt;
-      </div>
-      <div className="mt-2 grid gap-2 sm:grid-cols-2">
-        <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 p-3">
-          <div className="font-mono text-sm font-bold text-emerald-700 dark:text-emerald-300">
-            &lt;head&gt;
-          </div>
-          <div className="mt-2 rounded-lg bg-background/80 px-2 py-1 font-mono text-xs">
-            &lt;title&gt; My Page &lt;/title&gt;
-          </div>
-          <div className="mt-1 text-xs text-muted-foreground">
-            🧠 Info — not visible
-          </div>
-        </div>
-        <div className="rounded-xl border border-pink-500/40 bg-pink-500/10 p-3">
-          <div className="font-mono text-sm font-bold text-pink-700 dark:text-pink-300">
-            &lt;body&gt;
-          </div>
-          <div className="mt-2 rounded-lg bg-background/80 px-2 py-1 font-mono text-xs">
-            &lt;h1&gt; Hello! &lt;/h1&gt;
-          </div>
-          <div className="mt-1 rounded-lg bg-background/80 px-2 py-1 font-mono text-xs">
-            &lt;p&gt; My page &lt;/p&gt;
-          </div>
-          <div className="mt-1 text-xs text-muted-foreground">
-            👀 Visible — what you see
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
+/**
+ * The file a blank board in the CSS track opens on.
+ *
+ * A CSS session styles a page that already exists, so handing the student an
+ * empty editor hands them nothing at all: there is no tag for a rule to attach
+ * to, and pressing Run on an empty box only says that there is nothing there
+ * yet. So every blank board in this track opens on the bakery's markup with an
+ * empty `<style>` inside it — the ids and classes the student already wrote in
+ * the HTML course, waiting for the rules that were missing. No CSS is given: the
+ * selector is still theirs to choose, and that is the whole exercise.
+ *
+ * The HTML track does not use this. There the markup is the work, so its boards
+ * stay genuinely empty.
+ */
+const CSS_BOARD_STARTER = `<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Family Bakery</title>
+    <style>
+      /* Your CSS goes between these two tags.
+         Everything below the head is the page you built in the HTML
+         course — pick a selector and write one rule. */
+    </style>
+  </head>
+  <body>
 
-function SectionVisual({
-  lessonId,
-  index,
-}: {
-  lessonId: string;
-  index: number;
-}) {
-  if (lessonId !== "html-1") return null;
-  if (index === 0) {
-    const cards = [
-      { icon: Globe, label: "Share", color: "bg-sky-500/10 text-sky-600" },
-      {
-        icon: Users,
-        label: "Connect",
-        color: "bg-violet-500/10 text-violet-600",
-      },
-      {
-        icon: Eye,
-        label: "Show work",
-        color: "bg-amber-500/10 text-amber-600",
-      },
-      {
-        icon: ShoppingCart,
-        label: "Shop",
-        color: "bg-emerald-500/10 text-emerald-600",
-      },
-    ];
-    return (
-      <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
-        {cards.map(item => (
-          <div
-            key={item.label}
-            className="flex flex-col items-center gap-2 rounded-2xl border border-border/60 bg-white p-4 shadow-sm dark:bg-slate-950"
-          >
-            <span
-              className={`flex h-11 w-11 items-center justify-center rounded-2xl ${item.color}`}
+    <header class="header">
+      <h1>Family Bakery</h1>
+      <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="index.html">About us</a></li>
+          <li><a href="index.html">Products</a></li>
+          <li><a href="index.html">Order</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <p class="main-part">Welcome to</p>
+      <h2>Family Bakery</h2>
+      <p>Fresh bread and cakes, baked every morning on 12 Nile Street.</p>
+      <div class="buttons">
+        <a class="btn" href="index.html">See what we bake</a>
+        <a class="btn outline" href="index.html">Order a box</a>
+      </div>
+    </section>
+
+    <section id="about">
+      <h2>Our story</h2>
+      <p class="info">We opened in 2019, in a shop that used to sell car parts.</p>
+    </section>
+
+    <section id="baking">
+      <h2>What we bake</h2>
+      <ul class="baking">
+        <li>Baladi</li>
+        <li>Wholemeal</li>
+        <li>Sourdough</li>
+      </ul>
+    </section>
+
+    <section id="location">
+      <h2>Come and find us</h2>
+      <p class="detail">12 Nile Street. Open every day except Friday.</p>
+    </section>
+
+    <section id="information">
+      <h2>Opening hours</h2>
+      <p class="info">Saturday to Thursday, 8:00 until 21:00.</p>
+      <p class="info"><span class="circle">i</span> We opened in 2019.</p>
+    </section>
+
+    <footer>
+      <p class="info">12 Nile Street. Open every day except Friday.</p>
+    </footer>
+
+  </body>
+</html>`;
+
+/**
+ * What a blank board opens on.
+ *
+ * Sessions two to eight of the CSS track get the bakery markup with an empty
+ * `<style>`, because by then the page exists and only the rules are missing.
+ * Session one is left exactly as it was: there the student is still meeting
+ * CSS for the first time and the empty box is the lesson.
+ */
+const boardStarter = (lesson: WebLesson, own?: string) => {
+  if (own) return own;
+  return lesson.kind === "CSS" && lesson.id !== "css-1" ? CSS_BOARD_STARTER : "";
+};
+
+const PHASE_NAMES: Record<number, string> = Object.fromEntries(
+  curriculumPhases.map(phase => [phase.id, phase.en])
+);
+
+/** Renders a body or homework block, turning `-` / `•` / `1.` lines into rows. */
+function RichText({ value }: { value: string }) {
+  return (
+    <div className="max-w-3xl space-y-2">
+      {value.split("\n").map((line, index) => {
+        const trimmed = line.trim();
+        if (!trimmed) return null;
+        if (trimmed.startsWith("•") || trimmed.startsWith("-")) {
+          return (
+            <div
+              key={index}
+              className="flex gap-2.5 leading-7 text-muted-foreground"
             >
-              <item.icon className="h-5 w-5" />
-            </span>
-            <span className="text-sm font-bold">{item.label}</span>
-          </div>
-        ))}
-      </div>
-    );
-  }
-  if (index === 1) {
-    return (
-      <div className="mt-4 grid gap-2 sm:grid-cols-2">
-        <div className="rounded-2xl border border-cyan-500/30 bg-cyan-500/10 p-4">
-          <div className="flex items-center gap-2 font-bold text-cyan-700 dark:text-cyan-300">
-            <Palette className="h-5 w-5" /> Front-end 🎨
-          </div>
-          <div className="mt-2 text-sm">What you SEE</div>
-          <div className="mt-3 flex flex-wrap gap-1.5">
-            {["HTML", "CSS", "JS"].map(t => (
-              <span
-                key={t}
-                className="rounded-full bg-white px-3 py-1 font-mono text-xs font-bold shadow-sm dark:bg-slate-900"
-              >
-                {t}
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                •
               </span>
-            ))}
-          </div>
-        </div>
-        <div className="rounded-2xl border border-violet-500/30 bg-violet-500/10 p-4">
-          <div className="flex items-center gap-2 font-bold text-violet-700 dark:text-violet-300">
-            <Server className="h-5 w-5" /> Back-end ⚙️
-          </div>
-          <div className="mt-2 text-sm">Hidden logic + data</div>
-          <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
-            <Database className="h-4 w-4" /> Server · Database
-          </div>
-        </div>
-      </div>
-    );
-  }
-  if (index === 2) {
-    const roles = [
-      { emoji: "🦴", label: "HTML", sub: "bones" },
-      { emoji: "👕", label: "CSS", sub: "clothes" },
-      { emoji: "🛹", label: "JS", sub: "moves" },
-    ];
-    return (
-      <div className="mt-4 grid grid-cols-3 gap-2">
-        {roles.map(r => (
-          <div
-            key={r.label}
-            className="rounded-2xl border border-border/60 bg-white p-3 text-center shadow-sm dark:bg-slate-950"
-          >
-            <div className="text-4xl">{r.emoji}</div>
-            <div className="mt-2 font-mono text-sm font-bold">{r.label}</div>
-            <div className="text-xs text-muted-foreground">{r.sub}</div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-  if (index === 3) return <ElementDiagram />;
-  if (index === 4) return <PageSkeletonDiagram />;
-  if (index === 5) {
-    return (
-      <div className="mt-4 overflow-hidden rounded-2xl border border-border/60 bg-white shadow-sm dark:bg-slate-950">
-        <div className="flex items-center gap-1.5 border-b border-border/60 bg-muted/50 px-4 py-2.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-rose-400" />
-          <span className="h-2.5 w-2.5 rounded-full bg-amber-400" />
-          <span className="h-2.5 w-2.5 rounded-full bg-emerald-400" />
-          <span className="ms-3 flex-1 rounded-full bg-background px-3 py-1 text-xs text-muted-foreground">
-            google.com
-          </span>
-        </div>
-        <div className="grid gap-2 p-4 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
-          <div className="rounded-xl bg-muted/60 p-3 text-center text-sm font-bold">
-            <MousePointerClick className="mx-auto h-5 w-5 text-cyan-600" />
-            <div className="mt-1">1 · Right-click</div>
-          </div>
-          <div className="text-center text-xl">→</div>
-          <div className="rounded-xl bg-muted/60 p-3 text-center text-sm font-bold">
-            <Zap className="mx-auto h-5 w-5 text-amber-500" />
-            <div className="mt-1">2 · Inspect</div>
-          </div>
-        </div>
-        <div className="border-t border-border/60 bg-slate-950 px-4 py-3 font-mono text-xs text-slate-200">
-          <span className="text-slate-500">&lt;</span>
-          <span className="text-cyan-300">title</span>
-          <span className="text-slate-500">&gt;</span>First web page
-          <span className="text-slate-500">&lt;/</span>
-          <span className="text-cyan-300">title</span>
-          <span className="text-slate-500">&gt;</span>
-          <span className="ms-2 rounded bg-emerald-500/20 px-2 py-0.5 text-emerald-300">
-            ✏️ you can edit!
-          </span>
-        </div>
-      </div>
-    );
-  }
-  return null;
+              <span>{trimmed.replace(/^[•-]\s*/, "")}</span>
+            </div>
+          );
+        }
+        const numbered = trimmed.match(/^(\d+)[.)]\s*(.*)$/);
+        if (numbered) {
+          return (
+            <div
+              key={index}
+              className="flex gap-2.5 leading-7 text-muted-foreground"
+            >
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 font-mono text-[11px] font-bold text-primary">
+                {numbered[1]}
+              </span>
+              <span>{numbered[2]}</span>
+            </div>
+          );
+        }
+        return (
+          <p key={index} className="leading-8 text-muted-foreground">
+            {trimmed}
+          </p>
+        );
+      })}
+    </div>
+  );
 }
 
 type WebCourseProps = {
@@ -279,33 +210,21 @@ type WebCourseProps = {
 };
 
 export default function WebCourse({ studentName, accessCode }: WebCourseProps) {
-  const [activeTrack, setActiveTrack] = useState<WebLesson["track"]>("HTML");
-  const [activeId, setActiveId] = useState("html-1");
-  const [openSections, setOpenSections] = useState<number[]>([
-    0, 1, 2, 3, 4, 5,
-  ]);
-  const [answers, setAnswers] = useState<Record<string, number>>({});
-  const [submitted, setSubmitted] = useState(false);
-  const [completed, setCompleted] = useState<string[]>([]);
-  const [zoomed, setZoomed] = useState<{ src: string; alt: string } | null>(
-    null
-  );
-  const zoomImage = (src: string, alt: string) => setZoomed({ src, alt });
-  const lesson = webLessons.find(item => item.id === activeId) ?? webLessons[0];
-  const visibleLessons = useMemo(
-    () => webLessons.filter(item => item.track === activeTrack),
-    [activeTrack]
-  );
-  const validCompleted = useMemo(() => {
-    const ids = new Set(webLessons.map(item => item.id));
-    return completed.filter(id => ids.has(id));
-  }, [completed]);
-  const progress = Math.round(
-    (validCompleted.length / webLessons.length) * 100
-  );
-  // Progress is kept per student so it survives a reload, and the completion
-  // flip (99% → 100%) is what triggers the certificate.
+  const [activePhase, setActivePhase] = useState(curriculumPhases[0]?.id ?? 1);
+  const [activeLessonId, setActiveLessonId] = useState("");
+  const [completedLessons, setCompletedLessons] = useState<string[]>([]);
+  const [openSections, setOpenSections] = useState<number[]>([0, 1, 2]);
+  const [zoomedImage, setZoomedImage] = useState<{
+    src: string;
+    caption: string;
+  } | null>(null);
+  const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({});
+  const [quizSubmitted, setQuizSubmitted] = useState(false);
+  // One ref per section, so a quiz question can open the section that answers it
+  // and put it in front of the student rather than leaving them to hunt.
+  const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
   const progressLoadedFor = useRef<string | null>(null);
+
   useEffect(() => {
     if (!accessCode) return;
     const courseKey = `idev-progress-${accessCode}-Web`;
@@ -314,8 +233,8 @@ export default function WebCourse({ studentName, accessCode }: WebCourseProps) {
       try {
         const raw = localStorage.getItem(courseKey);
         const parsed: unknown = raw ? JSON.parse(raw) : null;
-        const ids = new Set(webLessons.map(item => item.id));
-        setCompleted(
+        const ids = new Set(allWebLessons.map(lesson => lesson.id));
+        setCompletedLessons(
           Array.isArray(parsed)
             ? parsed.filter(
                 (item): item is string =>
@@ -324,36 +243,102 @@ export default function WebCourse({ studentName, accessCode }: WebCourseProps) {
             : []
         );
       } catch {
-        setCompleted([]);
+        setCompletedLessons([]);
       }
       return;
     }
     try {
-      localStorage.setItem(courseKey, JSON.stringify(completed));
+      localStorage.setItem(courseKey, JSON.stringify(completedLessons));
     } catch {
       /* storage unavailable */
     }
-  }, [accessCode, completed]);
+  }, [accessCode, completedLessons]);
+
+  const visibleLessons = useMemo(
+    () => allWebLessons.filter(lesson => lesson.phase === activePhase),
+    [activePhase]
+  );
+  const selectedLesson =
+    allWebLessons.find(lesson => lesson.id === activeLessonId) ??
+    visibleLessons[0] ??
+    allWebLessons[0];
+
+  // Open the first session the moment the course becomes available.
+  useEffect(() => {
+    const first = allWebLessons[0];
+    if (!first) return;
+    setActiveLessonId(first.id);
+    setActivePhase(first.phase);
+    setOpenSections([0, 1, 2]);
+    setQuizAnswers({});
+    setQuizSubmitted(false);
+  }, []);
+
+  const validCompletedLessons = useMemo(() => {
+    const ids = new Set(allWebLessons.map(lesson => lesson.id));
+    return completedLessons.filter(id => ids.has(id));
+  }, [completedLessons]);
+  const completionPercent =
+    allWebLessons.length === 0
+      ? 0
+      : Math.round((validCompletedLessons.length / allWebLessons.length) * 100);
+
   const certificateCourse = CERTIFICATE_COURSES.Web;
   const certificate = useCourseCertificate({
     studentName,
     accessCode,
-    isComplete: progress === 100,
+    isComplete: completionPercent === 100,
     course: certificateCourse,
   });
-  const answer = answers[lesson.id];
-  const isCorrect = answer === lesson.quiz.answer;
-  const chooseTrack = (track: WebLesson["track"]) => {
-    const first = webLessons.find(item => item.track === track)!;
-    setActiveTrack(track);
-    setActiveId(first.id);
-    setOpenSections(first.sections.map((_, i) => i));
-    setSubmitted(false);
+
+  const quizScore = selectedLesson
+    ? selectedLesson.quiz.reduce(
+        (score, item, index) =>
+          score + (quizAnswers[index] === item.answer ? 1 : 0),
+        0
+      )
+    : 0;
+
+  /**
+   * Opens the section a quiz question came from and scrolls it into view.
+   *
+   * The quiz sits at the bottom of a long page, so "read the guide and try
+   * again" is only useful if the guide is one click away and lands in front of
+   * the student. A section that is already open is still scrolled to, because
+   * the point is the paragraph, not the accordion.
+   */
+  const goToSection = (title: string) => {
+    const index = selectedLesson.sections.findIndex(
+      section => section.title === title
+    );
+    if (index < 0) return;
+    setOpenSections(current =>
+      current.includes(index) ? current : [...current, index]
+    );
+    // Wait for the accordion to finish opening before scrolling to it.
+    window.requestAnimationFrame(() => {
+      sectionRefs.current[index]?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
   };
-  const chooseLesson = (next: WebLesson) => {
-    setActiveId(next.id);
-    setOpenSections(next.sections.map((_, i) => i));
-    setSubmitted(false);
+
+  const choosePhase = (phaseId: number) => {
+    const first =
+      allWebLessons.find(lesson => lesson.phase === phaseId) ??
+      allWebLessons[0];
+    setActivePhase(phaseId);
+    if (first) setActiveLessonId(first.id);
+    setQuizAnswers({});
+    setQuizSubmitted(false);
+  };
+
+  const chooseLesson = (lesson: WebLesson) => {
+    setActiveLessonId(lesson.id);
+    setOpenSections([0, 1, 2]);
+    setQuizAnswers({});
+    setQuizSubmitted(false);
     window.setTimeout(
       () =>
         document
@@ -362,466 +347,565 @@ export default function WebCourse({ studentName, accessCode }: WebCourseProps) {
       20
     );
   };
+
   const toggleComplete = () => {
-    setCompleted(items =>
-      items.includes(lesson.id)
-        ? items.filter(id => id !== lesson.id)
-        : [...items, lesson.id]
+    if (!selectedLesson) return;
+    const isDone = completedLessons.includes(selectedLesson.id);
+    setCompletedLessons(current =>
+      isDone
+        ? current.filter(id => id !== selectedLesson.id)
+        : [...current, selectedLesson.id]
     );
-    toast.success("Great job! Your progress was updated");
+    toast.success(
+      isDone ? "Session marked active" : "Great job! Session completed"
+    );
   };
-  const copy = (code: string) => {
-    navigator.clipboard.writeText(code);
-    toast.success("Code copied");
-  };
+
+  if (!selectedLesson) {
+    return (
+      <Card className="rounded-[2rem]">
+        <CardContent className="p-10 text-center">
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+            <Code2 className="h-6 w-6" />
+          </div>
+          <h2 className="mt-4 text-2xl font-bold">{text.empty}</h2>
+          <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+            {text.emptyBody}
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
-    <section className="mt-10 space-y-7">
-      <div className="grid gap-4 md:grid-cols-[1.4fr_.6fr]">
-        <Card className="overflow-hidden rounded-[2rem] border-cyan-500/20 bg-gradient-to-br from-cyan-500/15 via-card to-card">
-          <CardContent className="p-6 md:p-8">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <Badge className="rounded-full">Web · 6 months</Badge>
-                <h2 className="mt-4 text-3xl font-bold">{text.title}</h2>
-                <p className="mt-2 max-w-xl text-muted-foreground">
-                  {text.sub}
-                </p>
-              </div>
-              <Sparkles className="hidden h-8 w-8 text-cyan-500 sm:block" />
-            </div>
-            <div className="mt-7 flex justify-between text-sm">
-              <span>{text.progress}</span>
-              <b>{progress}%</b>
-            </div>
-            <Progress value={progress} className="mt-2 h-3" />
-            <CertificateClaim
-              courseName={certificateCourse.courseName}
-              sessionCount={certificateCourse.sessionCount}
-              monthCount={certificateCourse.monthCount}
-              complete={certificate.canClaim}
-              busy={certificate.busy}
-              issued={certificate.issued}
-              onDownload={certificate.download}
-            />
-          </CardContent>
-        </Card>
-        <div className="rounded-[2rem] border border-border bg-card p-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-cyan-500/10 text-cyan-500">
-              <Code2 className="h-5 w-5" />
-            </div>
+    <div className="grid gap-4">
+      <Card className="overflow-hidden rounded-[2rem] border-primary/20 bg-gradient-to-br from-primary/15 via-card to-card">
+        <CardContent className="p-6 md:p-8">
+          <div className="flex items-start justify-between gap-4">
             <div>
-              <div className="font-semibold">
-                {webLessons.length} {text.sessions}
-              </div>
-              <div className="text-sm text-muted-foreground">
-                HTML · CSS · JavaScript
-              </div>
+              <Badge className="rounded-full">{`Web · ${WEB_MONTHS} months`}</Badge>
+              <h2 className="mt-4 text-2xl font-bold sm:text-3xl">{text.curriculum}</h2>
+              <p className="mt-2 max-w-xl text-sm text-muted-foreground sm:text-base">{text.sub}</p>
+            </div>
+            <div className="hidden rounded-2xl bg-primary/10 p-4 text-primary sm:block">
+              <Trophy className="h-7 w-7" />
             </div>
           </div>
-          <Separator className="my-5" />
-          <div className="text-sm text-muted-foreground">
-            Every lesson includes a guide, example, activity, and interactive
-            question.
+          <div className="mt-7 flex items-center justify-between text-sm sm:text-base">
+            <span>{text.progress}</span>
+            <b>{completionPercent}%</b>
           </div>
-        </div>
-      </div>
-      <div className="grid gap-3 md:grid-cols-3">
-        {webTracks.map(track => (
-          <button
-            key={track.id}
-            type="button"
-            onClick={() => chooseTrack(track.id as WebLesson["track"])}
-            className={`rounded-2xl border p-4 text-start transition ${activeTrack === track.id ? "border-cyan-500 bg-cyan-500/10 shadow-md" : "border-border bg-card hover:border-cyan-500/40"}`}
-          >
-            <div
-              className={`mb-3 h-2 rounded-full bg-gradient-to-r ${track.color}`}
-            />
-            <div className="font-bold">{track.en}</div>
-            <div className="mt-1 text-xs leading-5 text-muted-foreground">
-              {track.description}
-            </div>
-          </button>
-        ))}
-      </div>
-      <div className="grid gap-8 lg:grid-cols-[.7fr_1.3fr]">
+          <Progress value={completionPercent} className="mt-2 h-3" />
+          <CertificateClaim
+            courseName={certificateCourse.courseName}
+            sessionCount={certificateCourse.sessionCount}
+            monthCount={certificateCourse.monthCount}
+            complete={certificate.canClaim}
+            busy={certificate.busy}
+            issued={certificate.issued}
+            onDownload={certificate.download}
+          />
+        </CardContent>
+      </Card>
+
+      <div className="mt-8 grid gap-8 lg:grid-cols-[.7fr_1.3fr]">
         <aside className="space-y-4">
           <div className="rounded-2xl border border-border bg-card p-4">
-            <div className="mb-4 flex items-center gap-2 text-sm font-semibold">
-              <Target className="h-4 w-4 text-cyan-500" />
-              {text.roadmap}
+            <div className="mb-4 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm font-semibold sm:text-base">
+                <Map className="h-4 w-4 text-primary" />
+                {text.roadmap}
+              </div>
+              <span className="text-xs text-muted-foreground sm:text-sm">
+                {curriculumPhases.length} phases
+              </span>
             </div>
             <div className="space-y-2">
-              {webTracks.map(track => (
-                <button
-                  key={track.id}
-                  type="button"
-                  onClick={() => chooseTrack(track.id as WebLesson["track"])}
-                  className={`w-full rounded-xl border p-3 text-start ${activeTrack === track.id ? "border-cyan-500 bg-cyan-500/10" : "border-border/70"}`}
-                >
-                  <div className="font-bold">{track.en}</div>
-                  <div className="mt-1 text-xs text-muted-foreground">
-                    {webLessons.filter(item => item.track === track.id).length}{" "}
-                    {text.sessions}
-                  </div>
-                </button>
-              ))}
+              {curriculumPhases.map(item => {
+                const count = allWebLessons.filter(
+                  lesson => lesson.phase === item.id
+                ).length;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => choosePhase(item.id)}
+                    className={`w-full rounded-xl border p-3 text-start transition ${activePhase === item.id ? "border-primary bg-primary/10" : "border-border/70 hover:border-primary/40"}`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground sm:text-sm">{`Month ${item.month}`}</span>
+                      <span
+                        className={`h-2 w-2 rounded-full bg-gradient-to-r ${item.color}`}
+                      />
+                    </div>
+                    <div className="mt-1 text-sm font-bold sm:text-base">{item.en}</div>
+                    <div className="mt-1 text-xs text-muted-foreground sm:text-sm">
+                      {count > 0
+                        ? `${item.meta} · ${count} ${
+                            count === 1 ? "session" : "sessions"
+                          }`
+                        : `${item.meta} · coming soon`}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
           <div className="rounded-2xl border border-border bg-card p-4">
-            <div className="mb-3 text-sm font-semibold">Track sessions</div>
+            <div className="mb-3 text-sm font-semibold">
+              {text.phase} {activePhase}
+            </div>
             <div className="space-y-2">
-              {visibleLessons.map(item => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => chooseLesson(item)}
-                  className={`w-full rounded-xl border p-3 text-start transition ${lesson.id === item.id ? "border-cyan-500 bg-cyan-500/10" : "border-border/70 hover:border-cyan-500/40"}`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs text-cyan-600">
-                      {String(item.number).padStart(2, "0")}
-                    </span>
-                    <CheckCircle2
-                      className={`h-4 w-4 ${completed.includes(item.id) ? "text-emerald-500" : "text-muted-foreground"}`}
-                    />
-                  </div>
-                  <div className="mt-2 text-sm font-bold">{item.title}</div>
-                  <div className="mt-1 text-xs text-muted-foreground">
-                    {item.subtitle}
-                  </div>
-                </button>
-              ))}
+              {visibleLessons.length === 0 ? (
+                <p className="rounded-xl border border-dashed border-border p-4 text-xs leading-5 text-muted-foreground">
+                  No sessions in this phase yet.
+                </p>
+              ) : (
+                visibleLessons.map(lesson => (
+                  <button
+                    key={lesson.id}
+                    type="button"
+                    aria-current={
+                      selectedLesson.id === lesson.id ? "page" : undefined
+                    }
+                    onClick={() => chooseLesson(lesson)}
+                    className={`w-full rounded-xl border p-3 text-start transition ${selectedLesson.id === lesson.id ? "border-primary bg-primary/10 shadow-sm" : "border-border/70 hover:border-primary/40"}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <MarkMini>
+                        <Code2 className="h-5 w-5" />
+                      </MarkMini>
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="font-mono text-xs text-primary sm:text-sm">
+                            {String(lesson.number).padStart(2, "0")}
+                          </span>
+                          <CheckCircle2
+                            className={`h-4 w-4 shrink-0 ${completedLessons.includes(lesson.id) ? "text-emerald-500" : "text-muted-foreground"}`}
+                          />
+                        </div>
+                        <div className="mt-1 truncate text-sm font-bold sm:text-base">
+                          {lesson.title}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-2 line-clamp-2 text-xs text-muted-foreground sm:text-sm">
+                      {lesson.subtitle}
+                    </div>
+                  </button>
+                ))
+              )}
             </div>
           </div>
         </aside>
-        <section id="web-lesson-detail">
+
+        <section id="web-lesson-detail" className="scroll-mt-6">
           <Card
-            className={`overflow-hidden rounded-[2rem] border-0 bg-gradient-to-br ${lesson.color}`}
+            className={`overflow-hidden rounded-[2rem] border-0 bg-gradient-to-br ${selectedLesson.accent}`}
           >
             <CardContent className="p-0">
               <div className="border-b border-white/10 bg-card/70 p-7 backdrop-blur md:p-9">
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="secondary" className="rounded-full">
-                    {lesson.track}
+                    {trackOf(selectedLesson)}
                   </Badge>
                   <Badge variant="outline" className="rounded-full">
-                    {text.month} {lesson.month}
+                    {`Month ${selectedLesson.month}`}
                   </Badge>
                   <Badge variant="outline" className="rounded-full">
-                    {text.lesson} {lesson.number} / {webLessons.length}
+                    {text.lesson} {selectedLesson.number} /{" "}
+                    {allWebLessons.length}
                   </Badge>
                 </div>
                 <h2 className="mt-5 text-3xl font-bold md:text-5xl">
-                  {lesson.title}
+                  {selectedLesson.title}
                 </h2>
                 <p className="mt-3 text-lg leading-8 text-muted-foreground">
-                  {lesson.subtitle}
+                  {selectedLesson.subtitle}
                 </p>
-                <div className="mt-6 flex items-start gap-3 rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-4">
-                  <Lightbulb className="mt-1 h-5 w-5 shrink-0 text-cyan-600" />
-                  <div>
-                    <div className="text-sm font-bold">Coach tip</div>
-                    <p className="mt-1 leading-7 text-muted-foreground">
-                      {lesson.intro}
-                    </p>
-                  </div>
-                </div>
+                <LessonArt
+                  lesson={selectedLesson}
+                  total={allWebLessons.length}
+                  phaseNames={PHASE_NAMES}
+                  mark={<Code2 className="h-28 w-28" />}
+                  alt="Web"
+                />
               </div>
-              <div className="space-y-5 p-7 md:p-9">
-                <div className="grid gap-3 sm:grid-cols-3">
-                  <div className="rounded-2xl border border-cyan-500/20 bg-cyan-500/5 p-4">
-                    <div className="text-xs font-semibold uppercase tracking-wider text-cyan-600">
-                      {text.goal}
-                    </div>
-                    <p className="mt-3 text-sm font-semibold leading-6">
-                      {lesson.intro}
-                    </p>
-                  </div>
-                  <div className="rounded-2xl border border-violet-500/20 bg-violet-500/5 p-4">
-                    <div className="text-xs font-semibold uppercase tracking-wider text-violet-600">
-                      {text.toolkit}
-                    </div>
-                    <p className="mt-3 text-sm font-semibold leading-6">
-                      {lesson.sections
-                        .slice(0, 2)
-                        .map(item => item.title)
-                        .join(" · ")}
-                    </p>
-                  </div>
-                  <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4">
-                    <div className="text-xs font-semibold uppercase tracking-wider text-amber-600">
-                      {text.think}
-                    </div>
-                    <p className="mt-3 text-sm font-semibold leading-6">
-                      What will the user see, and what changes after they
-                      interact?
-                    </p>
-                  </div>
-                </div>
-                <div className="rounded-2xl border border-border bg-card/80 p-5">
-                  <div className="flex items-center gap-3">
-                    <Lightbulb className="h-5 w-5 text-cyan-500" />
-                    <div className="font-bold">{text.map}</div>
-                  </div>
-                  <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                    {lesson.sections.map((item, index) => (
-                      <div
-                        key={item.title}
-                        className="flex items-center gap-3 rounded-xl bg-muted/40 p-3"
-                      >
-                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white text-2xl shadow-sm dark:bg-slate-900">
-                          {item.emoji ?? `0${index + 1}`}
-                        </span>
-                        <div>
-                          <div className="font-mono text-[11px] text-cyan-600">
-                            STEP {index + 1}
-                          </div>
-                          <div className="text-sm font-bold leading-5">
-                            {item.title}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                {lesson.sections.map((item, index) => {
-                  const open = openSections.includes(index);
+
+              <div className="space-y-4 p-7 md:p-9">
+                {selectedLesson.sections.map((section, index) => {
+                  const isOpen = openSections.includes(index);
+                  // An activity carries the one picture it is measured against,
+                  // and that picture belongs on the board above the empty
+                  // editor — not in the lesson gallery, where a student could
+                  // scroll past the target and call the job done.
+                  const activityImage = section.blank
+                    ? (section.images?.[0] ?? undefined)
+                    : undefined;
+                  const gallery = activityImage
+                    ? (section.images ?? []).slice(1)
+                    : (section.images ?? []);
+                  // The file a practice opens on. Held in one place because the
+                  // editor and the run decision have to be about the same text.
+                  const board = boardStarter(
+                    selectedLesson,
+                    section.starterCode
+                  );
+                  const starter =
+                    section.starterCode ?? "<!-- Write your code here -->\n";
                   return (
                     <div
-                      key={item.title}
+                      key={section.title}
+                      ref={node => {
+                        sectionRefs.current[index] = node;
+                      }}
                       className="overflow-hidden rounded-2xl border border-border/70 bg-card/70"
                     >
                       <button
                         type="button"
                         onClick={() =>
                           setOpenSections(current =>
-                            open
-                              ? current.filter(value => value !== index)
+                            isOpen
+                              ? current.filter(item => item !== index)
                               : [...current, index]
                           )
                         }
                         className="flex w-full items-center justify-between gap-4 p-5 text-start"
                       >
-                        <span className="flex items-center gap-3">
-                          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-500/20 to-violet-500/20 text-3xl">
-                            {item.emoji ?? index + 1}
+                        <div className="flex items-center gap-3">
+                          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 font-mono text-sm text-primary">
+                            {index + 1}
                           </span>
-                          <span>
-                            <span className="block font-mono text-[11px] uppercase tracking-wider text-cyan-600">
-                              Step {index + 1}
-                            </span>
-                            <span className="block text-lg font-bold leading-6">
-                              {item.title}
-                            </span>
+                          <span className="text-lg font-bold">
+                            {section.title}
                           </span>
-                        </span>
-                        {open ? (
-                          <ChevronUp className="h-5 w-5 shrink-0" />
+                        </div>
+                        {isOpen ? (
+                          <ChevronUp className="h-5 w-5 text-muted-foreground" />
                         ) : (
-                          <ChevronDown className="h-5 w-5 shrink-0" />
+                          <ChevronDown className="h-5 w-5 text-muted-foreground" />
                         )}
                       </button>
-                      {open && (
+
+                      {isOpen && (
                         <div className="border-t border-border/70 p-5 pt-4">
-                          <p className="whitespace-pre-line text-base leading-7 text-foreground/90">
-                            {item.body}
-                          </p>
-                          {item.caption && (
-                            <div className="mt-3 inline-flex items-center gap-2 rounded-full bg-amber-500/10 px-3 py-1 text-xs font-bold text-amber-700 dark:text-amber-300">
-                              💡 {item.caption}
-                            </div>
-                          )}
-                          <SectionVisual lessonId={lesson.id} index={index} />
-                          {item.images && item.images.length > 0 && (
-                            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                              {item.images.map(src => (
-                                <WebFigure
+                          {section.body && <RichText value={section.body} />}
+
+                          {gallery.length > 0 && (
+                            <div
+                              className={`mt-5 grid gap-4 ${gallery.length > 1 ? "sm:grid-cols-2" : "max-w-3xl"}`}
+                            >
+                              {gallery.map(src => (
+                                <CurriculumFigure
                                   key={src}
                                   src={src}
-                                  alt={item.title}
-                                  onZoom={zoomImage}
+                                  alt={section.title}
+                                  onZoom={(s, c) =>
+                                    setZoomedImage({ src: s, caption: c })
+                                  }
                                 />
                               ))}
                             </div>
                           )}
-                          {item.code && (
-                            <div className="mt-5 overflow-hidden rounded-2xl bg-slate-950 text-slate-100">
-                              <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 text-sm">
-                                <span className="flex items-center gap-2">
-                                  <Code2 className="h-4 w-4 text-cyan-300" />
-                                  {text.example}
-                                </span>
-                                <Button
-                                  type="button"
-                                  size="sm"
-                                  variant="ghost"
-                                  className="text-slate-300 hover:bg-white/10 hover:text-white"
-                                  onClick={() => copy(item.code!)}
-                                >
-                                  {text.copy}
-                                </Button>
-                              </div>
-                              <pre className="overflow-x-auto whitespace-pre-wrap p-5 text-sm leading-7">
-                                <code>{item.code}</code>
-                              </pre>
+
+                          {section.videos && section.videos.length > 0 && (
+                            <div className="mt-5 grid max-w-3xl gap-4">
+                              {section.videos.map(src => (
+                                <video
+                                  key={src}
+                                  src={src}
+                                  controls
+                                  preload="metadata"
+                                  playsInline
+                                  className="w-full rounded-2xl border border-border/70 bg-black"
+                                />
+                              ))}
                             </div>
                           )}
-                          {item.code && (
-                            <WebCodeRunner
-                              code={item.code}
-                              lessonId={lesson.id}
-                              sectionIndex={index}
-                            />
+
+                          {section.blank ? (
+                            <div className="mt-5">
+                              <HomeworkBoard
+                                key={`${selectedLesson.id}-${index}-blank`}
+                                image={activityImage}
+                                onZoom={(s, c) =>
+                                  setZoomedImage({ src: s, caption: c })
+                                }
+                                placeholder={text.activityBlank}
+                                editorLabel={text.activityEditor}
+                                runLabel={text.run}
+                                copyLabel={text.copied}
+                                starterCode={board}
+                                autoRun={runsByItself(board)}
+                              />
+                            </div>
+                          ) : section.starterCode || section.solutionCode ? (
+                            <div className="mt-5 space-y-4">
+                              <div>
+                                <div className="mb-2 text-sm font-bold">
+                                  Try yourself
+                                </div>
+                                <WebCodeRunner
+                                  key={`${selectedLesson.id}-${index}-starter`}
+                                  code={starter}
+                                  exampleLabel="Try yourself — empty editor"
+                                  runLabel={text.run}
+                                  copyLabel={text.copied}
+                                  autoRun={runsByItself(starter)}
+                                />
+                              </div>
+                              {section.solutionCode && (
+                                <div>
+                                  <div className="mb-2 text-sm font-bold">
+                                    Solution — compare your answer
+                                  </div>
+                                  <WebCodeRunner
+                                    key={`${selectedLesson.id}-${index}-solution`}
+                                    code={section.solutionCode}
+                                    exampleLabel="Solution — compare your answer"
+                                    runLabel={text.run}
+                                    copyLabel={text.copied}
+                                    autoRun={runsByItself(section.solutionCode)}
+                                  />
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            section.code && (
+                              <div className="mt-5">
+                                <WebCodeRunner
+                                  key={`${selectedLesson.id}-${index}-code`}
+                                  code={section.code}
+                                  exampleLabel={text.example}
+                                  runLabel={text.run}
+                                  copyLabel={text.copied}
+                                  autoRun={runsByItself(section.code)}
+                                />
+                              </div>
+                            )
                           )}
                         </div>
                       )}
                     </div>
                   );
                 })}
-                <div className="rounded-2xl border border-dashed border-cyan-500/30 bg-cyan-500/5 p-5">
-                  <div className="flex items-center gap-2 font-bold text-cyan-700 dark:text-cyan-300">
-                    <span className="text-xl">🏠</span> {text.mission}
-                  </div>
-                  {lesson.id === "html-1" ? (
-                    <div className="mt-3 grid gap-2 sm:grid-cols-3">
-                      {[
-                        { n: "1", t: "Download VS Code", e: "💻" },
-                        { n: "2", t: "Create index.html", e: "📄" },
-                        { n: "3", t: "Add h1 + p about you", e: "✍️" },
-                      ].map(step => (
-                        <div
-                          key={step.n}
-                          className="flex items-center gap-3 rounded-xl bg-white p-3 shadow-sm dark:bg-slate-950"
-                        >
-                          <span className="text-2xl">{step.e}</span>
-                          <div>
-                            <div className="font-mono text-[11px] text-cyan-600">
-                              STEP {step.n}
-                            </div>
-                            <div className="text-sm font-bold leading-5">
-                              {step.t}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="mt-2 leading-7 text-muted-foreground">
-                      {lesson.challenge}
-                    </p>
-                  )}
-                  {lesson.id === "html-1" && (
-                    <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                      {lesson.challenge}
-                    </p>
-                  )}
-                </div>
-                <div className="rounded-2xl border border-dashed border-amber-500/30 bg-amber-500/5 p-5">
-                  <div className="font-bold text-amber-700 dark:text-amber-300">
-                    {text.extra}
-                  </div>
-                  <p className="mt-2 leading-7 text-muted-foreground">{`Add a creative twist to ${lesson.title}, such as a new color or an interactive message.`}</p>
-                </div>
-                <Card className="border-border bg-card">
-                  <CardContent className="p-5">
-                    <div className="mb-4 flex items-center gap-2 font-bold">
-                      <Sparkles className="h-5 w-5 text-amber-500" />
+
+                <div className="rounded-2xl border border-border bg-card/80 p-5">
+                  <div className="mb-5 flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2 font-bold">
+                      <Trophy className="h-5 w-5 text-amber-500" />
                       {text.quiz}
+                      <span className="text-sm font-semibold text-muted-foreground">
+                        {selectedLesson.quiz.length} questions
+                      </span>
                     </div>
-                    <p className="font-semibold">{lesson.quiz.question}</p>
-                    <div className="mt-4 grid gap-2 sm:grid-cols-2">
-                      {lesson.quiz.options.map((option, index) => (
-                        <button
-                          key={option}
-                          type="button"
-                          onClick={() => {
-                            setAnswers(current => ({
-                              ...current,
-                              [lesson.id]: index,
-                            }));
-                            setSubmitted(false);
-                          }}
-                          className={`rounded-xl border p-3 text-start transition ${answer === index ? "border-cyan-500 bg-cyan-500/10" : "border-border hover:border-cyan-500/40"}`}
-                        >
-                          {option}
-                        </button>
-                      ))}
-                    </div>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      <Button
-                        type="button"
-                        onClick={() => setSubmitted(true)}
-                        disabled={answer === undefined}
+                    {quizSubmitted && (
+                      <Badge
+                        variant={
+                          quizScore === selectedLesson.quiz.length
+                            ? "default"
+                            : "secondary"
+                        }
                       >
-                        {text.result}
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={() => {
-                          setAnswers(current => {
-                            const next = { ...current };
-                            delete next[lesson.id];
-                            return next;
-                          });
-                          setSubmitted(false);
-                        }}
-                      >
-                        <RotateCcw className="me-2 h-4 w-4" />
-                        {text.reset}
-                      </Button>
-                    </div>
-                    {submitted && (
-                      <div
-                        className={`mt-4 rounded-xl p-4 text-sm ${isCorrect ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300" : "bg-rose-500/10 text-rose-700 dark:text-rose-300"}`}
-                      >
-                        {isCorrect
-                          ? `${text.correct}: ${lesson.quiz.explanation}`
-                          : text.retry}
-                      </div>
+                        {quizScore}/{selectedLesson.quiz.length}
+                      </Badge>
                     )}
-                  </CardContent>
-                </Card>
+                  </div>
+                  <div className="space-y-5">
+                    {selectedLesson.quiz.map((item, index) => (
+                      <div key={item.question}>
+                        <div className="flex flex-wrap items-baseline justify-between gap-2">
+                          <div className="font-semibold">
+                            {index + 1}. {item.question}
+                          </div>
+                          {item.section && (
+                            <button
+                              type="button"
+                              onClick={() => goToSection(item.section!)}
+                              className="flex shrink-0 items-center gap-1.5 rounded-full border border-primary/25 bg-primary/5 px-2.5 py-1 text-[11px] font-semibold text-primary transition hover:border-primary/60 hover:bg-primary/10"
+                            >
+                              <BookOpen className="h-3 w-3" />
+                              {text.readSource}
+                              <span className="font-normal opacity-80">
+                                {item.section}
+                              </span>
+                            </button>
+                          )}
+                        </div>
+                        {item.questionImages &&
+                          item.questionImages.length > 0 && (
+                            <div className="mt-3 grid max-w-2xl gap-3 sm:grid-cols-2">
+                              {item.questionImages.map(src => (
+                                <button
+                                  key={src}
+                                  type="button"
+                                  onClick={() =>
+                                    setZoomedImage({
+                                      src,
+                                      caption: item.question,
+                                    })
+                                  }
+                                  className="overflow-hidden rounded-xl border border-border/70 bg-white transition hover:border-primary/50"
+                                >
+                                  <img
+                                    src={src}
+                                    alt={item.question}
+                                    loading="lazy"
+                                    className="max-h-40 w-full object-contain p-1"
+                                  />
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                          {item.options.map((option, optionIndex) => (
+                            <button
+                              type="button"
+                              key={option}
+                              onClick={() => {
+                                setQuizAnswers(current => ({
+                                  ...current,
+                                  [index]: optionIndex,
+                                }));
+                                setQuizSubmitted(false);
+                              }}
+                              className={`rounded-xl border p-3 text-start text-sm transition ${quizAnswers[index] === optionIndex ? "border-primary bg-primary/10" : "border-border/70 hover:border-primary/40"}`}
+                            >
+                              {item.optionImages?.[optionIndex] &&
+                              item.optionImages[optionIndex]!.length > 0 ? (
+                                <span className="block space-y-2">
+                                  {item.optionImages[optionIndex]!.map(src => (
+                                    <img
+                                      key={src}
+                                      src={src}
+                                      alt={option}
+                                      loading="lazy"
+                                      className="mx-auto max-h-32 w-full rounded-lg bg-white object-contain p-1"
+                                    />
+                                  ))}
+                                  <span className="block text-xs leading-5 text-muted-foreground">
+                                    {option}
+                                  </span>
+                                </span>
+                              ) : /^https?:\/\/\S+\.(png|jpe?g|webp|gif|svg)(\?\S*)?$/i.test(
+                                  option
+                                ) ? (
+                                <img
+                                  src={option}
+                                  alt={`Answer option ${optionIndex + 1}`}
+                                  loading="lazy"
+                                  className="mx-auto max-h-44 w-full rounded-lg bg-white object-contain"
+                                />
+                              ) : (
+                                option
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                        {quizSubmitted && (
+                          <div
+                            className={`mt-3 rounded-xl p-3 text-sm leading-6 ${quizAnswers[index] === item.answer ? "bg-emerald-500/10 text-emerald-600" : "bg-amber-500/10 text-amber-700"}`}
+                          >
+                            {quizAnswers[index] === item.answer
+                              ? text.correct
+                              : text.tryAgain}{" "}
+                            · {item.explanation}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    <Button
+                      type="button"
+                      onClick={() => {
+                        const total = selectedLesson.quiz.length;
+                        const perfect = total > 0 && quizScore === total;
+                        const solved = quizScore > 0;
+                        setQuizSubmitted(true);
+                        if (
+                          solved &&
+                          !completedLessons.includes(selectedLesson.id)
+                        ) {
+                          setCompletedLessons(current => [
+                            ...current,
+                            selectedLesson.id,
+                          ]);
+                          toast.success(
+                            perfect
+                              ? `Perfect ${total}/${total}! Session completed — progress up!`
+                              : `Nice work ${quizScore}/${total}! Session completed — progress up!`
+                          );
+                        } else {
+                          toast.success(`Your score: ${quizScore}/${total}`);
+                        }
+                      }}
+                    >
+                      {text.submitQuiz}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        setQuizAnswers({});
+                        setQuizSubmitted(false);
+                      }}
+                    >
+                      <RotateCcw className="me-2 h-4 w-4" />
+                      {text.resetQuiz}
+                    </Button>
+                  </div>
+                </div>
+
                 <Button
                   type="button"
-                  className="w-full rounded-2xl"
+                  className="h-14 w-full rounded-2xl text-base"
+                  variant={
+                    completedLessons.includes(selectedLesson.id)
+                      ? "outline"
+                      : "default"
+                  }
                   onClick={toggleComplete}
                 >
-                  {completed.includes(lesson.id) ? (
-                    <>
-                      <CheckCircle2 className="me-2 h-4 w-4" />
-                      {text.completed}
-                    </>
-                  ) : (
-                    text.complete
-                  )}
+                  <CheckCircle2 className="me-2 h-5 w-5" />
+                  {completedLessons.includes(selectedLesson.id)
+                    ? text.completed
+                    : text.complete}
                 </Button>
               </div>
             </CardContent>
           </Card>
         </section>
       </div>
-      <Dialog
-        open={Boolean(zoomed)}
-        onOpenChange={open => !open && setZoomed(null)}
-      >
-        <DialogContent className="max-w-5xl">
-          <DialogHeader>
-            <DialogTitle>{zoomed?.alt}</DialogTitle>
-            <DialogDescription>
-              Click anywhere outside the image to close it.
-            </DialogDescription>
-          </DialogHeader>
-          {zoomed && (
+
+      {zoomedImage && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 p-4 backdrop-blur-sm"
+          onClick={() => setZoomedImage(null)}
+        >
+          <button
+            type="button"
+            className="absolute right-4 top-4 flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 font-bold text-white transition hover:bg-white/20"
+            onClick={() => setZoomedImage(null)}
+          >
+            <X className="h-4 w-4" />
+            Close
+          </button>
+          <figure
+            className="max-h-[90vh] max-w-[95vw]"
+            onClick={event => event.stopPropagation()}
+          >
             <img
-              src={zoomed.src}
-              alt={zoomed.alt}
-              className="max-h-[75vh] w-full rounded-xl border border-border/60 bg-white object-contain p-2"
+              src={zoomedImage.src}
+              alt={zoomedImage.caption}
+              className="max-h-[78vh] max-w-[95vw] rounded-2xl border border-white/20 bg-white object-contain shadow-2xl"
             />
-          )}
-        </DialogContent>
-      </Dialog>
-    </section>
+            <figcaption className="mx-auto mt-3 w-fit max-w-full truncate rounded-full bg-white/10 px-4 py-1.5 text-sm text-white">
+              {zoomedImage.caption}
+            </figcaption>
+          </figure>
+        </div>
+      )}
+    </div>
   );
 }

@@ -309,9 +309,9 @@ class SDKServer {
       throw ForbiddenError("User not found");
     }
 
-    // Auto-promote allowlisted admin emails on every request (covers users
-    // created before they were added to ADMIN_EMAILS).
-    if (db.isAdminEmail(user.email) && user.role !== "admin") {
+    // Auto-promote allowlisted admin emails on every request, so someone invited
+    // after their account was created still lands in the panel on the next load.
+    if ((await db.isAllowedAdminEmail(user.email)) && user.role !== "admin") {
       await db.upsertUser({ openId: user.openId, role: "admin", lastSignedIn: signedInAt });
       user = (await db.getUserByOpenId(sessionUserId)) ?? user;
     } else {

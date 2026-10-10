@@ -8,6 +8,48 @@
       "when": 1789497900048,
       "tag": "0000_left_hairball",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "5",
+      "when": 1789500000048,
+      "tag": "0002_achievements",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1789586400048,
+      "tag": "0003_announcements",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1791489919374,
+      "tag": "0004_group_schedule",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1791651574278,
+      "tag": "0004_regular_lifeguard",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1791660683470,
+      "tag": "0005_serious_captain_universe",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1791662402426,
+      "tag": "0006_wild_champions",
+      "breakpoints": true
     }
   ]
 }

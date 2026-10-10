@@ -12,6 +12,8 @@ vi.mock("./db", () => ({
   listStudents: vi.fn(async () => []),
   listGroups: vi.fn(async () => []),
   createAccessCode: vi.fn(async () => "IDA-TEST123"),
+  // Removing a group has to take its calendar rows and their exceptions with it.
+  deleteSessionsForGroup: vi.fn(async () => undefined),
 }));
 
 import { appRouter } from "./routers";
