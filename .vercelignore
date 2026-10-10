@@ -1,0 +1,16 @@
+node_modules
+dist
+.vercel
+.env
+.env.local
+.env.*.local
+.vercel/.env.*.local
+.manus-logs
+.opencode
+cloudflared.exe
+*.zip
+_tmp-*
+scripts
+Dockerfile
+.dockerignore
+docker-compose.yml

@@ -3,8 +3,7 @@ import fs from "fs";
 import { type Server } from "http";
 import { nanoid } from "nanoid";
 import path from "path";
-import { createServer as createViteServer } from "vite";
-import viteConfig from "../../vite.config";
+import { createServer as createViteServer, loadConfigFromFile } from "vite";
 
 export async function setupVite(app: Express, server: Server) {
   const serverOptions = {
@@ -13,8 +12,19 @@ export async function setupVite(app: Express, server: Server) {
     allowedHosts: true as const,
   };
 
+  // `vite.config.ts` exports a config function (it picks its plugins from the
+  // Vite command), so read it back the same way the CLI does instead of
+  // spreading it.
+  const projectRoot = path.resolve(import.meta.dirname, "../..");
+  const loaded = await loadConfigFromFile(
+    { command: "serve", mode: "development" },
+    undefined,
+    projectRoot,
+  );
+  if (!loaded) throw new Error("Could not load vite.config.ts");
+
   const vite = await createViteServer({
-    ...viteConfig,
+    ...loaded.config,
     configFile: false,
     server: serverOptions,
     appType: "custom",
