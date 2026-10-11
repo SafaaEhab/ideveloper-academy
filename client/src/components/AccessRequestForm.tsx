@@ -10,15 +10,17 @@ import { trpc } from "@/lib/trpc";
  * the owner needs to recognise them — name and email — plus the password they
  * want to sign in with once the request is approved. Nothing is granted here: the
  * owner gets an email and decides from the Admins tab, which only they can open.
+ *
+ * Every field starts empty on purpose. Prefilling from the session would put the
+ * signed-in address on screen for anyone using a shared machine, and there is
+ * nothing to gain by it — the person typing knows their own email.
  */
 export default function AccessRequestForm({
-  defaultEmail,
   onSent,
 }: {
-  defaultEmail?: string | null;
   onSent?: (email: string) => void;
 }) {
-  const [email, setEmail] = useState(defaultEmail ?? "");
+  const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
   const [sent, setSent] = useState<string | null>(null);
