@@ -3,11 +3,12 @@ import { TRPCError } from "@trpc/server";
 import { COOKIE_NAME } from "@shared/const";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { adminProcedure, publicProcedure, router } from "./_core/trpc";
+import { adminProcedure, isOwnerUser, ownerProcedure, publicProcedure, router } from "./_core/trpc";
+import { notifyAdminAccessRequest } from "./_core/mailer";
 import { checkRateLimit, rateLimitKey } from "./_core/password";
 import { destroyImage, isCloudinaryConfigured, ownedPublicId, uploadImage } from "./_core/cloudinary";
 import { eq } from "drizzle-orm";
-import { getDb, getStudentByCode, listAchievements, listGroups, listStudents, createAccessCode, deleteAchievement, getAchievement, insertAchievement, updateAchievement, listAnnouncements, getActiveAnnouncement, insertAnnouncement, updateAnnouncement, setOnlyAnnouncementEnabled, deleteAnnouncement, listGroupSessions, insertGroupSession, updateGroupSession, deleteGroupSession, deleteSessionsForGroup, listSessionExceptions, insertSessionException, deleteSessionException, listAdminInvites, addAdminInvite, removeAdminInvite } from "./db";
+import { getDb, getStudentByCode, listAchievements, listGroups, listStudents, createAccessCode, deleteAchievement, getAchievement, insertAchievement, updateAchievement, listAnnouncements, getActiveAnnouncement, insertAnnouncement, updateAnnouncement, setOnlyAnnouncementEnabled, deleteAnnouncement, listGroupSessions, insertGroupSession, updateGroupSession, deleteGroupSession, deleteSessionsForGroup, listSessionExceptions, insertSessionException, deleteSessionException, listAdminInvites, addAdminInvite, removeAdminInvite, isAllowedAdminEmail, listAccessRequests, upsertAccessRequest, approveAccessRequest, deleteAccessRequest, createPendingAccount, getCredentialByEmail } from "./db";
 import { groups, students, studentCourses, groupSessions } from "../drizzle/schema";
 
 const courseSchema = z.enum(["Scratch", "Robotics", "Web", "Python"]);
@@ -172,7 +173,14 @@ function announcementValues(input: z.infer<typeof announcementSchema>) {
 export const appRouter = router({
   system: systemRouter,
   auth: router({
-    me: publicProcedure.query(opts => opts.ctx.user),
+    // `isOwner` rides along so the panel can decide whether to show the admin
+    // roster tab. It is only ever true for the single account pinned in the
+    // environment, so an invited admin reads `false` and never learns more.
+    me: publicProcedure.query(opts => {
+      const user = opts.ctx.user;
+      if (!user) return null;
+      return { ...user, isOwner: isOwnerUser(user) };
+    }),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
@@ -202,6 +210,49 @@ export const appRouter = router({
     // The site popup. Null whenever no announcement is switched on, which is what
     // keeps the home page clean.
     announcement: publicProcedure.query(() => getActiveAnnouncement()),
+    // Open to anyone, but rate limited so the endpoint cannot be used to spray
+    // the owner's inbox or to grind through password hashes. The request is saved
+    // whether or not the email goes out.
+    requestAccess: publicProcedure
+      .input(z.object({
+        email: z.string().email(),
+        name: z.string().trim().max(120).optional().or(z.literal("")),
+        password: z.string().min(8, "Use at least 8 characters").max(200),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const email = input.email.trim().toLowerCase();
+        const key = rateLimitKey(ctx.req, `access:${email}`);
+        if (!checkRateLimit(key)) {
+          throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: "Too many requests. Try again in a few minutes." });
+        }
+        // Already allowed? Nothing to ask for, and no reason to email the owner.
+        if (await isAllowedAdminEmail(email)) {
+          throw new TRPCError({ code: "CONFLICT", message: "This email already has admin access." });
+        }
+        // An address that already signed up keeps the password it signed up with.
+        // Overwriting it here would quietly hand the owner the ability to sign in
+        // as that person, so a duplicate request is recorded and left alone.
+        const existingCredential = await getCredentialByEmail(email);
+        if (!existingCredential) {
+          await createPendingAccount({ email, name: input.name, password: input.password });
+        }
+
+        const request = await upsertAccessRequest({
+          email,
+          name: input.name,
+        });
+        const delivered = await notifyAdminAccessRequest({
+          email: request!.email,
+          name: request!.name,
+        });
+
+        return {
+          success: true,
+          // The panel shows the request either way, so this only changes the
+          // wording the visitor sees, never whether the request was recorded.
+          notified: delivered.some(Boolean),
+        } as const;
+      }),
   }),
   admin: router({
     stats: adminProcedure.query(async () => {
@@ -211,13 +262,25 @@ export const appRouter = router({
     students: adminProcedure.query(() => listStudents()),
     groups: adminProcedure.query(() => listGroups()),
     // ── قائمة المسموح لهم بالدخول على اللوحة ─────────────────────────────────
-    admins: adminProcedure.query(() => listAdminInvites()),
-    addAdmin: adminProcedure.input(z.object({ email: z.string().email() })).mutation(async ({ input, ctx }) => {
+    // Owner-only: these four are what reveal who holds access and who is waiting
+    // for it, so an invited admin gets the same FORBIDDEN a stranger would.
+    admins: ownerProcedure.query(() => listAdminInvites()),
+    accessRequests: ownerProcedure.query(() => listAccessRequests()),
+    addAdmin: ownerProcedure.input(z.object({ email: z.string().email() })).mutation(async ({ input, ctx }) => {
       await addAdminInvite(input.email, ctx.user?.email ?? null);
       return { success: true };
     }),
-    removeAdmin: adminProcedure.input(z.object({ email: z.string().email() })).mutation(async ({ input }) => {
+    removeAdmin: ownerProcedure.input(z.object({ email: z.string().email() })).mutation(async ({ input }) => {
       await removeAdminInvite(input.email);
+      return { success: true };
+    }),
+    // Approving from the queue grants the invite and removes the request in one go.
+    approveAccess: ownerProcedure.input(z.object({ email: z.string().email() })).mutation(async ({ input, ctx }) => {
+      await approveAccessRequest(input.email, ctx.user?.email ?? null);
+      return { success: true };
+    }),
+    dismissAccess: ownerProcedure.input(z.object({ email: z.string().email() })).mutation(async ({ input }) => {
+      await deleteAccessRequest(input.email);
       return { success: true };
     }),
     createGroup: adminProcedure.input(z.object({ name: z.string().min(2), level: z.string().optional(), scheduleDays: z.string().optional(), scheduleTime: z.string().optional() })).mutation(async ({ input }) => {

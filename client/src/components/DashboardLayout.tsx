@@ -36,7 +36,8 @@ const menuItems = [
   { icon: CalendarClock, label: "Schedule calendar", tab: "schedule" },
   { icon: Trophy, label: "Achievements", tab: "achievements" },
   { icon: Megaphone, label: "Announcement", tab: "announcements" },
-  { icon: ShieldCheck, label: "Admins", tab: "admins" },
+  // `ownerOnly` keeps this entry out of the sidebar for invited admins.
+  { icon: ShieldCheck, label: "Admins", tab: "admins", ownerOnly: true },
 ];
 
 const SIDEBAR_WIDTH_KEY = "sidebar-width";
@@ -120,7 +121,12 @@ function DashboardLayoutContent({
   const sidebarRef = useRef<HTMLDivElement>(null);
   // Read the tab off the query string so the highlight matches the open screen.
   const activeTab = searchParams.get("tab") ?? "overview";
-  const activeMenuItem = menuItems.find(item => item.tab === activeTab);
+  // The roster is the owner's alone, so the entry is dropped from the sidebar for
+  // everyone else — they never see the button, let alone the screen behind it.
+  const visibleMenuItems = menuItems.filter(
+    item => item.ownerOnly !== true || user?.isOwner === true,
+  );
+  const activeMenuItem = visibleMenuItems.find(item => item.tab === activeTab);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -188,7 +194,7 @@ function DashboardLayoutContent({
 
           <SidebarContent className="gap-0">
             <SidebarMenu className="px-2 py-1">
-              {menuItems.map(item => {
+              {visibleMenuItems.map(item => {
                 const isActive = location === "/admin" && item.tab === activeTab;
                 return (
                   <SidebarMenuItem key={item.tab}>
