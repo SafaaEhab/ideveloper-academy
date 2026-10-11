@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, gte, lte, ne, or } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, groups, groupSessions, sessionExceptions, students, studentCourses, achievements, announcements, userCredentials, adminInvites, accessRequests, CourseName } from "../drizzle/schema";
+import { InsertUser, users, groups, groupSessions, sessionExceptions, students, studentCourses, achievements, announcements, userCredentials, adminInvites, CourseName } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 import { readAnnouncement, type ParsedAnnouncement } from "./announcement";
 import { customAlphabet } from "nanoid";
@@ -101,60 +101,6 @@ export async function removeAdminInvite(email: string) {
 }
 
 // ── طلبات الوصول ──────────────────────────────────────────────────────────────
-
-/** Open requests, newest first. Approving one is what turns it into an invite. */
-export async function listAccessRequests() {
-  const db = await getDb(); if (!db) return [];
-  return db.select().from(accessRequests).orderBy(desc(accessRequests.createdAt));
-}
-
-/**
- * Records the request. Re-submitting an address that is already pending only
- * refreshes the note and timestamp rather than failing, so someone who pressed
- * the button twice does not think it broke.
- */
-export async function upsertAccessRequest(values: {
-  email: string;
-  name?: string | null;
-}) {
-  const db = await getDb();
-  if (!db) throw new Error("Database unavailable");
-  const normalized = values.email.trim().toLowerCase();
-  await db
-    .insert(accessRequests)
-    .values({
-      email: normalized,
-      name: values.name?.trim() || null,
-      // ON UPDATE CURRENT_TIMESTAMP with no DEFAULT, so it must be supplied.
-      updatedAt: new Date(),
-    })
-    .onDuplicateKeyUpdate({ set: { updatedAt: new Date() } });
-  return getAccessRequest(normalized);
-}
-
-export async function getAccessRequest(email: string) {
-  const db = await getDb(); if (!db) return undefined;
-  const normalized = email.trim().toLowerCase();
-  const rows = await db.select().from(accessRequests).where(eq(accessRequests.email, normalized)).limit(1);
-  return rows[0];
-}
-
-export async function deleteAccessRequest(email: string) {
-  const db = await getDb();
-  if (!db) throw new Error("Database unavailable");
-  await db.delete(accessRequests).where(eq(accessRequests.email, email.trim().toLowerCase()));
-  return { success: true };
-}
-
-/**
- * Approving a request grants the access and clears the queue in one step, so the
- * panel can never show an approved address still waiting for a decision.
- */
-export async function approveAccessRequest(email: string, invitedBy: string | null) {
-  await addAdminInvite(email, invitedBy);
-  await deleteAccessRequest(email);
-  return { success: true };
-}
 
 export function shouldBeAdmin(openId: string, email: string | null | undefined, explicitRole?: string): boolean {
   if (explicitRole === "admin") return true;

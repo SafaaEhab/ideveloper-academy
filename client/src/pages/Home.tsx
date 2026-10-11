@@ -6,7 +6,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { LOGO_ALT, LOGO_URL } from "@/lib/brand";
 import { trpc } from "@/lib/trpc";
 
-const t = { navStudent: "Student portal", navAdmin: "Admin login", eyebrow: "Build the future, one line at a time", title: "A brighter start for\nthe next generation of builders.", sub: "iDeveloper turns curiosity into confidence through playful, practical coding education for young creators.", enter: "Enter student portal", explore: "Explore the academy", programs: "Learning paths", programsSub: "Four focused tracks. One creative mindset.", why: "Where young minds become makers", badge: "Made for curious minds", footer: "Learn boldly. Create kindly. Ship proudly.", achievements: "Achievements", achievementsSub: "Where our learners stood out, competition after competition.", achievementsEmpty: "The next result is being prepared — check back soon." };
+const t = { navStudent: "Student portal", eyebrow: "Build the future, one line at a time", title: "A brighter start for\nthe next generation of builders.", sub: "iDeveloper turns curiosity into confidence through playful, practical coding education for young creators.", enter: "Enter student portal", explore: "Explore the academy", programs: "Learning paths", programsSub: "Four focused tracks. One creative mindset.", why: "Where young minds become makers", badge: "Made for curious minds", footer: "Learn boldly. Create kindly. Ship proudly.", achievements: "Achievements", achievementsSub: "Where our learners stood out, competition after competition.", achievementsEmpty: "The next result is being prepared — check back soon." };
 const courses = [
   { name: "Scratch", icon: "✦", color: "from-sky-500/25 to-blue-500/5" },
   { name: "Robotics", icon: "◉", color: "from-violet-500/25 to-fuchsia-500/5" },
@@ -28,7 +28,7 @@ export default function Home() {
     <header className="relative z-10 mx-auto flex max-w-7xl items-center justify-between px-5 py-5 lg:px-8">
       <Link href="/" className="flex items-center gap-3"><span className="flex h-12 w-12 items-center justify-center overflow-hidden rounded-full bg-white ring-2 ring-primary/30"><img src={LOGO_URL} alt={LOGO_ALT} className="h-full w-full object-cover" /></span><div className="text-sm font-bold tracking-wide">iDeveloper</div></Link>
       <nav className="hidden items-center gap-8 text-sm text-muted-foreground md:flex"><a href="#programs" className="transition-colors hover:text-foreground">{t.programs}</a><a href="#achievements" className="transition-colors hover:text-foreground">{t.achievements}</a><a href="#why" className="transition-colors hover:text-foreground">{t.why}</a></nav>
-      <div className="flex items-center gap-2"><Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">{theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}</Button><Link href="/admin" className="hidden text-sm font-semibold md:block">{t.navAdmin}</Link><Link href="/student"><Button size="sm" className="rounded-full px-4">{t.navStudent}<ArrowUpRight className="ms-1 h-4 w-4" /></Button></Link></div>
+      <div className="flex items-center gap-2"><Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">{theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}</Button><Link href="/student"><Button size="sm" className="rounded-full px-4">{t.navStudent}<ArrowUpRight className="ms-1 h-4 w-4" /></Button></Link></div>
     </header>
 
     <main>

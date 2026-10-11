@@ -62,29 +62,3 @@ export async function sendMail(message: MailMessage): Promise<boolean> {
     return false;
   }
 }
-
-/** Every address that should hear about a new access request. */
-export function notificationRecipients(): string[] {
-  return [...new Set([...ENV.adminEmails, ENV.ownerEmail].filter(Boolean))];
-}
-
-export function notifyAdminAccessRequest(request: {
-  email: string;
-  name: string | null;
-}): Promise<boolean[]> {
-  const lines = [
-    `${request.name || "Someone"} asked for access to the iDeveloper admin workspace.`,
-    "",
-    `Email: ${request.email}`,
-    "",
-    `Review it here: ${ENV.siteUrl}/admin?tab=admins`,
-  ];
-
-  return Promise.all(
-    notificationRecipients().map(to => sendMail({
-      to,
-      subject: `Access request — ${request.email}`,
-      text: lines.join("\n"),
-    })),
-  );
-}
