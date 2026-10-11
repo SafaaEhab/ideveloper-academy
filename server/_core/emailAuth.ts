@@ -83,13 +83,17 @@ async function registerAccount(req: Request, res: Response) {
   const { hash, salt } = hashPassword(password);
 
   await db.upsertCredential({ email, passwordHash: hash, salt });
-  // `upsertUser` promotes to admin automatically when the email is in
-  // ADMIN_EMAILS, so this single call creates the profile with the right role.
+  // Typing an address proves nothing, so signing up never inherits the admin
+  // allow-list — otherwise anyone who guessed the owner's email would walk
+  // straight into the panel by making an account with it. The owner's own
+  // address is the single exception, kept so a fresh password account can never
+  // lock them out of the panel they own.
   await db.upsertUser({
     openId,
     email,
     name: name || existingUser?.name || email.split("@")[0],
     loginMethod: "email",
+    role: db.isOwnerEmail(email) ? "admin" : "user",
     lastSignedIn: new Date(),
   });
 
@@ -137,15 +141,20 @@ async function loginWithPassword(req: Request, res: Response) {
   let user = await db.getUserByOpenId(openId);
 
   // The credential row and the profile row are written separately, so a signup
-  // that died midway leaves a login without a profile. Recreate it here.
+  // that died midway leaves a login without a profile. Recreate it here — as a
+  // plain user, since an address alone never earns the admin role.
   if (!user) {
-    await db.upsertUser({
-      openId,
-      email,
-      name: email.split("@")[0],
-      loginMethod: "email",
-      lastSignedIn: signedInAt,
-    });
+    await db.upsertUser(
+      {
+        openId,
+        email,
+        name: email.split("@")[0],
+        loginMethod: "email",
+        role: db.isOwnerEmail(email) ? "admin" : "user",
+        lastSignedIn: signedInAt,
+      },
+      { allowAdminPromotion: false },
+    );
     user = await db.getUserByOpenId(openId);
   } else {
     await db.upsertUser({ openId, lastSignedIn: signedInAt });

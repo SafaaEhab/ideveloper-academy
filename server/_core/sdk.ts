@@ -309,9 +309,19 @@ class SDKServer {
       throw ForbiddenError("User not found");
     }
 
-    // Auto-promote allowlisted admin emails on every request, so someone invited
-    // after their account was created still lands in the panel on the next load.
-    if ((await db.isAllowedAdminEmail(user.email)) && user.role !== "admin") {
+    // Auto-promote allowlisted admin emails, so someone invited after their
+    // account was created still lands in the panel on the next load.
+    //
+    // Password accounts are excluded on purpose. Their address is whatever the
+    // person typed when they signed up, so re-running the allow-list on every
+    // request would hand the admin role to anyone who guessed an owner's email.
+    // Inviting still works — `addAdminInvite` promotes the row at that moment.
+    const isSelfAssertedPasswordAccount = user.loginMethod === "email";
+    if (
+      !isSelfAssertedPasswordAccount &&
+      (await db.isAllowedAdminEmail(user.email)) &&
+      user.role !== "admin"
+    ) {
       await db.upsertUser({ openId: user.openId, role: "admin", lastSignedIn: signedInAt });
       user = (await db.getUserByOpenId(sessionUserId)) ?? user;
     } else {

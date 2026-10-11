@@ -187,14 +187,17 @@ export async function createPendingAccount(values: {
   const email = values.email.trim().toLowerCase();
   const { hash, salt } = hashPassword(values.password);
   await upsertCredential({ email, passwordHash: hash, salt });
-  await upsertUser({
-    openId: openIdForEmail(email),
-    email,
-    name: values.name?.trim() || email.split("@")[0],
-    loginMethod: "email",
-    role: "user",
-    lastSignedIn: new Date(),
-  });
+  await upsertUser(
+    {
+      openId: openIdForEmail(email),
+      email,
+      name: values.name?.trim() || email.split("@")[0],
+      loginMethod: "email",
+      role: "user",
+      lastSignedIn: new Date(),
+    },
+    { allowAdminPromotion: false },
+  );
   return { success: true };
 }
 
@@ -205,7 +208,19 @@ export function shouldBeAdmin(openId: string, email: string | null | undefined, 
   return false;
 }
 
-export async function upsertUser(user: InsertUser): Promise<void> {
+/**
+ * Writes the profile row.
+ *
+ * `allowAdminPromotion: false` is what keeps a self-asserted address out of the
+ * admin role. The allow-list (`ADMIN_EMAILS` plus the panel's invites) is a list
+ * of *addresses*, and an address alone is not proof of identity — so any caller
+ * that learned the email from the person filling in a form rather than from a
+ * verified identity provider has to pass this and set the role itself.
+ */
+export async function upsertUser(
+  user: InsertUser,
+  options: { allowAdminPromotion?: boolean } = {},
+): Promise<void> {
   if (!user.openId) throw new Error("User openId is required for upsert");
   const db = await getDb();
   if (!db) return;
@@ -219,7 +234,10 @@ export async function upsertUser(user: InsertUser): Promise<void> {
   // Auto-promote: explicit role, OWNER_OPEN_ID, or the admin allowlist
   // (ADMIN_EMAILS plus the invites the panel manages).
   const emailForCheck = (user.email !== undefined ? user.email : undefined) ?? null;
-  const isAllowed = emailForCheck ? await isAllowedAdminEmail(emailForCheck) : false;
+  const isAllowed =
+    options.allowAdminPromotion !== false && emailForCheck
+      ? await isAllowedAdminEmail(emailForCheck)
+      : false;
   if (user.role !== undefined || (ENV.ownerOpenId && user.openId === ENV.ownerOpenId) || isAllowed) {
     values.role = user.role ?? 'admin';
     updateSet.role = values.role;
