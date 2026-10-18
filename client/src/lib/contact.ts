@@ -1,7 +1,11 @@
 // Company WhatsApp number in international format (country code, no "+" or
 // separators) because wa.me requires that exact shape.
-// 01039721472 -> +20 10 39721472 -> 201039721472
-export const COMPANY_WHATSAPP_NUMBER = "201039721472";
+// 01062302368 -> +20 10 62302368 -> 201062302368
+//
+// This is the same number the site prints in the footer and the one baked into
+// the academy's own photos, so the WhatsApp buttons and the advertised number
+// always agree.
+export const COMPANY_WHATSAPP_NUMBER = "201062302368";
 
 export type ContactFormValues = {
   name: string;
@@ -25,6 +29,17 @@ export function buildWhatsAppLink({ name, phone, message }: ContactFormValues) {
   return `https://wa.me/${COMPANY_WHATSAPP_NUMBER}?text=${encodeURIComponent(body)}`;
 }
 
+/**
+ * Opens a WhatsApp chat that already says which course the visitor is asking
+ * about, so the team does not have to work out what the enquiry is for. The
+ * message is written in Arabic because that is the language of the page the
+ * button sits on, and the parent who presses it is the one reading it.
+ */
+export function buildCourseEnquiryLink(courseTitle: string) {
+  const body = `مرحباً iDeveloper Academy، عايز أتركّب في كورس ${courseTitle} وعايز أعرف تفاصيله ومواعيده.`;
+  return `https://wa.me/${COMPANY_WHATSAPP_NUMBER}?text=${encodeURIComponent(body)}`;
+}
+
 /** The social rail shown on the home page. Each link opens in a new tab. */
 export const SOCIAL_LINKS = {
   whatsapp: buildWhatsAppLink({ name: "", phone: "", message: "Hi iDeveloper, I have a question." }),
@@ -32,4 +47,7 @@ export const SOCIAL_LINKS = {
   // The tracking parameters LinkedIn adds when a visitor shares a profile are
   // dropped so the public link stays clean.
   linkedin: "https://www.linkedin.com/in/ideveloper-academy-384864356/",
+  // The Banha branch, as a Google Maps short link. Kept short rather than expanded
+  // to maps.google.com so it survives being copied into a chat message.
+  map: "https://maps.app.goo.gl/Yt3MCdYWzoF6krM19",
 } as const;

@@ -2,6 +2,12 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
+/* Tailwind v4 ships `dark:` bound to `prefers-color-scheme`. This app has a
+   manual light/dark toggle that writes a `.dark` class on <html>, so without
+   this the `dark:` utilities would follow the operating system instead of the
+   switch the visitor actually clicked. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: 246 248 252;
   --foreground: 18 22 31;
@@ -95,4 +101,61 @@ button:active { transform: scale(.97); }
 @keyframes float-slow {
   0%, 100% { transform: translateY(0); opacity: .55; }
   50% { transform: translateY(-14px); opacity: 1; }
+}
+
+/* ---------------------------------------------------------------- motion --
+   A small, dependency-free layer for the public pages. Everything here is
+   confined to `opacity` and `transform` so it stays on the compositor, and the
+   whole block switches off for visitors who asked for reduced motion.        */
+
+.reveal {
+  opacity: 0;
+  transform: translate3d(var(--reveal-x, 0px), var(--reveal-y, 24px), 0);
+  transition:
+    opacity 700ms cubic-bezier(.22, 1, .36, 1) var(--reveal-delay, 0ms),
+    transform 700ms cubic-bezier(.22, 1, .36, 1) var(--reveal-delay, 0ms);
+}
+.reveal.is-revealed { opacity: 1; transform: none; }
+
+/* An ambient drift for the hero glows. Two of them, out of phase, so the
+   background never visibly loops. */
+@keyframes drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(3%, -4%, 0) scale(1.08); }
+}
+.animate-drift { animation: drift 19s ease-in-out infinite; }
+.animate-drift-late { animation: drift 27s ease-in-out infinite; animation-delay: -9s; }
+
+/* Crossfade for panels that swap in place, such as the journey tabs. */
+@keyframes fade-slide-in {
+  from { opacity: 0; transform: translate3d(0, 10px, 0); }
+  to { opacity: 1; transform: none; }
+}
+.animate-fade-slide-in { animation: fade-slide-in 420ms cubic-bezier(.22, 1, .36, 1) both; }
+
+/* Card hover: a soft spotlight that follows the pointer. The coordinates are
+   written by onPointerMove as a percentage of the card, so the gradient tracks
+   the cursor on any card size without measuring anything. */
+.spotlight { position: relative; }
+.spotlight::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: radial-gradient(22rem circle at var(--spot-x, 50%) var(--spot-y, 0%), rgb(var(--primary) / .13), transparent 62%);
+  opacity: 0;
+  transition: opacity 260ms ease;
+  pointer-events: none;
+}
+.spotlight:hover::before { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal { opacity: 1; transform: none; transition: none; }
+  .animate-drift,
+  .animate-drift-late,
+  .animate-fade-slide-in { animation: none; }
+  .spotlight::before { display: none; }
+  button { transition: none; }
+  button:active { transform: none; }
 }

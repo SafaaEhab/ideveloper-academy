@@ -180,3 +180,37 @@
 - [x] Save a checkpoint after the completed selected-course visibility verification
 - [x] Run tests again after the final selectedCourse reset change in StudentPortal.tsx
 - [x] Save a new checkpoint for selected-course visibility after the completed Arabic and English verification
+
+- [x] Download the live site's resolved image assets into client/public/images/ideveloper and downscale them
+- [x] Add client/src/data/academyContent.ts with the crawled phone, hours, address, 8 courses, team, tech stack, offerings, and FAQs
+- [x] Rebuild the public home page in Arabic RTL with the live hero, journey tabs, tech strip, courses, team, projects, CTA, FAQ, and footer
+- [x] Set dir="rtl" and lang="ar" on the document root while the Arabic landing page is mounted
+- [x] Fall back to initials badges for the two trainers whose photos were never published
+- [x] Verify the Arabic landing page in dark/light and desktop/mobile with zero console errors
+
+- [x] Add a dependency-free motion layer: useInView hook, Reveal and CountUp components, spotlight pointer tracking
+- [x] Wire staggered scroll reveals through every landing page section and the hero entrance
+- [x] Add ambient hero glow drift, tech-chip bob, journey tab crossfade, and card hover spotlight
+- [x] Add a header shadow on scroll and an RTL reading-progress bar
+- [x] Derive a hero stat row from the real catalogue and roster with count-up numbers
+- [x] Fix the IntersectionObserver so below-the-fold reveals are not stranded at opacity 0
+- [x] Bind Tailwind's dark: variant to the app's .dark class instead of the OS setting
+- [x] Verify all 64 reveals fire, the progress bar completes, and console stays clean
+- [x] Remove the top phone/hours/address utility strip from the landing page
+- [x] Add a branch location button to the social rail linking to the Google Maps short URL
+- [x] Use the single Cloudinary academy logo sitewide and delete the duplicate local copy
+- [x] Rewrite the hero paragraph and bullets so the copy does not read as machine-written
+- [x] Remove the promo button and the whole technology strip section
+- [x] Extract the five promo video ids and their labels from the live homepage modals
+- [x] Play the videos inline on the landing page with no outbound YouTube link
+- [x] Cut the landing page course list down to the four real courses: Scratch, Robotics, Web, Python
+- [x] Show real session and month counts read from the curriculum modules
+- [x] Add a drift test that fails when the landing page counts stop matching the curriculum
+- [x] Replace the course photos with gradient cards and a proper mark for each course
+- [x] Turn each "احجز مكانك" button into a prefilled WhatsApp chat naming that course
+- [x] Fill the "تعرف على مبرمجى المستقبل" section with the real student photos
+- [x] Point the Python course mark at the project's own hero-coding-robot.jpg
+- [x] Unify the WhatsApp number with the one the site advertises and the photos print
+- [x] Replace the achievements heading with "أحدث إنجازاتنا"
+- [x] Give each achievement its own real image from the live site and set the matching tag
+- [x] Change the footer credit to "Developed by Safaa Ehab"

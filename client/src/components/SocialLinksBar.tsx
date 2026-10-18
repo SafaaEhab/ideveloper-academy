@@ -1,17 +1,21 @@
 import { useState, type CSSProperties } from "react";
+import { MapPin } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { FacebookIcon, LinkedInIcon, WhatsAppIcon } from "@/components/BrandIcons";
 import { LOGO_ALT, LOGO_URL } from "@/lib/brand";
 import { SOCIAL_LINKS } from "@/lib/contact";
 
 // Each network wears its own brand colour — WhatsApp's green (the same #25D366
-// the announcement button uses), Facebook's blue, and LinkedIn's blue — so a
-// visitor recognises the channel before reading the tooltip. The rail itself
-// stays the academy's black and the hover fills with that colour.
+// the announcement button uses), Facebook's blue, LinkedIn's blue, and Google
+// Maps' red for the branch location — so a visitor recognises the channel before
+// reading the tooltip. The rail itself stays the academy's black and the hover
+// fills with that colour. The location pin is not a network brand, so it borrows
+// the same channel treatment for consistency.
 const channels = [
   { key: "whatsapp", label: "واتساب", href: SOCIAL_LINKS.whatsapp, icon: WhatsAppIcon, color: "#25D366" },
   { key: "facebook", label: "فيسبوك", href: SOCIAL_LINKS.facebook, icon: FacebookIcon, color: "#1877F2" },
   { key: "linkedin", label: "لينكدإن", href: SOCIAL_LINKS.linkedin, icon: LinkedInIcon, color: "#0A66C2" },
+  { key: "map", label: "موقع الفرع", href: SOCIAL_LINKS.map, icon: MapPin, color: "#EA4335" },
 ] as const;
 
 // The colour arrives as a CSS variable rather than a class name so Tailwind
@@ -36,8 +40,8 @@ function BrandMark({ className }: { className: string }) {
 /**
  * The contact rail pinned to the right edge of the home page. A vertical rail only
  * fits where the centred page leaves a gutter (the layout caps at 1280px), so on
- * narrower screens the same three links lie flat along the bottom instead of
- * covering the content.
+ * narrower screens the same links lie flat along the bottom instead of covering
+ * the content.
  */
 export default function SocialLinksBar() {
   return (
