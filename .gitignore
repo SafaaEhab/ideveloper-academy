@@ -8,6 +8,9 @@ cloudflared.exe
 .vercel
 # Scratch scripts from ad-hoc debugging sessions.
 _tmp-*
+# Local tooling state and screenshot scratch space.
+.impeccable
+_shots
 .env
 .env.local
 .env.*.local

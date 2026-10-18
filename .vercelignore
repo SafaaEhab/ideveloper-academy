@@ -14,3 +14,5 @@ scripts
 Dockerfile
 .dockerignore
 docker-compose.yml
+.impeccable
+_shots
