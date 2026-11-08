@@ -132,7 +132,11 @@ Sheets warning, staff access, mobile layout and RTL, then deletes every record.
 ## Deployment
 
 1. Apply `drizzle/0011_useful_lady_bullseye.sql` with the existing Drizzle
-   migration command (`pnpm db:push`) against the DB the API uses.
+   migration command (`pnpm db:push`) against the DB the API uses. If the
+   production DB is only reachable through MonsterASP, paste the equivalent
+   clean script in `docs/phase1-leads-migration.sql` into **MonsterASP →
+   WebSQL** after taking a backup. The script only creates the five new tables
+   and copies legacy registration rows; it does not alter existing tables.
 2. Upload `release/monsterasp/monsterasp-site.zip` to MonsterASP → Files,
    unzip into `/wwwroot`, overwrite, restart the application.
 3. Add the Google variables above to MonsterASP environment variables.
