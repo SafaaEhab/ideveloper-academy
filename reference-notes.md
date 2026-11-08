@@ -48,6 +48,34 @@ Two things worth remembering if this is extended:
 
 Everything under the motion block is switched off by `prefers-reduced-motion: reduce`, and content falls back to visible whenever `IntersectionObserver` is unavailable.
 
+## Deploying to Vercel
+
+> **Current architecture (Nov 2026):** the frontend stays on Vercel at
+> `https://ideveloper-academy.vercel.app`, while the API + MySQL database +
+> Excel backups run on MonsterASP at
+> `https://ideveloper-academy.runasp.net`. Vercel builds with
+> `VITE_API_URL=https://ideveloper-academy.runasp.net`; Monster allows that
+> origin through `WEB_ORIGIN`. See `docs/monsterasp-deployment.md`.
+
+Production is **https://ideveloper-academy.vercel.app**, the Vercel project `ideveloper-academy` under the team `safaas-projects-216f1299` (project id `prj_YxeeUhVkyYKFIAENGemQtHVYTVv3`).
+
+Two things about this setup are worth knowing, because both cost time:
+
+- **The Vercel CLI's saved token had expired.** `auth.json` still held a valid `refreshToken`, and running any `vercel` command refreshes it in place — `npx vercel whoami` is enough to renew it. The CLI is not installed globally; `npx --yes vercel@latest` works.
+- **A plain `git push` does not deploy.** The project has a GitHub integration, but it blocks the deployment with *"the commit author doesn't have permission to create deployments for this project"* unless the commit author's email belongs to the Vercel account. The git identity had a typo — `safsafehab012345@gmail.com` against the account's `safaaehab012345@gmail.com` — so every push was rejected. The repo-local `git config user.email` is now the account address.
+
+  Because of that, the working deploy is:
+
+  ```
+  npx --yes vercel@latest --prod --yes --archive=tgz
+  ```
+
+  `--archive=tgz` uploads the working tree as a plain source archive, so no commit author is involved and the deployment is not blocked. The CLI otherwise notices the git repository and produces a git-linked deployment, which is the path that gets blocked.
+
+The upload respects `.vercelignore`; `_shots` (144 MB of scratch screenshots) and `.impeccable` were added there and to `.gitignore` so they stay out of both the repo and the upload.
+
+**Cloudinary is not actually configured.** `CLOUDINARY_API_KEY` and `CLOUDINARY_API_SECRET` are empty strings in `.env`, so `uploadImage()` throws and the admin's own achievement-image upload button cannot work. The achievement images are therefore served from `client/public/images/achievements/` and the rows point at those paths — the column accepts any image URL. Adding the two keys to `.env` (and on the Render dashboard) would let images be uploaded to Cloudinary as originally designed.
+
 ## Promo videos
 
 Five videos, ids read out of the live homepage's modal iframes and paired with the label of the button that opens each one:

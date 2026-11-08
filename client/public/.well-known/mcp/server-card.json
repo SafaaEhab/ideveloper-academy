@@ -1,0 +1,24 @@
+{
+  "$schema": "https://modelcontextprotocol.io/schemas/server-card/v1.json",
+  "version": "1.0",
+  "protocolVersion": "2025-06-18",
+  "serverInfo": {
+    "name": "ideveloper-academy",
+    "title": "iDeveloper Academy",
+    "version": "1.0.0",
+    "description": "Public read-only course catalogue, achievements and announcement for iDeveloper Academy in Banha, Egypt.",
+    "websiteUrl": "https://ideveloper-academy.vercel.app"
+  },
+  "transport": {
+    "type": "streamable-http",
+    "endpoint": "https://ideveloper-academy.runasp.net/mcp"
+  },
+  "capabilities": {
+    "tools": {
+      "listChanged": false
+    }
+  },
+  "authentication": {
+    "required": false
+  }
+}

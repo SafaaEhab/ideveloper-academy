@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { API_BASE_URL } from "@/const";
 
 const MIN_PASSWORD_LENGTH = 8;
 
@@ -21,7 +22,8 @@ export default function Login() {
   const [searchParams] = useSearchParams();
   const [location] = useLocation();
 
-  const returnTo = searchParams.get("returnTo") ?? "/student";
+  const explicitReturnTo = searchParams.get("returnTo");
+  const returnTo = explicitReturnTo ?? "/student";
   const isSignup = mode === "signup";
   const canSubmit =
     email.trim().length > 0 &&
@@ -34,7 +36,7 @@ export default function Login() {
 
     setBusy(true);
     try {
-      const res = await fetch(`/api/auth/${isSignup ? "signup" : "login"}`, {
+      const res = await fetch(`${API_BASE_URL}/api/auth/${isSignup ? "signup" : "login"}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -59,11 +61,20 @@ export default function Login() {
       }
 
       const result = await refresh();
-      if (!result?.data) {
-        window.location.href = returnTo;
-        return;
-      }
-      window.location.href = returnTo;
+      // No explicit `returnTo`: send each role to the workspace it can use.
+      // `auth.me` is server-authoritative, so this only picks a landing page —
+      // the dashboards themselves still gate every request server-side.
+      const role = result?.data?.role;
+      const destination =
+        explicitReturnTo ??
+        (role === "admin"
+          ? "/admin"
+          : result?.data?.leadAccess
+            ? "/leads"
+            : role === "instructor"
+              ? "/instructor"
+              : returnTo);
+      window.location.href = destination;
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Login failed");
       setBusy(false);

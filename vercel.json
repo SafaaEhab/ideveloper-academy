@@ -10,8 +10,108 @@
     }
   },
   "routes": [
-    { "handle": "filesystem" },
-    { "src": "/api/(.*)", "dest": "/api/[...path].ts" },
-    { "src": "/((?!api/).*)", "dest": "/index.html" }
-  ]
+    {
+      "src": "/(.*)",
+      "headers": {
+        "X-Content-Type-Options": "nosniff",
+        "Referrer-Policy": "strict-origin-when-cross-origin",
+        "Permissions-Policy": "camera=(), microphone=(), geolocation=()"
+      },
+      "continue": true
+    },
+    {
+      "src": "/",
+      "headers": {
+        "Link": "</.well-known/api-catalog>; rel=\"api-catalog\", </api.md>; rel=\"service-doc\", </auth.md>; rel=\"describedby\", </.well-known/ai-catalog.json>; rel=\"describedby\", </.well-known/agent-skills/index.json>; rel=\"describedby\", </sitemap.xml>; rel=\"sitemap\"",
+        "Vary": "Accept"
+      },
+      "continue": true
+    },
+    {
+      "src": "/courses",
+      "headers": {
+        "Vary": "Accept"
+      },
+      "continue": true
+    },
+    {
+      "src": "/register",
+      "headers": {
+        "Vary": "Accept"
+      },
+      "continue": true
+    },
+    {
+      "src": "/auth.md",
+      "headers": {
+        "Content-Type": "text/markdown; charset=utf-8"
+      },
+      "continue": true
+    },
+    {
+      "src": "/api.md",
+      "headers": {
+        "Content-Type": "text/markdown; charset=utf-8"
+      },
+      "continue": true
+    },
+    {
+      "src": "/.well-known/api-catalog",
+      "headers": {
+        "Content-Type": "application/linkset+json",
+        "Access-Control-Allow-Origin": "*"
+      },
+      "continue": true
+    },
+    {
+      "src": "/.well-known/ai-catalog.json",
+      "headers": {
+        "Access-Control-Allow-Origin": "*"
+      },
+      "continue": true
+    },
+    {
+      "src": "/.well-known/openid-configuration",
+      "status": 404,
+      "headers": {
+        "Content-Type": "application/json"
+      }
+    },
+    {
+      "src": "/.well-known/oauth-authorization-server",
+      "status": 404,
+      "headers": {
+        "Content-Type": "application/json"
+      }
+    },
+    {
+      "src": "/.well-known/oauth-protected-resource",
+      "status": 404,
+      "headers": {
+        "Content-Type": "application/json"
+      }
+    },
+    {
+      "src": "/api/markdown",
+      "dest": "/api/[...path].ts"
+    },
+    {
+      "src": "/api/health",
+      "dest": "/api/[...path].ts"
+    },
+    {
+      "src": "/api/(.*)",
+      "status": 404
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/((?!api/).*)",
+      "dest": "/index.html"
+    }
+  ],
+  "proxy": {
+    "entrypoint": "proxy.ts"
+  }
 }

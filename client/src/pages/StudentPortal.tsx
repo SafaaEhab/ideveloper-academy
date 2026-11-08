@@ -1,6 +1,8 @@
 ﻿import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import {
+  ArrowLeft,
   ArrowRight,
+  BarChart3,
   BookOpen,
   CheckCircle2,
   ChevronDown,
@@ -30,6 +32,8 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { trpc, LIVE_REFETCH_INTERVAL } from "@/lib/trpc";
 import { useTheme } from "@/contexts/ThemeContext";
+import StudentPerformanceSection from "@/components/performance/StudentPerformanceSection";
+import StudentAssignments from "@/components/StudentAssignments";
 import {
   allPythonLessons,
   coreLessons,
@@ -61,46 +65,49 @@ const courseCatalog = [
   {
     name: "Scratch",
     description: "Visual stories, games, and creative thinking",
+    descriptionAr: "حكايات وألعاب وتفكير إبداعي بالبلوكات",
     icon: Sparkles,
     color: "from-pink-500/20 to-rose-500/5",
   },
   {
     name: "Robotics",
     description: "Build, control, and explore smart machines",
+    descriptionAr: "ابنِ روبوتات ذكية وتعلّم التحكم فيها",
     icon: Target,
     color: "from-orange-500/20 to-amber-500/5",
   },
   {
     name: "Web",
     description: "Create your first websites and digital ideas",
+    descriptionAr: "اعمل أول موقع ليك وأفكار رقمية",
     icon: Code2,
     color: "from-cyan-500/20 to-blue-500/5",
   },
   {
     name: "Python",
     description: "A five-month journey from basics to problem solving",
+    descriptionAr: "رحلة 5 شهور من الأساسيات لحل المشكلات",
     icon: BookOpen,
     color: "from-violet-500/20 to-indigo-500/5",
   },
 ] as const;
 
 const text = {
-  back: "Back to home",
+  back: "العودة للرئيسية",
   title: "Your learning space",
-  sub: "Your course code unlocks your lessons \u2014 Python: id-123456789 \u00b7 Web: id-987654321 \u00b7 Scratch: id-147852369",
-  placeholder: "id-123456789",
-  unlock: "Unlock my course",
-  invalid: "This code is invalid or inactive. Check the code and try again.",
-  welcome: "Welcome",
+  sub: "كود الكورس بيفتح لك الدروس",
+  placeholder: "IDA-XXXXXXXX",
+  unlock: "افتح الكورس",
+  invalid: "الكود غير صحيح أو غير نشط. راجع الكود وحاول تاني.",
+  welcome: "أهلاً",
   sessions: "sessions",
-  months: "months",
   coreTrack: "Core Python track",
   problemTrack: "Problem Solving track",
   coreSub: "From print() to functions",
   problemSub: "Applied challenges for the final month",
   roadmap: "Five-month roadmap",
-  curriculum: "Curriculum map",
-  progress: "Your progress",
+  curriculum: "خريطة المنهج",
+  progress: "????? ?? ??????",
   phase: "Phase",
   lesson: "Session",
   read: "Lesson guide",
@@ -116,7 +123,7 @@ const text = {
   resetQuiz: "Reset quiz",
   correct: "Correct answer",
   tryAgain: "Read the guide and try again",
-  signOut: "Sign out",
+  signOut: "تسجيل الخروج",
   noPython: "Python is not enrolled for this student yet.",
   tip: "Coach tip",
   show: "Show explanation",
@@ -124,7 +131,7 @@ const text = {
 };
 
 export default function StudentPortal() {
-  const [code, setCode] = useState("id-123456789");
+  const [code, setCode] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [track, setTrack] = useState<Track>("core");
   const [activePhase, setActivePhase] = useState(1);
@@ -139,12 +146,33 @@ export default function StudentPortal() {
   const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
   const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({});
   const [quizSubmitted, setQuizSubmitted] = useState(false);
+  const [quizResult, setQuizResult] = useState<{ lessonId: string; score: number; total: number } | null>(null);
+  const [portalView, setPortalView] = useState<"curriculum" | "performance">(
+    "curriculum",
+  );
+  const [signedOut, setSignedOut] = useState(false);
   const { theme, toggleTheme } = useTheme();
   const query = trpc.portal.byCode.useQuery(
-    { accessCode: code || "IDA-DEMO" },
+    { accessCode: code },
     { enabled: false, refetchInterval: LIVE_REFETCH_INTERVAL },
   );
-  const student = query.data;
+  // A page reload has no access code in memory, but the signed HttpOnly cookie
+  // issued at login can still restore the same student. The cookie is the only
+  // thing the performance endpoint accepts — never a student id.
+  const sessionQuery = trpc.portal.session.useQuery(undefined, {
+    retry: false,
+    refetchOnWindowFocus: false,
+  });
+  const logout = trpc.portal.logout.useMutation();
+  const student =
+    (signedOut ? null : query.data ?? sessionQuery.data) ?? null;
+  const learning = trpc.portal.learning.useQuery(undefined, {
+    enabled: Boolean(student),
+    retry: false,
+    refetchInterval: LIVE_REFETCH_INTERVAL,
+  });
+  const completeLesson = trpc.portal.setLessonComplete.useMutation();
+  const submitQuizMutation = trpc.portal.submitQuiz.useMutation();
   const enrolledCourses = useMemo(() => student?.courses ?? [], [student]);
   const enrolledCount = enrolledCourses.length;
   // Single course â†’ open directly. Multiple courses â†’ chooser until one is picked.
@@ -162,9 +190,11 @@ export default function StudentPortal() {
     : problemSolvingLessons;
   useEffect(() => {
     if (!student) return;
+    // Web has its own component and cache key; Python/Scratch own this one.
+    if (courseName !== "Python" && courseName !== "Scratch") return;
     const courseKey = `idev-progress-${student.accessCode}-${courseName}`;
     const loadKey = `${student.accessCode}-${courseName}`;
-    if (progressLoadedFor.current !== loadKey) {
+    if (!learning.data && progressLoadedFor.current !== loadKey) {
       progressLoadedFor.current = loadKey;
       try {
         const raw = localStorage.getItem(courseKey);
@@ -203,10 +233,23 @@ export default function StudentPortal() {
     } catch {
       /* storage unavailable */
     }
-  }, [student, completedLessons, courseName]);
-  const journey = showChooser
-    ? "Choose your course"
-    : `My ${courseName} journey`;
+  }, [student, completedLessons, courseName, learning.data]);
+  useEffect(() => {
+    if (!student || !learning.data) return;
+    if (courseName !== "Python" && courseName !== "Scratch") return;
+    const ids = new Set(curriculumLessons.map(lesson => lesson.id));
+    setCompletedLessons(
+      learning.data.completed
+        .filter(item => item.course === courseName && ids.has(item.lessonId))
+        .map(item => item.lessonId),
+    );
+  }, [student, courseName, curriculumLessons, learning.data]);
+  const journey =
+    portalView === "performance"
+      ? "أدائي وتقييماتي"
+      : showChooser
+        ? "اختار كورسك"
+        : `رحلتك في ${courseName}`;
   const phases = isScratch ? scratchPhases : curriculumPhases;
   const visibleLessons = useMemo(
     () =>
@@ -244,6 +287,12 @@ export default function StudentPortal() {
       score + (quizAnswers[index] === item.answer ? 1 : 0),
     0
   );
+  const shownQuizScore =
+    quizResult?.lessonId === selectedLesson.id ? quizResult.score : quizScore;
+  const shownQuizTotal =
+    quizResult?.lessonId === selectedLesson.id
+      ? quizResult.total
+      : selectedLesson.quiz.length;
   // Ø£ÙˆÙ„ Ù…Ø§ Ø§Ù„ÙƒÙˆØ±Ø³ ÙŠØªÙØªØ­ (Ø£Ùˆ ÙŠØªØ¨Ø¯Ù„)ØŒ Ø§ÙØªØ­ Ø¹Ù„Ù‰ Ø£ÙˆÙ„ Ø¯Ø±Ø³ ÙÙŠÙ‡ Ø¹Ù„Ù‰ Ø·ÙˆÙ„
   useEffect(() => {
     const first = curriculumCoreLessons[0] || curriculumLessons[0];
@@ -260,8 +309,23 @@ export default function StudentPortal() {
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     setSelectedCourse(null);
+    setSignedOut(false);
     setSubmitted(true);
     await query.refetch();
+  };
+  const signOut = async () => {
+    try {
+      await logout.mutateAsync();
+    } catch {
+      /* the cookie may already be gone — still return to the gate */
+    }
+    setSignedOut(true);
+    setSubmitted(false);
+    setCode("");
+    setSelectedCourse(null);
+    setPortalView("curriculum");
+    await sessionQuery.refetch();
+    window.location.assign("/student");
   };
   const chooseTrack = (nextTrack: Track) => {
     const pool = isScratch ? allScratchLessons : allPythonLessons;
@@ -310,22 +374,38 @@ export default function StudentPortal() {
   };
   const runExample = () =>
     toast.success("Example ready to try in your Python editor");
-  const toggleComplete = () => {
+  const toggleComplete = async () => {
     const isDone = completedLessons.includes(selectedLesson.id);
-    setCompletedLessons(current =>
-      isDone
-        ? current.filter(id => id !== selectedLesson.id)
-        : [...current, selectedLesson.id]
-    );
-    toast.success(
-      isDone ? "Session marked active" : "Great job! Session completed"
-    );
+    try {
+      await completeLesson.mutateAsync({
+        course: courseName as "Scratch" | "Web" | "Python",
+        lessonId: selectedLesson.id,
+        completed: !isDone,
+      });
+      setCompletedLessons(current =>
+        isDone
+          ? current.filter(id => id !== selectedLesson.id)
+          : [...current, selectedLesson.id]
+      );
+      toast.success(
+        isDone ? "Session marked active" : "Great job! Session completed"
+      );
+      void learning.refetch();
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Your progress could not be saved",
+      );
+    }
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="mx-auto mb-8 flex max-w-7xl items-center justify-between px-5 py-5 lg:px-8">
-        <Link href="/" className="flex items-center gap-3">
+    <div
+      dir={student ? undefined : "rtl"}
+      lang={student ? undefined : "ar"}
+      className="min-h-screen bg-background text-foreground"
+    >
+      <header dir="rtl" className="mx-auto mb-8 flex max-w-7xl flex-wrap items-center justify-between gap-x-4 gap-y-3 px-4 py-4 sm:px-5 sm:py-5 lg:px-8">
+        <Link href="/" className="flex min-w-0 items-center gap-2 sm:gap-3">
           <span className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-full bg-white ring-2 ring-primary/20">
             <img
               src="https://res.cloudinary.com/alhiemg0/image/upload/f_auto,q_auto/logo.png"
@@ -333,12 +413,14 @@ export default function StudentPortal() {
               className="h-full w-full object-cover"
             />
           </span>
-          <span className="font-bold">iDeveloper</span>
+          <span className="max-w-[8rem] text-[11px] font-semibold leading-4 sm:max-w-[16rem] sm:text-sm sm:leading-5">
+            أكاديمية البرمجة والروبوتات للأطفال
+          </span>
         </Link>
         <div className="flex items-center gap-3">
           <Link
             href="/"
-            className="rounded-full border border-border bg-card/70 px-4 py-2 text-sm font-semibold text-muted-foreground transition hover:border-primary/40 hover:text-foreground"
+            className="rounded-full border border-border bg-card/70 px-3 py-1.5 text-xs font-semibold text-muted-foreground transition hover:border-primary/40 hover:text-foreground sm:px-4 sm:py-2 sm:text-sm"
           >
             {text.back}
           </Link>
@@ -347,7 +429,7 @@ export default function StudentPortal() {
               variant="ghost"
               size="icon"
               onClick={toggleTheme}
-              aria-label="Toggle theme"
+              aria-label="تبديل الوضع الليلي"
             >
               {theme === "dark" ? (
                 <Sun className="h-4 w-4" />
@@ -359,17 +441,21 @@ export default function StudentPortal() {
         </div>
       </header>
 
-      {!student ? (
+      {sessionQuery.isLoading && !student ? (
+        <main className="mx-auto flex min-h-[calc(100vh-90px)] max-w-7xl items-center justify-center px-5 pb-16 lg:px-8">
+          <p className="text-sm text-muted-foreground">
+            جارٍ استعادة جلستك…
+          </p>
+        </main>
+      ) : !student ? (
         <main className="mx-auto flex min-h-[calc(100vh-90px)] max-w-7xl items-center px-5 pb-16 lg:px-8">
           <div className="w-full">
             <div className="mx-auto max-w-3xl text-center">
-              <Badge className="rounded-full px-3 py-1">iDeveloper</Badge>
               <h1 className="mt-5 text-4xl font-bold tracking-tight md:text-6xl">
-                Choose your course and start your journey
+                اختار كورسك وابدأ رحلتك
               </h1>
               <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-muted-foreground">
-                Use the shared code to unlock every course and the complete
-                curriculum.
+                استخدم كود الكورس اللي معاك لفتح الدروس والمنهج كامل.
               </p>
             </div>
             <div className="mx-auto mt-10 grid max-w-5xl gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -380,15 +466,15 @@ export default function StudentPortal() {
                     key={course.name}
                     className={`group rounded-[1.75rem] border border-border bg-gradient-to-br ${course.color} p-5 transition hover:-translate-y-1 hover:border-primary/40 hover:shadow-xl`}
                   >
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-background/80 text-primary">
+                    <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-background/80 text-primary">
                       <Icon className="h-6 w-6" />
                     </div>
-                    <h2 className="mt-6 text-xl font-bold">{course.name}</h2>
+                    <h2 className="mt-6 text-center text-xl font-bold">{course.name}</h2>
                     <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                      {course.description}
+                      {course.descriptionAr}
                     </p>
                     <div className="mt-6 text-xs font-semibold text-muted-foreground">
-                      Details unlock with your code
+                      التفاصيل هتظهر بعد إدخال الكود
                     </div>
                   </div>
                 );
@@ -399,11 +485,12 @@ export default function StudentPortal() {
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                   <LockKeyhole className="h-6 w-6" />
                 </div>
-                <h2 className="mt-4 text-2xl font-bold">Student access</h2>
+                <h2 className="mt-4 text-2xl font-bold">دخول المشتركين</h2>
                 <p className="mt-2 text-sm text-muted-foreground">{text.sub}</p>
                 <form onSubmit={submit} className="mt-5 space-y-3">
                   <Input
                     value={code}
+                    dir="ltr"
                     onChange={event =>
                       setCode(event.target.value.toUpperCase())
                     }
@@ -415,7 +502,7 @@ export default function StudentPortal() {
                     disabled={!code || query.isFetching}
                   >
                     {query.isFetching ? "..." : text.unlock}
-                    <ArrowRight className="ms-2 h-5 w-5" />
+                    <ArrowLeft className="ms-2 h-5 w-5" />
                   </Button>
                 </form>
                 {submitted && !student && !query.isFetching && (
@@ -429,31 +516,46 @@ export default function StudentPortal() {
         </main>
       ) : (
         <main className="mx-auto max-w-7xl px-5 pb-20 pt-8 lg:px-8">
-          <div className="mb-8 flex flex-col justify-between gap-5 md:flex-row md:items-end">
-            <div>
+          <div dir="rtl" className="mb-8 flex flex-col justify-between gap-5 md:flex-row md:items-end">
+            <div dir="rtl">
               <div className="text-sm font-semibold text-primary">
-                {text.welcome}, {student.name}
+                {text.welcome}، {student.name}
               </div>
-              <h1 className="mt-3 text-4xl font-bold tracking-tight md:text-6xl">
+              <h1 className="mt-3 break-words text-4xl font-bold tracking-tight md:text-6xl">
                 {journey}
               </h1>
-              <p className="mt-3 text-muted-foreground">
-                iDeveloper Â· {student.accessCode}
-              </p>
             </div>
             <Button
               variant="outline"
               className="rounded-full"
-              onClick={() => {
-                setSubmitted(false);
-                setCode("");
-                setSelectedCourse(null);
-                window.location.assign("/student");
-              }}
+              disabled={logout.isPending}
+              onClick={signOut}
             >
               {text.signOut}
             </Button>
           </div>
+          <div dir="rtl" className="mb-6 flex flex-wrap gap-2 rounded-2xl border border-border bg-card/60 p-2">
+            <Button
+              variant={portalView === "curriculum" ? "default" : "ghost"}
+              className="rounded-xl"
+              onClick={() => setPortalView("curriculum")}
+            >
+              <BookOpen className="me-2 h-4 w-4" />
+              رحلتي الدراسية
+            </Button>
+            <Button
+              variant={portalView === "performance" ? "default" : "ghost"}
+              className="rounded-xl"
+              onClick={() => setPortalView("performance")}
+            >
+              <BarChart3 className="me-2 h-4 w-4" />
+              أدائي وتقييماتي
+            </Button>
+          </div>
+          {portalView === "performance" ? (
+            <StudentPerformanceSection />
+          ) : (
+            <>
           {enrolledCount > 1 && selectedCourse && (
             <div className="mb-6 flex flex-wrap gap-2">
               {enrolledCourses.map(course => (
@@ -506,6 +608,7 @@ export default function StudentPortal() {
                 })}
             </div>
           )}
+          {!showChooser && student ? <StudentAssignments /> : null}
           {(student.courses?.includes("Python") ||
             student.courses?.includes("Scratch")) &&
           (effectiveCourse === "Python" || effectiveCourse === "Scratch") ? (
@@ -514,18 +617,15 @@ export default function StudentPortal() {
                 <div className="grid gap-4">
                   <Card className="overflow-hidden rounded-[2rem] border-primary/20 bg-gradient-to-br from-primary/15 via-card to-card">
                     <CardContent className="p-6 md:p-8">
-                      <div className="flex items-start justify-between gap-4">
+                      <div dir="rtl" className="flex items-start justify-between gap-4">
                         <div>
-                          <Badge className="rounded-full">
-                            {courseName} Â· {isScratch ? 3 : 5} {text.months}
-                          </Badge>
-                          <h2 className="mt-4 text-2xl font-bold sm:text-3xl">
+                          <h2 className="text-2xl font-bold sm:text-3xl">
                             {text.curriculum}
                           </h2>
                           <p className="mt-2 max-w-xl text-sm text-muted-foreground sm:text-base">
                             {isScratch
-                              ? "A three-month game journey from first setup to final challenge."
-                              : "A five-month journey from foundations to applied problem solving."}
+                              ? "رحلة 3 شهور في عالم الألعاب من أول خطوة للتحدي الأخير."
+                              : "رحلة 5 شهور من الأساسيات لحل المشكلات."}
                           </p>
                         </div>
                         {isScratch ? (
@@ -542,7 +642,7 @@ export default function StudentPortal() {
                           </div>
                         )}
                       </div>
-                      <div className="mt-7 flex items-center justify-between text-sm sm:text-base">
+                      <div dir="rtl" className="mt-7 flex items-center justify-between text-sm sm:text-base">
                         <span>{text.progress}</span>
                         <b>{completionPercent}%</b>
                       </div>
@@ -550,6 +650,11 @@ export default function StudentPortal() {
                         value={completionPercent}
                         className="mt-2 h-3"
                       />
+                      <p dir="rtl" className="mt-2 text-[11px] leading-5 text-muted-foreground">
+                        هذا الشريط يعتمد على علامات الدروس المحفوظة في هذا
+                        المتصفح، وليس على تقييمات المدرّب. التقدم الرسمي يظهر في
+                        «أدائي وتقييماتي».
+                      </p>
                       {certificateCourse ? (
                         <CertificateClaim
                           courseName={certificateCourse.courseName}
@@ -565,7 +670,7 @@ export default function StudentPortal() {
                   </Card>
                 </div>
                 <div className="mt-8 grid gap-8 lg:grid-cols-[.7fr_1.3fr]">
-                  <aside className="space-y-4">
+                  <aside className="min-w-0 space-y-4">
                     <div className="rounded-2xl border border-border bg-card p-4">
                       <div className="mb-4 flex items-center justify-between">
                         <div className="flex items-center gap-2 text-sm font-semibold sm:text-base">
@@ -645,7 +750,7 @@ export default function StudentPortal() {
                       </div>
                     </div>
                   </aside>
-                  <section id="lesson-detail" className="scroll-mt-6">
+                  <section id="lesson-detail" className="min-w-0 scroll-mt-6">
                     <Card
                       className={`overflow-hidden rounded-[2rem] border-0 bg-gradient-to-br ${selectedLesson.accent}`}
                     >
@@ -668,7 +773,7 @@ export default function StudentPortal() {
                               {curriculumLessons.length}
                             </Badge>
                           </div>
-                          <h2 className="mt-5 text-2xl font-bold sm:text-3xl md:text-5xl">
+                          <h2 className="mt-5 break-words text-2xl font-bold sm:text-3xl md:text-5xl">
                             {selectedLesson.title}
                           </h2>
                           <p className="mt-3 text-base leading-7 text-muted-foreground sm:text-lg sm:leading-8">
@@ -706,11 +811,11 @@ export default function StudentPortal() {
                                   }
                                   className="flex w-full items-center justify-between gap-4 p-5 text-start"
                                 >
-                                  <div className="flex items-center gap-3">
+                                  <div className="flex min-w-0 items-center gap-3">
                                     <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 font-mono text-sm text-primary">
                                       {index + 1}
                                     </span>
-                                    <span className="text-lg font-bold">
+                                    <span className="min-w-0 break-words text-lg font-bold">
                                       {section.title}
                                     </span>
                                   </div>
@@ -722,7 +827,7 @@ export default function StudentPortal() {
                                 </button>
                                 {isOpen && (
                                   <div className="border-t border-border/70 p-5 pt-4">
-                                    <div className="max-w-3xl space-y-2">
+                                    <div className="max-w-3xl space-y-2 break-words">
                                       {(section.body ?? "")
                                         .split("\n")
                                         .map((line, li) => {
@@ -974,7 +1079,7 @@ export default function StudentPortal() {
                                       : "secondary"
                                   }
                                 >
-                                  {quizScore}/{selectedLesson.quiz.length}
+                                  {shownQuizScore}/{shownQuizTotal}
                                 </Badge>
                               )}
                             </div>
@@ -1009,7 +1114,7 @@ export default function StudentPortal() {
                                         ))}
                                       </div>
                                     )}
-                                  <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                                  <div className="mt-3 grid gap-2 break-words sm:grid-cols-2">
                                     {item.options.map((option, optionIndex) => (
                                       <button
                                         type="button"
@@ -1020,6 +1125,7 @@ export default function StudentPortal() {
                                             [index]: optionIndex,
                                           }));
                                           setQuizSubmitted(false);
+                                          setQuizResult(null);
                                         }}
                                         className={`rounded-xl border p-3 text-start text-sm transition ${quizAnswers[index] === optionIndex ? "border-primary bg-primary/10" : "border-border/70 hover:border-primary/40"}`}
                                       >
@@ -1059,7 +1165,7 @@ export default function StudentPortal() {
                                   </div>
                                   {quizSubmitted && (
                                     <div
-                                      className={`mt-3 rounded-xl p-3 text-sm leading-6 ${quizAnswers[index] === item.answer ? "bg-emerald-500/10 text-emerald-600" : "bg-amber-500/10 text-amber-700"}`}
+                                      className={`mt-3 rounded-xl p-3 text-sm leading-6 ${quizAnswers[index] === item.answer ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-amber-500/10 text-amber-700 dark:text-amber-300"}`}
                                     >
                                       {quizAnswers[index] === item.answer
                                         ? text.correct
@@ -1073,30 +1179,46 @@ export default function StudentPortal() {
                             <div className="mt-5 flex flex-wrap gap-2">
                               <Button
                                 type="button"
-                                onClick={() => {
+                                disabled={submitQuizMutation.isPending}
+                                onClick={async () => {
                                   const total = selectedLesson.quiz.length;
-                                  const perfect =
-                                    total > 0 && quizScore === total;
-                                  const solved = quizScore > 0;
-                                  setQuizSubmitted(true);
-                                  if (
-                                    solved &&
-                                    !completedLessons.includes(
-                                      selectedLesson.id
-                                    )
-                                  ) {
-                                    setCompletedLessons(current => [
-                                      ...current,
-                                      selectedLesson.id,
-                                    ]);
-                                    toast.success(
-                                      perfect
-                                        ? `Perfect ${total}/${total}! Session completed â€” progress up!`
-                                        : `Nice work ${quizScore}/${total}! Session completed â€” progress up!`
-                                    );
-                                  } else {
-                                    toast.success(
-                                      `Your score: ${quizScore}/${total}`
+                                  const answers = selectedLesson.quiz.map(
+                                    (_, index) => quizAnswers[index] ?? -1
+                                  );
+                                  try {
+                                    // The server recalculates this from its own
+                                    // answer key; the client never sends a score.
+                                    const result = await submitQuizMutation.mutateAsync({
+                                      course: courseName as "Scratch" | "Web" | "Python",
+                                      lessonId: selectedLesson.id,
+                                      answers,
+                                    });
+                                    setQuizResult({
+                                      lessonId: selectedLesson.id,
+                                      score: result.score,
+                                      total: result.total,
+                                    });
+                                    setQuizSubmitted(true);
+                                    if (result.completed) {
+                                      setCompletedLessons(current =>
+                                        current.includes(selectedLesson.id)
+                                          ? current
+                                          : [...current, selectedLesson.id]
+                                      );
+                                      toast.success(
+                                        result.score === result.total
+                                          ? `Perfect ${result.score}/${result.total}! Session completed`
+                                          : `Nice work ${result.score}/${result.total}! Session completed`
+                                      );
+                                    } else {
+                                      toast.success(`Your score: ${result.score}/${result.total}`);
+                                    }
+                                    void learning.refetch();
+                                  } catch (error) {
+                                    toast.error(
+                                      error instanceof Error
+                                        ? error.message
+                                        : "Your quiz result could not be saved"
                                     );
                                   }
                                 }}
@@ -1109,6 +1231,7 @@ export default function StudentPortal() {
                                 onClick={() => {
                                   setQuizAnswers({});
                                   setQuizSubmitted(false);
+                                  setQuizResult(null);
                                 }}
                               >
                                 <RotateCcw className="me-2 h-4 w-4" />
@@ -1125,6 +1248,7 @@ export default function StudentPortal() {
                                 : "default"
                             }
                             onClick={toggleComplete}
+                            disabled={completeLesson.isPending}
                           >
                             <CheckCircle2 className="me-2 h-5 w-5" />
                             {completedLessons.includes(selectedLesson.id)
@@ -1162,6 +1286,8 @@ export default function StudentPortal() {
                 accessCode={student?.accessCode}
               />
             </div>
+          )}
+            </>
           )}
         </main>
       )}

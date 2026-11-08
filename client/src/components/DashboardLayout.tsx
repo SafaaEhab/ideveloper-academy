@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/sidebar";
 import { startLogin } from "@/const";
 import { useIsMobile } from "@/hooks/useMobile";
-import { CalendarClock, CalendarDays, LayoutDashboard, LogOut, Megaphone, PanelLeft, ShieldCheck, Trophy, Users } from "lucide-react";
+import { BarChart3, CalendarClock, ClipboardList, DatabaseBackup, GraduationCap, LayoutDashboard, LogOut, Megaphone, PanelLeft, ShieldCheck, Trophy, Users } from "lucide-react";
 import { CSSProperties, useEffect, useRef, useState } from "react";
 import { useLocation, useSearchParams } from "wouter";
 import { DashboardLayoutSkeleton } from './DashboardLayoutSkeleton';
@@ -31,11 +31,14 @@ import { Button } from "./ui/button";
 // sidebar can deep-link and a refresh keeps the admin where they were.
 const menuItems = [
   { icon: LayoutDashboard, label: "Workspace", tab: "overview" },
+  { icon: BarChart3, label: "Performance", tab: "analytics" },
   { icon: Users, label: "Students", tab: "students" },
-  { icon: CalendarDays, label: "Groups", tab: "groups" },
+  { icon: ClipboardList, label: "العملاء المحتملون", tab: "leads" },
   { icon: CalendarClock, label: "Schedule calendar", tab: "schedule" },
+  { icon: GraduationCap, label: "Instructors", tab: "instructors" },
   { icon: Trophy, label: "Achievements", tab: "achievements" },
   { icon: Megaphone, label: "Announcement", tab: "announcements" },
+  { icon: DatabaseBackup, label: "Data backup", tab: "backup" },
   // `ownerOnly` keeps this entry out of the sidebar for invited admins.
   { icon: ShieldCheck, label: "Admins", tab: "admins", ownerOnly: true },
 ];

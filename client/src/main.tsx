@@ -79,3 +79,38 @@ createRoot(document.getElementById("root")!).render(
     </QueryClientProvider>
   </trpc.Provider>
 );
+
+// Keep the static first-paint shell until both React and the full app CSS are
+// ready. The shell is fixed positioned, so fading it cannot shift layout; the
+// 8s fallback in index.html covers a failed bundle or stylesheet.
+const boot = document.getElementById("boot");
+if (boot) {
+  const reveal = () => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const root = document.getElementById("root");
+        if (root) root.style.visibility = "visible";
+        boot.style.opacity = "0";
+        // Keep the fixed node mounted but invisible. Removing it is one less
+        // DOM mutation during the layout-sensitive first seconds.
+        window.setTimeout(() => {
+          boot.style.visibility = "hidden";
+        }, 220);
+      });
+    });
+  };
+
+  const waitForAssets = () => {
+    const cssReady =
+      (window as unknown as { __appCssReady?: boolean }).__appCssReady === true;
+    if (!cssReady) {
+      window.setTimeout(waitForAssets, 60);
+      return;
+    }
+    const fonts = document.fonts?.ready ?? Promise.resolve();
+    const timeout = new Promise<void>(resolve => window.setTimeout(resolve, 900));
+    Promise.race([fonts, timeout]).then(reveal);
+  };
+
+  waitForAssets();
+}

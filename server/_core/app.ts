@@ -7,6 +7,12 @@ import { registerDevAuthRoutes } from "./devAuth";
 import { registerEmailAuthRoutes } from "./emailAuth";
 import { registerOAuthRoutes } from "./oauth";
 import { registerStorageProxy } from "./storageProxy";
+import { registerAssignmentFileRoutes } from "./assignmentFiles";
+import { registerDiscoveryRoutes } from "./discovery";
+import { registerBackupRoutes } from "./backupRoutes";
+import { registerExcelBackupTriggers } from "./excelBackup";
+import { registerAgentMcpRoute } from "./agentMcp";
+import { registerUploadRoutes } from "./uploadRoutes";
 
 /**
  * Builds the Express app shared by every deployment target:
@@ -19,6 +25,7 @@ import { registerStorageProxy } from "./storageProxy";
  */
 export function createApp(): Express {
   const app = express();
+  app.disable("x-powered-by");
 
   // Split deployment (static frontend on Vercel + API here):
   // allow the configured frontend origins to call /api/* cross-origin.
@@ -47,9 +54,21 @@ export function createApp(): Express {
   app.use(express.urlencoded({ limit: "1mb", extended: true }));
 
   registerStorageProxy(app);
+  registerAssignmentFileRoutes(app);
+  registerDiscoveryRoutes(app);
   registerOAuthRoutes(app);
   registerEmailAuthRoutes(app);
   registerDevAuthRoutes(app);
+  registerBackupRoutes(app);
+  registerUploadRoutes(app);
+  registerAgentMcpRoute(app);
+
+  // Every successful write to /api/* schedules a debounced Excel snapshot.
+  // This must be registered before the tRPC router so its `finish` listener is
+  // attached to the response that the router eventually ends.
+  if (process.env.EXCEL_BACKUP_ENABLED !== "false") {
+    registerExcelBackupTriggers(app);
+  }
 
   // tRPC API
   app.use(

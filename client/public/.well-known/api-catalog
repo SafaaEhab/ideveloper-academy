@@ -1,0 +1,25 @@
+{
+  "linkset": [
+    {
+      "anchor": "https://ideveloper-academy.runasp.net/api/trpc",
+      "service-doc": [
+        {
+          "href": "https://ideveloper-academy.vercel.app/api.md",
+          "type": "text/markdown"
+        }
+      ],
+      "status": [
+        {
+          "href": "https://ideveloper-academy.runasp.net/api/health",
+          "type": "application/json"
+        }
+      ],
+      "describedby": [
+        {
+          "href": "https://ideveloper-academy.vercel.app/.well-known/ai-catalog.json",
+          "type": "application/json"
+        }
+      ]
+    }
+  ]
+}

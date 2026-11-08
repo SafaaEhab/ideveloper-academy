@@ -40,6 +40,56 @@ export function buildCourseEnquiryLink(courseTitle: string) {
   return `https://wa.me/${COMPANY_WHATSAPP_NUMBER}?text=${encodeURIComponent(body)}`;
 }
 
+export type RegistrationValues = {
+  fullName: string;
+  phone: string;
+  age: string;
+  address: string;
+  school: string;
+  parentEmail: string;
+  parentPhone: string;
+  course: string;
+  gender: string;
+  siblingRegistered: string;
+  siblingName?: string;
+  siblingPhone?: string;
+  notes?: string;
+};
+
+/**
+ * Turns the registration form into one prefilled WhatsApp message that carries
+ * every field the academy's form asks for, so the team can confirm the seat
+ * without asking the parent to retype anything.
+ */
+export function buildRegistrationWhatsAppLink(values: RegistrationValues) {
+  const gender = values.gender === "male" ? "ذكر" : values.gender === "female" ? "أنثى" : "";
+  const lines = [
+    "طلب تسجيل جديد — iDeveloper Academy",
+    "",
+    `الاسم الكامل: ${values.fullName}`,
+    `رقم الهاتف: ${values.phone}`,
+    `العمر: ${values.age}`,
+    `العنوان: ${values.address}`,
+    `المدرسة: ${values.school}`,
+    `البريد الإلكتروني لولي الأمر: ${values.parentEmail}`,
+    `رقم ولي الأمر: ${values.parentPhone}`,
+    `الدورة: ${values.course}`,
+    `الجنس: ${gender}`,
+    `هل سبق تسجيل أخ أو أخت في نفس الكورس؟ ${values.siblingRegistered === "yes" ? "نعم" : "لا"}`,
+  ];
+
+  if (values.siblingRegistered === "yes") {
+    lines.push(`اسم الأخ / الأخت: ${values.siblingName ?? ""}`);
+    lines.push(`رقم هاتف الأخ / الأخت: ${values.siblingPhone ?? ""}`);
+  }
+
+  if (values.notes?.trim()) {
+    lines.push(`ملاحظات إضافية: ${values.notes.trim()}`);
+  }
+
+  return `https://wa.me/${COMPANY_WHATSAPP_NUMBER}?text=${encodeURIComponent(lines.join("\n"))}`;
+}
+
 /** The social rail shown on the home page. Each link opens in a new tab. */
 export const SOCIAL_LINKS = {
   whatsapp: buildWhatsAppLink({ name: "", phone: "", message: "Hi iDeveloper, I have a question." }),

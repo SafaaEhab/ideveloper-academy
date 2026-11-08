@@ -18,11 +18,14 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
+  CheckCircle2,
+  Link2,
   Plus,
   Repeat,
   Trash2,
   TriangleAlert,
   Wand2,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -48,6 +51,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
+import { normalizeWhatsAppGroupUrl } from "@shared/whatsapp";
 import { trpc, LIVE_REFETCH_INTERVAL } from "@/lib/trpc";
 import {
   DAY_LABELS,
@@ -92,12 +96,16 @@ type MoveTarget = {
 };
 
 type EditorForm = {
-  groupId: string;
+  groupName: string;
+  /** Selected instructor as a string (Select values); "" means unassigned. */
+  instructorId: string;
   dayOfWeek: number;
   startTime: string;
   endTime: string;
   location: string;
   notes: string;
+  /** Metadata that lives on the group row, not the session slot. */
+  whatsappUrl: string;
 };
 
 type EditorState = {
@@ -109,12 +117,29 @@ type EditorState = {
 };
 
 const emptyForm: EditorForm = {
-  groupId: "",
+  groupName: "",
+  instructorId: "",
   dayOfWeek: 6,
   startTime: "17:00",
   endTime: "18:30",
   location: "",
   notes: "",
+  whatsappUrl: "",
+};
+
+export type InstructorOption = {
+  id: number;
+  name: string;
+  active: boolean;
+};
+
+type GroupRow = {
+  id: number;
+  name: string;
+  level: string | null;
+  scheduleDays: string | null;
+  scheduleTime: string | null;
+  whatsappUrl: string | null;
 };
 
 export default function ScheduleCalendar() {
@@ -127,9 +152,23 @@ export default function ScheduleCalendar() {
   const [pendingMove, setPendingMove] = useState<MoveTarget | null>(null);
   const [drag, setDrag] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [groupToDelete, setGroupToDelete] = useState<{ id: number; name: string } | null>(null);
 
   const sessions = trpc.admin.groupSessions.useQuery(undefined, { retry: false, refetchInterval: LIVE_REFETCH_INTERVAL });
   const groups = trpc.admin.groups.useQuery(undefined, { retry: false, refetchInterval: LIVE_REFETCH_INTERVAL });
+  const instructorsQuery = trpc.admin.instructors.useQuery(undefined, { retry: false, refetchInterval: LIVE_REFETCH_INTERVAL });
+  // The editor dialog lists inactive instructors too (greyed), so an old
+  // assignment stays visible and nameable instead of breaking the select.
+  const instructorOptions: InstructorOption[] = useMemo(
+    () =>
+      (instructorsQuery.data ?? []).map(instructor => ({
+        id: instructor.id,
+        name: instructor.name,
+        active: instructor.active,
+      })),
+    [instructorsQuery.data],
+  );
 
   const sessionRows = sessions.data ?? [];
   const groupRows = groups.data ?? [];
@@ -181,6 +220,43 @@ export default function ScheduleCalendar() {
     utils.admin.groupSessions.invalidate();
     utils.admin.sessionExceptions.invalidate();
   };
+
+  const ensureGroup = trpc.admin.ensureGroup.useMutation({
+    onSuccess: result => {
+      if (result.created) {
+        utils.admin.groups.invalidate();
+        utils.admin.stats.invalidate();
+      }
+    },
+    onError: error => toast.error(error.message),
+  });
+
+  const updateGroup = trpc.admin.updateGroup.useMutation({
+    onSuccess: () => {
+      utils.admin.groups.invalidate();
+      utils.admin.stats.invalidate();
+    },
+    onError: error => toast.error(error.message),
+  });
+
+  const deleteGroup = trpc.admin.deleteGroup.useMutation({
+    onSuccess: (_result, variables) => {
+      toast.success("Group deleted");
+      setGroupToDelete(null);
+      utils.admin.groups.setData(undefined, rows =>
+        rows?.filter(group => group.id !== variables.id),
+      );
+      utils.admin.groupSessions.setData(undefined, rows =>
+        rows?.filter(session => session.groupId !== variables.id),
+      );
+      utils.admin.groups.invalidate();
+      utils.admin.groupSessions.invalidate();
+      utils.admin.sessionExceptions.invalidate();
+      utils.admin.students.invalidate();
+      utils.admin.stats.invalidate();
+    },
+    onError: error => toast.error(error.message),
+  });
 
   const createSession = trpc.admin.createGroupSession.useMutation({
     onSuccess: () => {
@@ -262,7 +338,6 @@ export default function ScheduleCalendar() {
       occurrence: null,
       form: {
         ...emptyForm,
-        groupId: groupRows[0] ? String(groupRows[0].id) : "",
         dayOfWeek: date.getDay(),
         startTime,
         endTime,
@@ -273,11 +348,13 @@ export default function ScheduleCalendar() {
 
   function openEdit(occurrence: Occurrence) {
     const series = sessionRows.find(item => item.id === occurrence.sessionId);
+    const matchingGroup = groupRows.find(g => g.id === occurrence.groupId);
     setEditor({
       sessionId: occurrence.sessionId,
       occurrence,
       form: {
-        groupId: String(occurrence.groupId),
+        groupName: occurrence.groupName,
+        instructorId: series?.instructorId ? String(series.instructorId) : "",
         // A recurring slot carries its own weekday; a moved week shows where it
         // actually sits.
         dayOfWeek: series ? series.dayOfWeek : occurrence.dayOfWeek,
@@ -285,21 +362,24 @@ export default function ScheduleCalendar() {
         endTime: occurrence.endTime,
         location: series?.location ?? "",
         notes: series?.notes ?? "",
+        whatsappUrl: matchingGroup?.whatsappUrl ?? "",
       },
       scope: "series",
     });
   }
 
   function editorPayload(form: EditorForm) {
-    const groupId = Number(form.groupId);
-    if (!groupId) return { error: "Pick the group this session belongs to" };
+    const groupName = form.groupName.trim();
+    if (!groupName) return { error: "Type or pick the group name" };
     const start = timeToMinutes(form.startTime);
     const end = timeToMinutes(form.endTime);
     if (start === null || end === null) return { error: "Enter the start and end time" };
     if (end <= start) return { error: "The session has to end after it starts" };
+    // An empty select String is "unassigned" — the slot waits for an instructor.
     return {
       values: {
-        groupId,
+        groupName,
+        instructorId: form.instructorId ? Number(form.instructorId) : null,
         dayOfWeek: form.dayOfWeek,
         startTime: form.startTime,
         endTime: form.endTime,
@@ -309,32 +389,71 @@ export default function ScheduleCalendar() {
     };
   }
 
-  function saveEditor() {
-    if (!editor) return;
-    const parsed = editorPayload(editor.form);
+  async function saveEditor() {
+    const current = editor;
+    if (!current || saving) return;
+    const parsed = editorPayload(current.form);
     if ("error" in parsed) {
       toast.error(parsed.error);
       return;
     }
-    const values = parsed.values;
+    const { groupName, instructorId, ...values } = parsed.values;
 
-    // Editing one week writes an exception and leaves the series alone.
-    if (editor.sessionId && editor.scope === "week" && editor.occurrence) {
-      const originalDay = fromDateKey(editor.occurrence.dateKey).getDay();
-      const sameDay = editor.form.dayOfWeek === originalDay;
+    if (instructorId !== null && !instructorOptions.some(item => item.id === instructorId)) {
+      toast.error("Pick an instructor from the list");
+      return;
+    }
+
+    // Validate and normalize the WhatsApp link before persisting it.
+    const linkResult = normalizeWhatsAppGroupUrl(current.form.whatsappUrl.trim() || undefined);
+    if (linkResult.error) {
+      toast.error(linkResult.error);
+      return;
+    }
+
+    // Editing one week writes an exception and leaves the series alone — the
+    // instructor on the series itself stays untouched by a one-off move.
+    if (current.sessionId && current.scope === "week" && current.occurrence) {
+      const originalDay = fromDateKey(current.occurrence.dateKey).getDay();
+      const sameDay = current.form.dayOfWeek === originalDay;
       saveException.mutate({
-        sessionId: editor.sessionId,
-        dateKey: editor.occurrence.dateKey,
+        sessionId: current.sessionId,
+        dateKey: current.occurrence.dateKey,
         kind: "moved",
-        moveToDate: sameDay ? "" : shiftWeek(editor.occurrence.dateKey, originalDay, editor.form.dayOfWeek),
+        moveToDate: sameDay ? "" : shiftWeek(current.occurrence.dateKey, originalDay, current.form.dayOfWeek),
         startTime: values.startTime,
         endTime: values.endTime,
       });
       return;
     }
 
-    if (editor.sessionId) updateSession.mutate({ id: editor.sessionId, ...values });
-    else createSession.mutate(values);
+    setSaving(true);
+    try {
+      // The admin types the group name here; reuse it when it already exists.
+      const group = await ensureGroup.mutateAsync({ name: groupName });
+      const payload = { ...values, groupId: group.id, instructorId };
+      if (current.sessionId) updateSession.mutate({ id: current.sessionId, ...payload });
+      else createSession.mutate(payload);
+
+      // Persist the WhatsApp link whenever it changed — even if the session
+      // itself was not touched.
+      const matched = groupRows.find(g => g.id === group.id);
+      const needsGroupUpdate =
+        (matched?.whatsappUrl ?? "") !== (linkResult.url ?? "");
+      if (needsGroupUpdate) {
+        updateGroup.mutate({
+          id: group.id,
+          name: groupName,
+          scheduleDays: matched?.scheduleDays ?? "",
+          scheduleTime: matched?.scheduleTime ?? "",
+          whatsappUrl: linkResult.url ?? "",
+        });
+      }
+    } catch {
+      // ensureGroup already showed the failure reason.
+    } finally {
+      setSaving(false);
+    }
   }
 
   /** Skips one dated occurrence without touching the series. */
@@ -376,6 +495,8 @@ export default function ScheduleCalendar() {
     updateSession.mutate({
       id: target.occurrence.sessionId,
       groupId: target.occurrence.groupId,
+      // The drag only cares about when; whoever teaches it stays on the slot.
+      instructorId: target.occurrence.instructorId ?? null,
       dayOfWeek: fromDateKey(target.dateKey).getDay(),
       startTime: target.startTime,
       endTime: target.endTime,
@@ -591,10 +712,14 @@ export default function ScheduleCalendar() {
       {groupRows.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-border p-12 text-center">
           <CalendarClock className="mx-auto h-8 w-8 text-muted-foreground" />
-          <p className="mt-4 font-semibold">No groups yet</p>
+          <p className="mt-4 font-semibold">No sessions yet</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Create a group first, then come back to lay out its weekly sessions.
+            Create a session and type the group name; the group will be added with it.
           </p>
+          <Button className="mt-4" onClick={() => openCreate(weekDays(anchor, weekStartsOn)[0])}>
+            <Plus className="me-2 h-4 w-4" />
+            New session
+          </Button>
         </div>
       ) : (
         <>
@@ -603,11 +728,20 @@ export default function ScheduleCalendar() {
               {sessionRows.length} weekly session{sessionRows.length === 1 ? "" : "s"}
             </span>
             {groupRows.map(group => (
-              <span key={group.id} className="flex items-center gap-2 text-sm">
+              <span key={group.id} className="flex items-center gap-1.5 text-sm">
                 <span
                   className={`h-2.5 w-2.5 rounded-full ${colorFor(group.id, colors).dot}`}
                 />
                 {group.name}
+                <button
+                  type="button"
+                  onClick={() => setGroupToDelete({ id: group.id, name: group.name })}
+                  className="rounded-full p-1 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                  aria-label={`Delete ${group.name}`}
+                  title={`Delete ${group.name}`}
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
               </span>
             ))}
             {clashCount > 0 && (
@@ -686,6 +820,7 @@ export default function ScheduleCalendar() {
                           day: "numeric",
                         })}
                         {` · ${formatTimeRange(occurrence.startTime, occurrence.endTime)}`}
+                        {occurrence.instructorName ? ` · ${occurrence.instructorName}` : ""}
                       </span>
                     </span>
                   </button>
@@ -702,7 +837,11 @@ export default function ScheduleCalendar() {
           id: group.id,
           name: group.name,
         }))}
+        fullGroups={groupRows as GroupRow[]}
+        instructors={instructorOptions}
         busy={
+          saving ||
+          ensureGroup.isPending ||
           createSession.isPending ||
           updateSession.isPending ||
           saveException.isPending
@@ -728,6 +867,36 @@ export default function ScheduleCalendar() {
         onClose={() => setPendingMove(null)}
         onApply={applyMove}
       />
+
+      <Dialog
+        open={groupToDelete !== null}
+        onOpenChange={open => !open && setGroupToDelete(null)}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Delete group?</DialogTitle>
+            <DialogDescription>
+              {groupToDelete
+                ? `"${groupToDelete.name}" and all of its sessions will be removed. Students in this group will become unassigned.`
+                : ""}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setGroupToDelete(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={deleteGroup.isPending}
+              onClick={() =>
+                groupToDelete && deleteGroup.mutate({ id: groupToDelete.id })
+              }
+            >
+              {deleteGroup.isPending ? "Deleting..." : "Delete group"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -961,7 +1130,12 @@ function SessionBlock({
           {formatTimeRange(occurrence.startTime, occurrence.endTime)}
         </span>
       )}
-      {height > 56 && occurrence.location && (
+      {height > 48 && occurrence.instructorName && (
+        <span className="block truncate px-1.5 text-[11px] leading-tight opacity-90">
+          {occurrence.instructorName}
+        </span>
+      )}
+      {height > 62 && occurrence.location && (
         <span className="block truncate px-1.5 text-[11px] leading-tight opacity-90">
           {occurrence.location}
         </span>
@@ -1102,6 +1276,9 @@ function MonthGrid({
 type SessionDialogProps = {
   state: EditorState | null;
   groups: { id: number; name: string }[];
+  /** Full group rows so the dialog can show / prefill the stored link and level. */
+  fullGroups: GroupRow[];
+  instructors: InstructorOption[];
   busy: boolean;
   onChange: (patch: Partial<EditorState>) => void;
   onClose: () => void;
@@ -1113,6 +1290,8 @@ type SessionDialogProps = {
 function SessionDialog({
   state,
   groups,
+  fullGroups,
+  instructors,
   busy,
   onChange,
   onClose,
@@ -1153,21 +1332,74 @@ function SessionDialog({
             <Label className="mb-2 block text-sm" htmlFor="session-group">
               Group
             </Label>
+            <Input
+              id="session-group"
+              list="session-group-names"
+              autoComplete="off"
+              autoFocus
+              maxLength={120}
+              value={form.groupName}
+              onChange={event => setForm({ groupName: event.target.value })}
+              placeholder="Type a group name"
+            />
+            <datalist id="session-group-names">
+              {groups.map(group => (
+                <option key={group.id} value={group.name} />
+              ))}
+            </datalist>
+            {groups.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {groups.map(group => (
+                  <button
+                    key={group.id}
+                    type="button"
+                    onClick={() => setForm({ groupName: group.name })}
+                    className={`rounded-full border px-2.5 py-1 text-xs transition-colors ${
+                      form.groupName === group.name
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    {group.name}
+                  </button>
+                ))}
+              </div>
+            )}
+            <p className="mt-1.5 text-xs text-muted-foreground">
+              Type a new name to create a group, or pick an existing one.
+            </p>
+          </div>
+
+          <div>
+            <Label className="mb-2 block text-sm" htmlFor="session-instructor">
+              Instructor
+            </Label>
             <Select
-              value={form.groupId || undefined}
-              onValueChange={value => setForm({ groupId: value })}
+              value={form.instructorId || "none"}
+              onValueChange={value => setForm({ instructorId: value === "none" ? "" : value })}
             >
-              <SelectTrigger id="session-group">
-                <SelectValue placeholder="Choose a group" />
+              <SelectTrigger id="session-instructor">
+                <SelectValue placeholder="Choose a instructor" />
               </SelectTrigger>
               <SelectContent>
-                {groups.map(group => (
-                  <SelectItem key={group.id} value={String(group.id)}>
-                    {group.name}
+                <SelectItem value="none">Unassigned — no instructor yet</SelectItem>
+                {instructors.map(instructor => (
+                  <SelectItem
+                    key={instructor.id}
+                    value={String(instructor.id)}
+                    disabled={!instructor.active && String(instructor.id) !== form.instructorId}
+                  >
+                    {instructor.name}
+                    {instructor.active ? "" : " (inactive)"}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
+            <p className="mt-1.5 text-xs text-muted-foreground">
+              {instructors.length === 0
+                ? "Add instructors from the Instructors tab — they choose from the existing list."
+                : "The chosen instructor sees this group on their dashboard automatically."}
+            </p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
@@ -1282,6 +1514,60 @@ function SessionDialog({
               onChange={event => setForm({ notes: event.target.value })}
               placeholder="Bring the robots kit"
             />
+          </div>
+
+          {/* Group-level metadata — not stored on the session slot itself, but
+              persisted on the group row so the instructor's report dialog can
+              open the WhatsApp link directly. */}
+          <Separator />
+          <div className="space-y-3 rounded-2xl border border-border bg-muted/20 p-4">
+            <h3 className="text-sm font-semibold">Group details</h3>
+            <div>
+              <Label className="mb-1.5 block text-xs text-muted-foreground" htmlFor="group-whatsapp">
+                WhatsApp group link
+              </Label>
+              <div className="relative">
+                <Link2 className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  id="group-whatsapp"
+                  type="url"
+                  dir="ltr"
+                  value={form.whatsappUrl}
+                  maxLength={500}
+                  onChange={event => setForm({ whatsappUrl: event.target.value })}
+                  placeholder="https://chat.whatsapp.com/..."
+                  className="ps-10 text-left font-mono text-xs"
+                />
+              </div>
+              {(() => {
+                const existing = fullGroups.find(g => g.name === form.groupName.trim());
+                if (existing?.whatsappUrl && !form.whatsappUrl) {
+                  return (
+                    <p className="mt-1 text-[11px] text-emerald-700 dark:text-emerald-300">
+                      Currently linked: {existing.whatsappUrl}
+                    </p>
+                  );
+                }
+                if (!form.whatsappUrl.trim()) {
+                  return (
+                    <p className="mt-1 text-[11px] text-muted-foreground">
+                      Instructors will use this link when sharing the evaluation
+                      report. Leave empty to remove it.
+                    </p>
+                  );
+                }
+                const state = normalizeWhatsAppGroupUrl(form.whatsappUrl.trim());
+                if (state.error) {
+                  return <p className="mt-1 text-[11px] text-destructive">{state.error}</p>;
+                }
+                return (
+                  <p className="mt-1 flex items-center gap-1 text-[11px] text-emerald-700 dark:text-emerald-300">
+                    <CheckCircle2 className="h-3 w-3 shrink-0" />
+                    Valid group invite link
+                  </p>
+                );
+              })()}
+            </div>
           </div>
 
           {state.sessionId && state.occurrence && (

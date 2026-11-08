@@ -26,6 +26,9 @@ export type ScheduleSession = {
   notes: string | null;
   groupName: string;
   groupLevel: string | null;
+  /** Who teaches the slot — assigned by the admin in the timetable editor. */
+  instructorId?: number | null;
+  instructorName?: string | null;
 };
 
 /** A one-off change for a single date, as returned by `admin.sessionExceptions`. */
@@ -58,6 +61,9 @@ export type Occurrence = {
   notes: string | null;
   /** True when a "moved" exception shifted this occurrence. */
   moved: boolean;
+  /** Copied from the series so blocks and dialogs can show the instructor. */
+  instructorId?: number | null;
+  instructorName?: string | null;
 };
 
 // ── Time strings ───────────────────────────────────────────────────────────
@@ -261,6 +267,8 @@ export function buildOccurrences(
       location: session.location,
       notes: session.notes,
       moved: exception?.kind === "moved",
+      instructorId: session.instructorId ?? null,
+      instructorName: session.instructorName ?? null,
     });
   };
 

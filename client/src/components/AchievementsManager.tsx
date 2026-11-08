@@ -16,6 +16,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { trpc, LIVE_REFETCH_INTERVAL } from "@/lib/trpc";
 import { checkImageFile, prepareImageForUpload } from "@/lib/imageUpload";
+import SafeImage from "@/components/SafeImage";
+import { IMAGE_VALIDATION_MESSAGE, validateImageSource } from "@shared/validation";
 
 const emptyForm = { title: "", description: "", achievedOn: "", imageUrl: "", tag: "", sortOrder: 0 };
 
@@ -27,7 +29,6 @@ export default function AchievementsManager() {
 
   const list = trpc.admin.achievements.useQuery(undefined, { retry: false, refetchInterval: LIVE_REFETCH_INTERVAL });
   const uploadReady = trpc.admin.uploadConfigured.useQuery(undefined, { retry: false });
-  const canUpload = uploadReady.data?.upload ?? false;
 
   // Both the admin list and the public home page feed off the same rows.
   const refresh = () => { utils.admin.achievements.invalidate(); utils.site.achievements.invalidate(); };
@@ -48,8 +49,12 @@ export default function AchievementsManager() {
   });
 
   const rows = list.data ?? [];
-  const canSave = form.description.trim().length > 0;
+  const imageValidation = validateImageSource(form.imageUrl);
+  const canSave =
+    form.description.trim().length > 0 && imageValidation.ok;
   const saving = create.isPending || update.isPending;
+  const missingKeys = uploadReady.data?.missing ?? [];
+  const canUpload = uploadReady.data?.upload ?? false;
 
   async function pickImage(file: File | undefined) {
     if (!file) return;
@@ -79,7 +84,12 @@ export default function AchievementsManager() {
   }
 
   const save = () => {
-    const payload = { ...form, sortOrder: Number(form.sortOrder) || 0 };
+    const validation = validateImageSource(form.imageUrl);
+    if (!validation.ok) {
+      toast.error(IMAGE_VALIDATION_MESSAGE);
+      return;
+    }
+    const payload = { ...form, imageUrl: validation.value ?? "", sortOrder: Number(form.sortOrder) || 0 };
     if (editingId) update.mutate({ id: editingId, ...payload });
     else create.mutate(payload);
   };
@@ -96,7 +106,7 @@ export default function AchievementsManager() {
               <Label>Photo</Label>
               <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-dashed border-border bg-muted/40">
                 {form.imageUrl ? (
-                  <img src={form.imageUrl} alt="Preview" className="h-full w-full object-cover" />
+                  <SafeImage src={form.imageUrl} alt="Preview" className="h-full w-full object-cover" />
                 ) : (
                   <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-xs text-muted-foreground">
                     <ImageOff className="h-6 w-6 opacity-40" />
@@ -116,7 +126,7 @@ export default function AchievementsManager() {
                   type="button"
                   variant="outline"
                   className="h-10 flex-1 rounded-xl"
-                  disabled={uploadImage.isPending}
+                  disabled={uploadImage.isPending || uploadReady.isLoading || !canUpload}
                   onClick={() => fileRef.current?.click()}
                 >
                   <Upload className="me-2 h-4 w-4" />
@@ -130,17 +140,25 @@ export default function AchievementsManager() {
               </div>
               {!canUpload && (
                 <p className="rounded-xl bg-muted/60 px-3 py-2 text-xs leading-5 text-muted-foreground">
-                  Uploading is off because <b>CLOUDINARY_API_KEY</b> is missing from the server env. You can still paste a
+                  Uploading is off until the server environment has{" "}
+                  <b>{missingKeys.length > 0 ? missingKeys.join(", ") : "the Cloudinary keys"}</b>. You can still paste a
                   link to an image below.
                 </p>
               )}
               <Input
                 value={form.imageUrl}
                 onChange={event => setForm({ ...form, imageUrl: event.target.value })}
-                placeholder="…or paste an image URL"
+                placeholder="https://… or /images/…"
                 dir="ltr"
+                aria-invalid={!imageValidation.ok}
+                aria-describedby="achievement-image-error"
                 className="h-10 rounded-xl text-xs"
               />
+              {!imageValidation.ok && (
+                <p id="achievement-image-error" className="text-xs text-destructive">
+                  {IMAGE_VALIDATION_MESSAGE}
+                </p>
+              )}
             </div>
 
             <div>
@@ -220,7 +238,7 @@ export default function AchievementsManager() {
                 <div key={item.id} className="flex items-center gap-4 rounded-2xl border border-border/70 p-4">
                   <div className="flex h-16 w-20 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-muted">
                     {item.imageUrl
-                      ? <img src={item.imageUrl} alt="" className="h-full w-full object-cover" />
+                      ? <SafeImage src={item.imageUrl} alt="" className="h-full w-full object-cover" />
                       : <Trophy className="h-5 w-5 text-muted-foreground opacity-40" />}
                   </div>
                   <div className="min-w-0 flex-1">

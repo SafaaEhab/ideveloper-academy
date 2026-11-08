@@ -72,17 +72,23 @@ export default function PythonRunner({ code, exampleLabel, runLabel, copyLabel }
     }
   };
 
+  const editorHeight = Math.min(320, Math.max(140, value.split("\n").length * 28 + 44));
+
   return <div className="mt-5 overflow-hidden rounded-2xl bg-slate-950 text-slate-100 shadow-xl">
     <div className="flex items-center justify-between border-b border-white/10 px-4 py-3">
       <div className="flex items-center gap-2 text-sm font-semibold"><span className="font-mono text-cyan-300">&gt;_</span>{exampleLabel}</div>
       <Button type="button" variant="ghost" size="icon" onClick={copy} className="text-slate-400 hover:bg-white/10 hover:text-white" aria-label={copyLabel}><Copy className="h-4 w-4" /></Button>
     </div>
-    <textarea value={value} onChange={(event) => setValue(event.target.value)} spellCheck={false} aria-label={exampleLabel} className="h-64 w-full resize-none overflow-y-auto border-0 bg-slate-950 p-5 font-mono text-sm leading-7 text-emerald-200 outline-none focus:ring-2 focus:ring-cyan-400" />
+    <textarea value={value} onChange={(event) => setValue(event.target.value)} spellCheck={false} aria-label={exampleLabel} style={{ height: editorHeight }} className="w-full resize-none overflow-y-auto border-0 bg-slate-950 p-5 font-mono text-sm leading-7 text-emerald-200 outline-none focus:ring-2 focus:ring-cyan-400" />
     <div className="flex flex-wrap items-center gap-2 border-t border-white/10 p-4">
       <Button type="button" size="sm" variant="secondary" onClick={run} disabled={running}><Play className="me-2 h-4 w-4" />{running ? "Loading..." : runLabel}</Button>
       <Button type="button" size="sm" variant="ghost" onClick={copy} className="text-slate-300 hover:bg-white/10 hover:text-white"><Copy className="me-2 h-4 w-4" />{copyLabel}</Button>
       {running && <Loader2 className="h-4 w-4 animate-spin text-cyan-300" />}
     </div>
-    <pre aria-live="polite" className="h-64 overflow-auto border-t border-white/10 bg-slate-900 px-5 py-4 text-sm leading-7 whitespace-pre-wrap text-cyan-100">{output}</pre>
+    <div aria-live="polite">
+      {output && (
+        <pre className="max-h-64 overflow-auto border-t border-white/10 bg-slate-900 px-5 py-4 text-sm leading-7 whitespace-pre-wrap text-cyan-100">{output}</pre>
+      )}
+    </div>
   </div>;
 }

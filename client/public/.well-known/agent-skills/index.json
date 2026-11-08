@@ -1,0 +1,19 @@
+{
+  "$schema": "https://schemas.agentskills.io/discovery/0.2.0/schema.json",
+  "skills": [
+    {
+      "name": "ideveloper-course-discovery",
+      "type": "skill-md",
+      "description": "Discover iDeveloper Academy courses, current availability, and the correct public booking or waiting-list action.",
+      "url": "https://ideveloper-academy.vercel.app/.well-known/agent-skills/course-discovery/SKILL.md",
+      "digest": "sha256:713cbfc782e7311365e90444a03648f6f7622ed77ac020be549f55c7ac115bc8"
+    },
+    {
+      "name": "ideveloper-public-site-guide",
+      "type": "skill-md",
+      "description": "Navigate the public iDeveloper Academy website, understand registration, and avoid private areas.",
+      "url": "https://ideveloper-academy.vercel.app/.well-known/agent-skills/public-site-guide/SKILL.md",
+      "digest": "sha256:3b1372dc96ea2b7a7b36b259bb80b99bbc19308a52a4eced7543d142caceccf9"
+    }
+  ]
+}

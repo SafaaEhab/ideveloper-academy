@@ -37,6 +37,8 @@ export type MailMessage = {
   to: string;
   subject: string;
   text: string;
+  /** Optional file attachments; used by the daily Excel database backup. */
+  attachments?: Array<{ filename: string; content: Buffer | string }>;
 };
 
 /** Returns false when mail is not configured or the send failed. */
@@ -55,6 +57,7 @@ export async function sendMail(message: MailMessage): Promise<boolean> {
       to: message.to,
       subject: message.subject,
       text: message.text,
+      ...(message.attachments?.length ? { attachments: message.attachments } : {}),
     });
     return true;
   } catch (error) {
@@ -86,5 +89,32 @@ export function notifyAdminAccessRequest(request: {
       subject: `Access request — ${request.email}`,
       text: lines.join("\n"),
     })),
+  );
+}
+
+/** Emails are optional; the dashboard alert exists even when SMTP is unset. */
+export function notifyAdminRegistrationRequest(request: {
+  fullName: string;
+  phone: string;
+  course: string;
+  parentEmail: string;
+}): Promise<boolean[]> {
+  const lines = [
+    `New registration request for ${request.course}.`,
+    "",
+    `Student: ${request.fullName}`,
+    `Phone: ${request.phone}`,
+    `Parent email: ${request.parentEmail}`,
+    "",
+    `Review it here: ${ENV.siteUrl}/admin?tab=leads`,
+  ];
+  return Promise.all(
+    notificationRecipients().map(to =>
+      sendMail({
+        to,
+        subject: `Registration request — ${request.fullName}`,
+        text: lines.join("\n"),
+      }),
+    ),
   );
 }

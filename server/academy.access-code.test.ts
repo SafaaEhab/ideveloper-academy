@@ -7,9 +7,8 @@ describe("academy access codes", () => {
     expect(code).toMatch(/^IDA-[A-Z2-9]{8}$/);
   });
 
-  it("opens only the matching course for each shared course code", async () => {
-    await expect(getStudentByCode("id-123456789")).resolves.toMatchObject({ courses: ["Python"] });
-    await expect(getStudentByCode("ID-987654321")).resolves.toMatchObject({ courses: ["Web"] });
-    await expect(getStudentByCode("id-147852369")).resolves.toMatchObject({ courses: ["Scratch"] });
+  it("does not ship with any working sample code", async () => {
+    await expect(getStudentByCode("IDA-XXXXXXXX")).resolves.toBeNull();
+    await expect(getStudentByCode("IDA-DEMO")).resolves.toBeNull();
   });
 });

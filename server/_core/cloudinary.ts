@@ -16,6 +16,11 @@
 import { createHash } from "node:crypto";
 import { customAlphabet } from "nanoid";
 import { ENV } from "./env";
+import {
+  deleteLocalImage,
+  localUploadFilenameFromUrl,
+  saveLocalImage,
+} from "./localUploads";
 
 /** Assets this module uploaded always start with this, so deletes stay safe. */
 const UPLOAD_PREFIX = "achievement-";
@@ -27,6 +32,28 @@ const ALLOWED_MIME = /^image\/(png|jpeg|jpg|webp|gif|avif)$/i;
 
 export function isCloudinaryConfigured(): boolean {
   return Boolean(ENV.cloudinaryCloudName && ENV.cloudinaryApiKey && ENV.cloudinaryApiSecret);
+}
+
+/**
+ * Which environment variable names are still empty. Returned to the admin UI
+ * only — values never leave the server.
+ */
+export function cloudinaryConfigurationStatus(): {
+  upload: boolean;
+  storage: "cloudinary" | "local";
+  missing: string[];
+} {
+  const missing: string[] = [];
+  if (!ENV.cloudinaryCloudName) missing.push("CLOUDINARY_CLOUD_NAME");
+  if (!ENV.cloudinaryApiKey) missing.push("CLOUDINARY_API_KEY");
+  if (!ENV.cloudinaryApiSecret) missing.push("CLOUDINARY_API_SECRET");
+  // Uploading stays available even without Cloudinary: the fallback writes the
+  // file to App_Data and serves it from the API. This is what fixes H-08.
+  return {
+    upload: true,
+    storage: missing.length === 0 ? "cloudinary" : "local",
+    missing,
+  };
 }
 
 /** SHA-1 signature over the sorted parameter string. */
@@ -64,7 +91,8 @@ export async function uploadImage(dataUrl: string): Promise<{ url: string; publi
   // reported as a bad file rather than as a missing-key problem.
   const { bytes, mime } = decodeDataUrl(dataUrl);
   if (!isCloudinaryConfigured()) {
-    throw new Error("Image upload is not configured on this server. Add the Cloudinary keys to .env, or paste an image URL instead.");
+    const saved = await saveLocalImage(bytes, mime);
+    return { url: saved.url, publicId: `local:${saved.filename}` };
   }
   const params = {
     public_id: `${UPLOAD_PREFIX}${randomSuffix()}`,
@@ -95,6 +123,8 @@ export async function uploadImage(dataUrl: string): Promise<{ url: string; publi
  * A URL pasted by hand — or pointing at another cloud — is never destroyed.
  */
 export function ownedPublicId(url: string | null | undefined): string | null {
+  const localFilename = localUploadFilenameFromUrl(url);
+  if (localFilename) return `local:${localFilename}`;
   if (!url || !ENV.cloudinaryCloudName) return null;
   const host = `https://res.cloudinary.com/${ENV.cloudinaryCloudName}/image/upload/`;
   if (!url.startsWith(host)) return null;
@@ -104,6 +134,10 @@ export function ownedPublicId(url: string | null | undefined): string | null {
 
 /** Removes a previously uploaded asset. Best-effort: a failure never blocks a delete. */
 export async function destroyImage(publicId: string): Promise<void> {
+  if (publicId.startsWith("local:")) {
+    await deleteLocalImage(publicId.slice("local:".length));
+    return;
+  }
   if (!isCloudinaryConfigured()) return;
   const params = {
     public_id: publicId,

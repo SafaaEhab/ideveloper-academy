@@ -22,6 +22,7 @@ import HomeworkBoard from "@/components/HomeworkBoard";
 import LessonArt, { MarkMini } from "@/components/LessonArt";
 import WebCodeRunner, { runsByItself } from "@/components/WebCodeRunner";
 import { useCourseCertificate } from "@/hooks/useCourseCertificate";
+import { trpc, LIVE_REFETCH_INTERVAL } from "@/lib/trpc";
 import { CERTIFICATE_COURSES } from "@/lib/certificateCourses";
 import {
   allWebLessons,
@@ -163,7 +164,7 @@ const PHASE_NAMES: Record<number, string> = Object.fromEntries(
 /** Renders a body or homework block, turning `-` / `•` / `1.` lines into rows. */
 function RichText({ value }: { value: string }) {
   return (
-    <div className="max-w-3xl space-y-2">
+    <div className="max-w-3xl space-y-2 break-words">
       {value.split("\n").map((line, index) => {
         const trimmed = line.trim();
         if (!trimmed) return null;
@@ -220,15 +221,23 @@ export default function WebCourse({ studentName, accessCode }: WebCourseProps) {
   } | null>(null);
   const [quizAnswers, setQuizAnswers] = useState<Record<number, number>>({});
   const [quizSubmitted, setQuizSubmitted] = useState(false);
+  const [quizResult, setQuizResult] = useState<{ lessonId: string; score: number; total: number } | null>(null);
   // One ref per section, so a quiz question can open the section that answers it
   // and put it in front of the student rather than leaving them to hunt.
   const sectionRefs = useRef<(HTMLDivElement | null)[]>([]);
   const progressLoadedFor = useRef<string | null>(null);
+  const learning = trpc.portal.learning.useQuery(undefined, {
+    enabled: Boolean(accessCode),
+    retry: false,
+    refetchInterval: LIVE_REFETCH_INTERVAL,
+  });
+  const completeLesson = trpc.portal.setLessonComplete.useMutation();
+  const submitQuizMutation = trpc.portal.submitQuiz.useMutation();
 
   useEffect(() => {
     if (!accessCode) return;
     const courseKey = `idev-progress-${accessCode}-Web`;
-    if (progressLoadedFor.current !== accessCode) {
+    if (!learning.data && progressLoadedFor.current !== accessCode) {
       progressLoadedFor.current = accessCode;
       try {
         const raw = localStorage.getItem(courseKey);
@@ -252,7 +261,16 @@ export default function WebCourse({ studentName, accessCode }: WebCourseProps) {
     } catch {
       /* storage unavailable */
     }
-  }, [accessCode, completedLessons]);
+  }, [accessCode, completedLessons, learning.data]);
+  useEffect(() => {
+    if (!accessCode || !learning.data) return;
+    const ids = new Set(allWebLessons.map(lesson => lesson.id));
+    setCompletedLessons(
+      learning.data.completed
+        .filter(item => item.course === "Web" && ids.has(item.lessonId))
+        .map(item => item.lessonId),
+    );
+  }, [accessCode, learning.data]);
 
   const visibleLessons = useMemo(
     () => allWebLessons.filter(lesson => lesson.phase === activePhase),
@@ -298,6 +316,14 @@ export default function WebCourse({ studentName, accessCode }: WebCourseProps) {
         0
       )
     : 0;
+  const shownQuizScore =
+    selectedLesson && quizResult?.lessonId === selectedLesson.id
+      ? quizResult.score
+      : quizScore;
+  const shownQuizTotal =
+    selectedLesson && quizResult?.lessonId === selectedLesson.id
+      ? quizResult.total
+      : selectedLesson?.quiz.length ?? 0;
 
   /**
    * Opens the section a quiz question came from and scrolls it into view.
@@ -348,17 +374,27 @@ export default function WebCourse({ studentName, accessCode }: WebCourseProps) {
     );
   };
 
-  const toggleComplete = () => {
+  const toggleComplete = async () => {
     if (!selectedLesson) return;
     const isDone = completedLessons.includes(selectedLesson.id);
-    setCompletedLessons(current =>
-      isDone
-        ? current.filter(id => id !== selectedLesson.id)
-        : [...current, selectedLesson.id]
-    );
-    toast.success(
-      isDone ? "Session marked active" : "Great job! Session completed"
-    );
+    try {
+      await completeLesson.mutateAsync({
+        course: "Web",
+        lessonId: selectedLesson.id,
+        completed: !isDone,
+      });
+      setCompletedLessons(current =>
+        isDone
+          ? current.filter(id => id !== selectedLesson.id)
+          : [...current, selectedLesson.id]
+      );
+      toast.success(
+        isDone ? "Session marked active" : "Great job! Session completed"
+      );
+      void learning.refetch();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Your progress could not be saved");
+    }
   };
 
   if (!selectedLesson) {
@@ -409,7 +445,7 @@ export default function WebCourse({ studentName, accessCode }: WebCourseProps) {
       </Card>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[.7fr_1.3fr]">
-        <aside className="space-y-4">
+        <aside className="min-w-0 space-y-4">
           <div className="rounded-2xl border border-border bg-card p-4">
             <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2 text-sm font-semibold sm:text-base">
@@ -499,7 +535,7 @@ export default function WebCourse({ studentName, accessCode }: WebCourseProps) {
           </div>
         </aside>
 
-        <section id="web-lesson-detail" className="scroll-mt-6">
+        <section id="web-lesson-detail" className="min-w-0 scroll-mt-6">
           <Card
             className={`overflow-hidden rounded-[2rem] border-0 bg-gradient-to-br ${selectedLesson.accent}`}
           >
@@ -517,7 +553,7 @@ export default function WebCourse({ studentName, accessCode }: WebCourseProps) {
                     {allWebLessons.length}
                   </Badge>
                 </div>
-                <h2 className="mt-5 text-3xl font-bold md:text-5xl">
+                <h2 className="mt-5 break-words text-3xl font-bold md:text-5xl">
                   {selectedLesson.title}
                 </h2>
                 <p className="mt-3 text-lg leading-8 text-muted-foreground">
@@ -572,11 +608,11 @@ export default function WebCourse({ studentName, accessCode }: WebCourseProps) {
                         }
                         className="flex w-full items-center justify-between gap-4 p-5 text-start"
                       >
-                        <div className="flex items-center gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
                           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary/10 font-mono text-sm text-primary">
                             {index + 1}
                           </span>
-                          <span className="text-lg font-bold">
+                          <span className="min-w-0 break-words text-lg font-bold">
                             {section.title}
                           </span>
                         </div>
@@ -702,12 +738,12 @@ export default function WebCourse({ studentName, accessCode }: WebCourseProps) {
                     {quizSubmitted && (
                       <Badge
                         variant={
-                          quizScore === selectedLesson.quiz.length
+                          shownQuizScore === shownQuizTotal
                             ? "default"
                             : "secondary"
                         }
                       >
-                        {quizScore}/{selectedLesson.quiz.length}
+                        {shownQuizScore}/{shownQuizTotal}
                       </Badge>
                     )}
                   </div>
@@ -757,7 +793,7 @@ export default function WebCourse({ studentName, accessCode }: WebCourseProps) {
                               ))}
                             </div>
                           )}
-                        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                        <div className="mt-3 grid gap-2 break-words sm:grid-cols-2">
                           {item.options.map((option, optionIndex) => (
                             <button
                               type="button"
@@ -768,6 +804,7 @@ export default function WebCourse({ studentName, accessCode }: WebCourseProps) {
                                   [index]: optionIndex,
                                 }));
                                 setQuizSubmitted(false);
+                                setQuizResult(null);
                               }}
                               className={`rounded-xl border p-3 text-start text-sm transition ${quizAnswers[index] === optionIndex ? "border-primary bg-primary/10" : "border-border/70 hover:border-primary/40"}`}
                             >
@@ -804,7 +841,7 @@ export default function WebCourse({ studentName, accessCode }: WebCourseProps) {
                         </div>
                         {quizSubmitted && (
                           <div
-                            className={`mt-3 rounded-xl p-3 text-sm leading-6 ${quizAnswers[index] === item.answer ? "bg-emerald-500/10 text-emerald-600" : "bg-amber-500/10 text-amber-700"}`}
+                            className={`mt-3 rounded-xl p-3 text-sm leading-6 ${quizAnswers[index] === item.answer ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" : "bg-amber-500/10 text-amber-700 dark:text-amber-300"}`}
                           >
                             {quizAnswers[index] === item.answer
                               ? text.correct
@@ -818,26 +855,44 @@ export default function WebCourse({ studentName, accessCode }: WebCourseProps) {
                   <div className="mt-5 flex flex-wrap gap-2">
                     <Button
                       type="button"
-                      onClick={() => {
-                        const total = selectedLesson.quiz.length;
-                        const perfect = total > 0 && quizScore === total;
-                        const solved = quizScore > 0;
-                        setQuizSubmitted(true);
-                        if (
-                          solved &&
-                          !completedLessons.includes(selectedLesson.id)
-                        ) {
-                          setCompletedLessons(current => [
-                            ...current,
-                            selectedLesson.id,
-                          ]);
-                          toast.success(
-                            perfect
-                              ? `Perfect ${total}/${total}! Session completed — progress up!`
-                              : `Nice work ${quizScore}/${total}! Session completed — progress up!`
+                      disabled={submitQuizMutation.isPending}
+                      onClick={async () => {
+                        const answers = selectedLesson.quiz.map(
+                          (_, index) => quizAnswers[index] ?? -1
+                        );
+                        try {
+                          const result = await submitQuizMutation.mutateAsync({
+                            course: "Web",
+                            lessonId: selectedLesson.id,
+                            answers,
+                          });
+                          setQuizResult({
+                            lessonId: selectedLesson.id,
+                            score: result.score,
+                            total: result.total,
+                          });
+                          setQuizSubmitted(true);
+                          if (result.completed) {
+                            setCompletedLessons(current =>
+                              current.includes(selectedLesson.id)
+                                ? current
+                                : [...current, selectedLesson.id]
+                            );
+                            toast.success(
+                              result.score === result.total
+                                ? `Perfect ${result.score}/${result.total}! Session completed`
+                                : `Nice work ${result.score}/${result.total}! Session completed`
+                            );
+                          } else {
+                            toast.success(`Your score: ${result.score}/${result.total}`);
+                          }
+                          void learning.refetch();
+                        } catch (error) {
+                          toast.error(
+                            error instanceof Error
+                              ? error.message
+                              : "Your quiz result could not be saved"
                           );
-                        } else {
-                          toast.success(`Your score: ${quizScore}/${total}`);
                         }
                       }}
                     >
@@ -866,6 +921,7 @@ export default function WebCourse({ studentName, accessCode }: WebCourseProps) {
                       : "default"
                   }
                   onClick={toggleComplete}
+                  disabled={completeLesson.isPending}
                 >
                   <CheckCircle2 className="me-2 h-5 w-5" />
                   {completedLessons.includes(selectedLesson.id)

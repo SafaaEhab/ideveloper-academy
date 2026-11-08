@@ -57,7 +57,7 @@ export default function LessonArt({
   const art = lesson.heroImage ?? logo;
 
   return (
-    <div className="mt-6 overflow-hidden rounded-2xl border border-border/60 bg-white shadow-sm">
+    <div className="mt-6 overflow-hidden rounded-2xl border border-border/60 bg-card shadow-sm">
       <div className="flex flex-wrap items-center gap-2 px-5 pt-5">
         <Badge variant="secondary" className="rounded-full">
           Session {ghost} / {total}
@@ -69,7 +69,7 @@ export default function LessonArt({
           {phaseNames[lesson.phase] ?? `Phase ${lesson.phase}`}
         </Badge>
       </div>
-      <div className="flex h-[260px] items-center justify-center p-6 md:h-[340px]">
+      <div className="m-4 flex h-[260px] items-center justify-center overflow-hidden rounded-xl bg-white p-3 md:h-[340px]">
         {art ? (
           <img
             src={art}

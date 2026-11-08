@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import AccessRequestForm from "@/components/AccessRequestForm";
+import { API_BASE_URL } from "@/const";
 
 /**
  * The front door of /admin for anyone who is not an admin yet.
@@ -37,7 +38,7 @@ export default function AdminGate() {
 
     setBusy(true);
     try {
-      const res = await fetch("/api/auth/login", {
+      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -61,7 +62,13 @@ export default function AdminGate() {
       const result = await refresh();
       // A successful sign-in that still lands on this page means the account has
       // no access yet, so send them to the request form rather than a dead end.
+      // A reception employee already granted leads access goes to that
+      // workspace instead of asking for an admin invite they do not need.
       if (result?.data?.role !== "admin") {
+        if (result?.data?.leadAccess) {
+          window.location.href = "/leads";
+          return;
+        }
         setPassword("");
         setMode("request");
       }

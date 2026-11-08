@@ -4,6 +4,11 @@ node_modules
 .env.*.local
 dist/
 .manus-logs/
+# Excel safety copies and IIS/HttpPlatform logs (never deploy old local data).
+App_Data/
+backups/
+release/
+reports/
 cloudflared.exe
 .vercel
 # Scratch scripts from ad-hoc debugging sessions.
@@ -11,6 +16,7 @@ _tmp-*
 # Local tooling state and screenshot scratch space.
 .impeccable
 _shots
+.opencode/
 .env
 .env.local
 .env.*.local

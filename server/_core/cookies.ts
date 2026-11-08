@@ -1,4 +1,5 @@
 import type { CookieOptions, Request } from "express";
+import { ENV } from "./env";
 
 /**
  * Origins allowed to call this API from another site. Read per call rather than
@@ -20,6 +21,17 @@ function isIpAddress(host: string) {
 
 function isSecureRequest(req: Request) {
   if (req.protocol === "https") return true;
+
+  // MonsterASP's IIS/HttpPlatform bridge does not always forward
+  // X-Forwarded-Proto. Production is HTTPS-only (the panel enforces the
+  // redirect), so cookies must still be marked Secure or a cross-site Vercel
+  // frontend cannot receive them. Local development never takes this branch.
+  if (
+    process.env.NODE_ENV === "production" &&
+    (ENV.siteUrl.startsWith("https://") || process.env.FORCE_SECURE_COOKIES === "true")
+  ) {
+    return true;
+  }
 
   const forwardedProto = req.headers["x-forwarded-proto"];
   if (!forwardedProto) return false;

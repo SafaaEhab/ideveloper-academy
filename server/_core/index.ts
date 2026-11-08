@@ -2,7 +2,9 @@ import "dotenv/config";
 import { createServer } from "http";
 import net from "net";
 import { createApp } from "./app";
-import { serveStatic, setupVite } from "./vite";
+import { setupVite } from "./vite";
+import { serveStatic } from "./static";
+import { startLeadSyncScheduler } from "../leadSync";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -43,6 +45,7 @@ async function startServer() {
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
+    startLeadSyncScheduler();
   });
 }
 

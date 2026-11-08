@@ -214,3 +214,4 @@
 - [x] Replace the achievements heading with "أحدث إنجازاتنا"
 - [x] Give each achievement its own real image from the live site and set the matching tag
 - [x] Change the footer credit to "Developed by Safaa Ehab"
+- [x] Deploy the rebuilt site to Vercel on the existing production link and verify it live

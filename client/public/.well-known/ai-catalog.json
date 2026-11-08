@@ -1,0 +1,64 @@
+{
+  "specVersion": "1.0",
+  "host": {
+    "displayName": "iDeveloper Academy",
+    "identifier": "did:web:ideveloper-academy.vercel.app"
+  },
+  "entries": [
+    {
+      "identifier": "urn:air:ideveloper-academy.vercel.app:site:home",
+      "displayName": "iDeveloper Academy homepage",
+      "type": "text/html",
+      "url": "https://ideveloper-academy.vercel.app/",
+      "representativeQueries": [
+        "what is iDeveloper Academy",
+        "where is the academy in Banha",
+        "what age groups does the academy teach"
+      ]
+    },
+    {
+      "identifier": "urn:air:ideveloper-academy.vercel.app:site:courses",
+      "displayName": "iDeveloper Academy public course catalogue",
+      "type": "text/html",
+      "url": "https://ideveloper-academy.vercel.app/courses",
+      "representativeQueries": [
+        "which programming courses are available for children",
+        "does the academy teach Scratch and Python",
+        "is the robotics course running"
+      ]
+    },
+    {
+      "identifier": "urn:air:ideveloper-academy.vercel.app:api:course-availability",
+      "displayName": "Public course availability API",
+      "type": "application/json",
+      "url": "https://ideveloper-academy.runasp.net/api/trpc/site.courses",
+      "representativeQueries": [
+        "get current course availability",
+        "which courses are coming soon",
+        "which course is live right now"
+      ]
+    },
+    {
+      "identifier": "urn:air:ideveloper-academy.vercel.app:doc:api",
+      "displayName": "iDeveloper Academy public API documentation",
+      "type": "text/markdown",
+      "url": "https://ideveloper-academy.vercel.app/api.md",
+      "representativeQueries": [
+        "how do I call the academy course API",
+        "what public tRPC procedures exist",
+        "which endpoints need a student session"
+      ]
+    },
+    {
+      "identifier": "urn:air:ideveloper-academy.vercel.app:site:register",
+      "displayName": "iDeveloper Academy registration page",
+      "type": "text/html",
+      "url": "https://ideveloper-academy.vercel.app/register",
+      "representativeQueries": [
+        "how do I register a child at the academy",
+        "what information does the registration form need",
+        "can I register without WhatsApp"
+      ]
+    }
+  ]
+}

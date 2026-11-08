@@ -21,18 +21,16 @@ export const IMAGE_BASE = "/images/ideveloper";
 export type NavItem = { href: string; label: string };
 
 export const NAV_ITEMS: NavItem[] = [
-  { href: "#top", label: "الرئيسية" },
-  { href: "#about", label: "عن الأكاديمية" },
-  { href: "#courses", label: "الكورسات" },
-  { href: "#projects", label: "مشاريع الطلبة" },
+  { href: "/", label: "الرئيسية" },
+  { href: "/#about", label: "عن الأكاديمية" },
+  { href: "/courses", label: "الكورسات" },
+  { href: "/#projects", label: "مشاريع الطلبة" },
+  { href: "/register", label: "التسجيل" },
 ];
 
-export const HERO_SUB =
-  "أكاديمية iDeveloper بتعلّم الأطفال والشباب البرمجة والروبوتات، وتبنيهم من الصفر لحد ما يشتغلوا فعلاً.";
-
 export const HERO_POINTS = [
-  "نبدأ مع ابنك من سن 6 سنين. ده الوقت المناسب إنه يتفرغ في البرمجة والروبوتات ويبني أساس قوي.",
-  "كل مدرّس عنده خبرة أكتر من 10 تراكات في التعامل مع الأطفال، ومتابعة فردية لكل طالب.",
+  "بداية من 6 سنين هيكون سن مثالي لابنك إنه يدرس علوم البرمجة والروبوتات.",
+  "أفضل المشرفين للتدريس والتعامل مع الأطفال لأكثر من عشر تراكات.",
 ];
 
 export type JourneyTab = { id: string; title: string; videoId: string };

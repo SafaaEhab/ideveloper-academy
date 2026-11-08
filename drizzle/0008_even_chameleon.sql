@@ -1,0 +1,1 @@
+ALTER TABLE `academy_groups` ADD `whatsappUrl` varchar(500);

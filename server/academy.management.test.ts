@@ -4,6 +4,7 @@ const fakeDb = {
   insert: vi.fn(() => ({ values: vi.fn(async () => [{ insertId: 42 }]) })),
   update: vi.fn(() => ({ set: vi.fn(() => ({ where: vi.fn(async () => undefined) })) })),
   delete: vi.fn(() => ({ where: vi.fn(async () => undefined) })),
+  transaction: vi.fn(async (callback: (tx: typeof fakeDb) => Promise<unknown>) => callback(fakeDb)),
 };
 
 vi.mock("./db", () => ({
@@ -12,6 +13,7 @@ vi.mock("./db", () => ({
   listStudents: vi.fn(async () => []),
   listGroups: vi.fn(async () => []),
   createAccessCode: vi.fn(async () => "IDA-TEST123"),
+  insertStudentWithCourses: vi.fn(async () => 42),
   // Removing a group has to take its calendar rows and their exceptions with it.
   deleteSessionsForGroup: vi.fn(async () => undefined),
 }));
@@ -52,5 +54,38 @@ describe("academy management procedures", () => {
     expect(fakeDb.insert).toHaveBeenCalled();
     expect(fakeDb.update).toHaveBeenCalled();
     expect(fakeDb.delete).toHaveBeenCalled();
+  });
+
+  it("validates the WhatsApp group link on create and update", async () => {
+    const caller = appRouter.createCaller(adminContext);
+
+    await expect(
+      caller.admin.createGroup({
+        name: "Python Explorers",
+        whatsappUrl: "http://chat.whatsapp.com/ABCdef123456",
+      }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+
+    await expect(
+      caller.admin.createGroup({
+        name: "Python Explorers",
+        whatsappUrl: "https://evil.example/ABCdef123456",
+      }),
+    ).rejects.toMatchObject({ code: "BAD_REQUEST" });
+
+    await expect(
+      caller.admin.createGroup({
+        name: "Python Explorers",
+        whatsappUrl: "chat.whatsapp.com/ABCdef123456",
+      }),
+    ).resolves.toEqual({ success: true });
+
+    await expect(
+      caller.admin.updateGroup({
+        id: 1,
+        name: "Python Explorers",
+        whatsappUrl: "https://chat.whatsapp.com/ABCdef123456",
+      }),
+    ).resolves.toEqual({ success: true });
   });
 });

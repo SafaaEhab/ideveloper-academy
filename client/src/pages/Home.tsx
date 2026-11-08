@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState, type PointerEvent } from "react";
-import { Link } from "wouter";
-import { ArrowUpLeft, Moon, Phone, Play, Sun, Trophy } from "lucide-react";
+import { ArrowUpLeft, Play, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Accordion,
@@ -9,26 +8,22 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import CountUp from "@/components/CountUp";
+import SafeImage from "@/components/SafeImage";
+import { OFFERING_ART } from "@/components/OfferingArt";
 import Reveal from "@/components/Reveal";
-import SocialLinksBar from "@/components/SocialLinksBar";
-import { useTheme } from "@/contexts/ThemeContext";
+import SiteLayout from "@/components/SiteLayout";
+import CourseWaitlistDialog from "@/components/CourseWaitlistDialog";
 import { useSpotlight } from "@/hooks/useSpotlight";
-import { LOGO_ALT, LOGO_URL } from "@/lib/brand";
 import { buildCourseEnquiryLink } from "@/lib/contact";
 import { trpc } from "@/lib/trpc";
 import {
-  ACADEMY_ADDRESS_SHORT,
-  ACADEMY_HOURS,
-  ACADEMY_PHONE,
   ACADEMY_PHONE_E164,
   COURSES,
   FAQS,
   GALLERY_BODY,
   HERO_POINTS,
-  HERO_SUB,
   IMAGE_BASE,
   JOURNEY_TABS,
-  NAV_ITEMS,
   OFFERINGS,
   STUDENT_PHOTOS,
   TEAM,
@@ -36,21 +31,15 @@ import {
 } from "@/data/academyContent";
 
 const t = {
-  brand: "iDeveloper Academy",
-  tagline: "أكاديمية البرمجة والروبوتات للأطفال",
-  subscribe: "اشترك الآن فى كورساتنا",
-  studentPortal: "بوابة الطالب",
   heroEyebrow: "للأعمار من 6 إلى 17 سنة",
   heroTitle: "طريقك لاحتراف البرمجة",
-  browseCourses: "تعرف على كورساتنا",
+  browseCourses: "اكتشف كورساتنا",
   journeyTitle: "شوف لقطات من رحلتنا",
-  aboutTitle: "ماذا تقدم الأكاديمية",
+  aboutTitle: "ما الذي تقدمه أكاديمية iDeveloper؟",
   coursesTitle: "دوراتنا التعليمية",
   coursesSub:
     "اكتشف عالم البرمجة والتكنولوجيا من خلال دوراتنا المصممة خصيصًا لتنمية مهاراتك",
   bookSeat: "احجز مكانك",
-  teamTitle: "تعرف على المدربين",
-  teamLabel: "Director",
   projectsTitle: "تعرف على مبرمجى المستقبل",
   ctaTitle: "عايز تطور ابنك ويكون جاهز لسوق العمل؟",
   ctaPoints: [
@@ -59,22 +48,12 @@ const t = {
     "تعلم البرمجة بشكل تفاعلي وممتع.",
     "تأسيس قوي لمهارات المستقبل.",
   ],
-  ctaFooter: "ابدأ معنا الآن، وعلمه مهارات المستقبل بخطوات صحيحة!",
   ctaButton: "سجل بسهولة، واجعل أول خطوة في مشواره تبدأ من هنا",
   faqTitle: "الأسئلة الشائعة",
   faqFooter: "ابدأ معنا الآن، وعلمه مهارات المستقبل بخطوات صحيحة!",
   achievements: "الإنجازات",
   achievementsSub: "أحدث إنجازاتنا",
   achievementsEmpty: "النتيجة الجاية بتحضّر دلوقتي — تابعونا قريبًا.",
-  footerLinks: "الوصول السريع",
-  footerCourses: "الكورسات التي نقدمها",
-  footerRegister: "سجل في الكورسات",
-  footerTeam: "تعرف على المدربين",
-  footerContact: "تواصل معنا",
-  rights: "جميع الحقوق محفوظة.",
-  credits: "Developed by Safaa Ehab",
-  terms: "الشروط والأحكام",
-  privacy: "سياسة الخصوصية",
 };
 
 const waLink = `https://wa.me/${ACADEMY_PHONE_E164}`;
@@ -86,130 +65,29 @@ const HERO_STATS = [
   { value: 10, suffix: "+", prefix: "", label: "تراك متخصص" },
 ];
 
-/**
- * The single academy mark, shared with the social rail, the student portal and
- * the admin dashboard through `lib/brand`. If the hosted image cannot be reached
- * it falls back to the letterforms rather than leaving a broken image behind.
- */
-function AcademyLogo({ className }: { className?: string }) {
-  const [failed, setFailed] = useState(false);
-  const size = className ?? "h-12 w-12";
-  if (failed) {
-    return (
-      <span
-        className={`flex shrink-0 items-center justify-center rounded-full bg-brand-navy font-bold text-brand-paper ${size}`}
-        role="img"
-        aria-label={LOGO_ALT}
-      >
-        iD
-      </span>
-    );
-  }
-  return <img src={LOGO_URL} alt={LOGO_ALT} onError={() => setFailed(true)} className={`${size} rounded-full object-cover`} />;
-}
-
 export default function Home() {
-  const { theme, toggleTheme } = useTheme();
   const [journeyTab, setJourneyTab] = useState(JOURNEY_TABS[0].id);
+  const [journeyPlaying, setJourneyPlaying] = useState(false);
+  useEffect(() => setJourneyPlaying(false), [journeyTab]);
   // The home page must render even when the API is unreachable, so failures fall back to no cards.
   const achievements = trpc.site.achievements.useQuery(undefined, {
     retry: false,
     staleTime: 60_000,
   });
+  const offerings = trpc.site.courses.useQuery(undefined, {
+    retry: false,
+    staleTime: 60_000,
+  });
+  const [waitCourse, setWaitCourse] = useState<string | null>(null);
+  const statusByCourse = new Map(
+    (offerings.data ?? []).map(item => [item.course, item.status]),
+  );
   const achievementCards = achievements.data ?? [];
   const activeJourney = JOURNEY_TABS.find(tab => tab.id === journeyTab) ?? JOURNEY_TABS[0];
   const trackSpotlight = useSpotlight();
 
-  // The header tightens once the page moves, and a hairline progress bar tracks
-  // how far down a long catalogue the visitor is. Both read from one rAF loop so
-  // a fast scroll never queues up layout work per event.
-  const [scrolled, setScrolled] = useState(false);
-  const [progress, setProgress] = useState(0);
-  useEffect(() => {
-    let frame = 0;
-    const update = () => {
-      frame = 0;
-      setScrolled(window.scrollY > 12);
-      const scrollable = document.documentElement.scrollHeight - window.innerHeight;
-      setProgress(scrollable > 0 ? Math.min(1, window.scrollY / scrollable) : 0);
-    };
-    const schedule = () => {
-      if (frame) return;
-      frame = requestAnimationFrame(update);
-    };
-    update();
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
-    return () => {
-      cancelAnimationFrame(frame);
-      window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
-    };
-  }, []);
-
-  // The page is Arabic, so the document itself has to flip — that is what makes
-  // the browser render it right-to-left (text order, list bullets, scroll origin)
-  // instead of only mirroring the handful of elements that use logical padding.
-  useEffect(() => {
-    const root = document.documentElement;
-    const previousDir = root.getAttribute("dir");
-    const previousLang = root.getAttribute("lang");
-    root.setAttribute("dir", "rtl");
-    root.setAttribute("lang", "ar");
-    return () => {
-      if (previousDir === null) root.removeAttribute("dir");
-      else root.setAttribute("dir", previousDir);
-      if (previousLang === null) root.removeAttribute("lang");
-      else root.setAttribute("lang", previousLang);
-    };
-  }, []);
-
   return (
-    <div className="min-h-screen overflow-hidden bg-background text-foreground">
-      <SocialLinksBar />
-
-      <header
-        className={`sticky top-0 z-30 border-b bg-background/85 backdrop-blur transition-[box-shadow,border-color] duration-300 ${
-          scrolled ? "border-border shadow-[0_10px_30px_-24px_rgba(0,0,0,.55)]" : "border-transparent"
-        }`}
-      >
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4 lg:px-8">
-          <Link href="/" className="flex items-center gap-3">
-            <AcademyLogo />
-            <span className="hidden text-[11px] leading-tight text-muted-foreground sm:block">
-              {t.tagline}
-            </span>
-          </Link>
-
-          <nav className="hidden items-center gap-7 text-sm font-medium text-muted-foreground md:flex">
-            {NAV_ITEMS.map(item => (
-              <a key={item.href} href={item.href} className="transition-colors hover:text-foreground">
-                {item.label}
-              </a>
-            ))}
-          </nav>
-
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="تبديل الوضع الليلي">
-              {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-            </Button>
-            <Link href="/student">
-              <Button size="sm" className="rounded-full px-4">
-                {t.subscribe}
-              </Button>
-            </Link>
-          </div>
-        </div>
-        {/* Reading progress. The page is RTL, so the bar grows from the right. */}
-        <div className="absolute inset-x-0 bottom-0 h-0.5 bg-transparent" aria-hidden>
-          <div
-            className="h-full origin-right bg-gradient-to-l from-primary via-sky-400 to-emerald-400"
-            style={{ transform: `scaleX(${progress})` }}
-          />
-        </div>
-      </header>
-
-      <main id="top">
+    <SiteLayout>
         {/* Hero */}
         <section className="relative overflow-hidden">
           <div className="pointer-events-none absolute -start-40 top-0 h-96 w-96 animate-drift rounded-full bg-primary/10 blur-3xl" />
@@ -229,21 +107,17 @@ export default function Home() {
               </Reveal>
 
               <Reveal delay={140}>
-                <p className="mt-6 max-w-xl text-base leading-9 text-muted-foreground md:text-lg">
-                  {HERO_SUB}
-                </p>
+                <ul className="mt-6 space-y-3">
+                  {HERO_POINTS.map((point, index) => (
+                    <Reveal as="li" key={point} delay={210 + index * 80} y={14}>
+                      <span className="flex items-start gap-3 text-sm leading-7 text-muted-foreground md:text-base">
+                        <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary" />
+                        <span>{point}</span>
+                      </span>
+                    </Reveal>
+                  ))}
+                </ul>
               </Reveal>
-
-              <ul className="mt-8 space-y-3">
-                {HERO_POINTS.map((point, index) => (
-                  <Reveal as="li" key={point} delay={210 + index * 80} y={14}>
-                    <span className="flex items-start gap-3 text-sm leading-7 text-muted-foreground md:text-base">
-                      <span className="mt-2 h-2 w-2 shrink-0 rounded-full bg-primary" />
-                      <span>{point}</span>
-                    </span>
-                  </Reveal>
-                ))}
-              </ul>
 
               <Reveal delay={390}>
                 <div className="mt-10">
@@ -281,12 +155,19 @@ export default function Home() {
                   light theme and deep navy in the dark one to keep it from
                   vanishing into a white page or glowing against a black one. */}
               <div className="relative overflow-hidden rounded-[2rem] border border-border bg-gradient-to-br from-sky-100 via-blue-50 to-indigo-100 p-6 shadow-2xl dark:from-[#192b4d] dark:via-[#101827] dark:to-[#080b12]">
-                <img
-                  src={`${IMAGE_BASE}/feature.png`}
-                  alt="أدوات البرمجة والتكنولوجيا"
-                  className="w-full object-contain"
-                  loading="lazy"
-                />
+                <picture>
+                  <source srcSet={`${IMAGE_BASE}/feature.webp`} type="image/webp" />
+                  <img
+                    src={`${IMAGE_BASE}/feature.png`}
+                    alt="أدوات البرمجة والتكنولوجيا"
+                    width={500}
+                    height={500}
+                    className="h-auto w-full object-contain"
+                    loading="eager"
+                    fetchPriority="high"
+                    decoding="async"
+                  />
+                </picture>
               </div>
             </Reveal>
           </div>
@@ -330,15 +211,37 @@ export default function Home() {
                   className="animate-fade-slide-in overflow-hidden rounded-3xl border border-border bg-background shadow-xl"
                 >
                   <div className="aspect-video w-full bg-black">
-                    <iframe
-                      className="h-full w-full"
-                      src={`${YOUTUBE_EMBED_ORIGIN}/embed/${activeJourney.videoId}?rel=0`}
-                      title={activeJourney.title}
-                      loading="lazy"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                      referrerPolicy="strict-origin-when-cross-origin"
-                      allowFullScreen
-                    />
+                    {journeyPlaying ? (
+                      <iframe
+                        className="h-full w-full"
+                        src={`${YOUTUBE_EMBED_ORIGIN}/embed/${activeJourney.videoId}?rel=0&autoplay=1`}
+                        title={activeJourney.title}
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                        referrerPolicy="strict-origin-when-cross-origin"
+                        allowFullScreen
+                      />
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => setJourneyPlaying(true)}
+                        className="group relative h-full w-full overflow-hidden"
+                        aria-label={`تشغيل ${activeJourney.title}`}
+                      >
+                        <img
+                          src={`https://i.ytimg.com/vi/${activeJourney.videoId}/hqdefault.jpg`}
+                          alt=""
+                          width={1280}
+                          height={720}
+                          loading="lazy"
+                          className="h-full w-full object-cover"
+                        />
+                        <span className="absolute inset-0 grid place-items-center bg-black/35 transition-colors group-hover:bg-black/50">
+                          <span className="grid h-16 w-16 place-items-center rounded-full bg-white/95 text-slate-900 shadow-2xl">
+                            <Play className="h-7 w-7 translate-x-0.5 fill-current" />
+                          </span>
+                        </span>
+                      </button>
+                    )}
                   </div>
                   <div className="border-t border-border px-5 py-4">
                     <h3 className="font-bold">{activeJourney.title}</h3>
@@ -356,17 +259,21 @@ export default function Home() {
               <h2 className="text-2xl font-bold tracking-tight md:text-4xl">{t.aboutTitle}</h2>
             </Reveal>
             <div className="mt-10 grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-              {OFFERINGS.map((item, index) => (
-                <Reveal key={item.title} delay={index * 70}>
-                  <article
-                    onPointerMove={trackSpotlight}
-                    className="spotlight h-full rounded-3xl border border-border bg-background p-6 transition-colors hover:border-primary/40"
-                  >
-                    <div className="text-lg font-bold">{item.title}</div>
-                    <p className="mt-3 text-sm leading-8 text-muted-foreground">{item.body}</p>
-                  </article>
-                </Reveal>
-              ))}
+              {OFFERINGS.map((item, index) => {
+                const Art = OFFERING_ART[index % OFFERING_ART.length];
+                return (
+                  <Reveal key={item.title} delay={index * 70}>
+                    <article
+                      onPointerMove={trackSpotlight}
+                      className="spotlight h-full rounded-3xl border border-border bg-background p-6 transition-colors hover:border-primary/40"
+                    >
+                      <Art className="mb-5 block h-auto w-full" />
+                      <div className="text-lg font-bold">{item.title}</div>
+                      <p className="mt-3 text-sm leading-8 text-muted-foreground">{item.body}</p>
+                    </article>
+                  </Reveal>
+                );
+              })}
             </div>
           </div>
         </section>
@@ -384,7 +291,9 @@ export default function Home() {
             </div>
 
             <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {COURSES.map((course, index) => (
+              {COURSES.map((course, index) => {
+                const status = statusByCourse.get(course.title as "Scratch" | "Robotics" | "Web" | "Python");
+                return (
                 <Reveal key={course.slug} delay={(index % 4) * 80}>
                   <article
                     onPointerMove={trackSpotlight}
@@ -405,9 +314,16 @@ export default function Home() {
                     </div>
 
                     <div className="flex flex-1 flex-col p-5">
-                      <h3 className="text-lg font-bold" dir="ltr">
-                        {course.title}
-                      </h3>
+                      <div className="flex items-center justify-between gap-2">
+                        <h3 className="text-lg font-bold" dir="ltr">
+                          {course.title}
+                        </h3>
+                        {status ? (
+                          <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                            {status === "live" ? "Live" : status === "waiting_list" ? "Waiting list" : "Coming soon"}
+                          </span>
+                        ) : null}
+                      </div>
                       <div className="mt-3 flex flex-wrap gap-2 text-[11px] font-semibold text-primary">
                         {course.facts.map(fact => (
                           <span key={fact} className="rounded-full bg-primary/10 px-2.5 py-1">
@@ -416,62 +332,31 @@ export default function Home() {
                         ))}
                       </div>
                       <p className="mt-4 flex-1 text-sm leading-7 text-muted-foreground">{course.description}</p>
-                      <a
-                        href={buildCourseEnquiryLink(course.title)}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="mt-6 block"
-                      >
-                        <Button className="w-full rounded-full">{t.bookSeat}</Button>
-                      </a>
+                      {status === "live" ? (
+                        <a
+                          href={buildCourseEnquiryLink(course.title)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-6 block"
+                        >
+                          <Button className="w-full rounded-full">{t.bookSeat}</Button>
+                        </a>
+                      ) : (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="mt-6 w-full rounded-full"
+                          disabled={!status}
+                          onClick={() => setWaitCourse(course.title)}
+                        >
+                          {status ? "Join waiting list" : "Checking availability…"}
+                        </Button>
+                      )}
                     </div>
                   </article>
                 </Reveal>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Team */}
-        <section id="team" className="border-y border-border/60 bg-card/40 py-16">
-          <div className="mx-auto max-w-7xl px-5 lg:px-8">
-            <Reveal>
-              <h2 className="text-2xl font-bold tracking-tight md:text-4xl">{t.teamTitle}</h2>
-            </Reveal>
-            <Reveal delay={80}>
-              <div className="mt-4 text-sm font-semibold uppercase tracking-[.2em] text-primary">{t.teamLabel}</div>
-            </Reveal>
-            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {TEAM.map((member, index) => (
-                <Reveal key={member.name} delay={(index % 3) * 70}>
-                  <article
-                    onPointerMove={trackSpotlight}
-                    className="spotlight flex h-full items-center gap-4 rounded-3xl border border-border bg-background p-5 transition-colors hover:border-primary/40"
-                  >
-                    {member.photo ? (
-                      <img
-                        src={member.photo}
-                        alt={member.name}
-                        loading="lazy"
-                        className="h-16 w-16 shrink-0 rounded-2xl object-cover"
-                      />
-                    ) : (
-                      <span
-                        aria-hidden
-                        className="flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-lg font-bold text-primary"
-                      >
-                        {member.name.replace(/^م\//, "").trim().slice(0, 1)}
-                      </span>
-                    )}
-                    <div className="min-w-0">
-                      <h3 className="truncate font-bold">{member.name}</h3>
-                      <p dir="ltr" className="mt-1 text-start text-xs leading-6 text-muted-foreground">
-                        {member.role}
-                      </p>
-                    </div>
-                  </article>
-                </Reveal>
-              ))}
+                );
+              })}
             </div>
           </div>
         </section>
@@ -506,7 +391,7 @@ export default function Home() {
         <section className="border-y border-border/60 bg-card/40 py-16">
           <div className="mx-auto max-w-4xl px-5 text-center lg:px-8">
             <Reveal>
-              <h2 className="text-2xl font-extrabold tracking-tight md:text-4xl">🚀 {t.ctaTitle}</h2>
+              <h2 className="text-2xl font-extrabold tracking-tight md:text-4xl">{t.ctaTitle}</h2>
             </Reveal>
             <ul className="mx-auto mt-8 max-w-2xl space-y-3 text-start">
               {t.ctaPoints.map((point, index) => (
@@ -520,12 +405,11 @@ export default function Home() {
             </ul>
             <Reveal delay={200}>
               <div className="mt-8">
-                <p className="text-sm font-semibold text-primary">🌟 {t.ctaFooter}</p>
-                <Link href="/student" className="mt-6 inline-block">
+                <a href={waLink} target="_blank" rel="noopener noreferrer" className="inline-block">
                   <Button size="lg" className="rounded-full px-8 shadow-xl shadow-primary/20">
-                    📲 {t.ctaButton}
+                    {t.ctaButton}
                   </Button>
-                </Link>
+                </a>
               </div>
             </Reveal>
           </div>
@@ -548,7 +432,7 @@ export default function Home() {
               </Accordion>
             </Reveal>
             <Reveal delay={140}>
-              <p className="mt-10 text-center text-sm font-semibold text-primary">🌟 {t.faqFooter}</p>
+              <p className="mt-10 text-center text-sm font-semibold text-primary">{t.faqFooter}</p>
             </Reveal>
           </div>
         </section>
@@ -560,7 +444,7 @@ export default function Home() {
               <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
                 <div>
                   <div className="text-sm font-semibold uppercase tracking-[.2em] text-primary">
-                    🎖 {t.achievements}
+                    {t.achievements}
                   </div>
                   <h2 className="mt-3 text-2xl font-bold tracking-tight md:text-4xl">{t.achievementsSub}</h2>
                 </div>
@@ -585,7 +469,7 @@ export default function Home() {
                     >
                       <div className="relative aspect-[4/3] overflow-hidden bg-muted">
                         {item.imageUrl ? (
-                          <img
+                          <SafeImage
                             src={item.imageUrl}
                             alt={item.title || item.description}
                             loading="lazy"
@@ -621,113 +505,14 @@ export default function Home() {
             )}
           </div>
         </section>
-      </main>
 
-      <footer className="border-t border-border/60 bg-card/40 px-5 py-12 lg:px-8">
-        <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-4">
-          <div>
-            <div className="flex items-center gap-3">
-              <AcademyLogo className="h-11" />
-              <div className="text-sm font-bold">{t.brand}</div>
-            </div>
-            <p className="mt-4 text-xs leading-7 text-muted-foreground">{ACADEMY_ADDRESS_SHORT}</p>
-            <a
-              href={`tel:${ACADEMY_PHONE_E164}`}
-              className="mt-2 inline-flex items-center gap-2 text-sm font-semibold text-primary"
-              dir="ltr"
-            >
-              <Phone className="h-4 w-4" />
-              {ACADEMY_PHONE}
-            </a>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-bold">{t.footerLinks}</h3>
-            <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-              <li>
-                <a href="#about" className="transition-colors hover:text-foreground">
-                  عن الأكاديمية
-                </a>
-              </li>
-              <li>
-                <a href="#courses" className="transition-colors hover:text-foreground">
-                  الكورسات
-                </a>
-              </li>
-              <li>
-                <a href="#projects" className="transition-colors hover:text-foreground">
-                  مشاريع الطلبة
-                </a>
-              </li>
-              <li>
-                <a href="#team" className="transition-colors hover:text-foreground">
-                  {t.footerTeam}
-                </a>
-              </li>
-              <li>
-                <a href="#faq" className="transition-colors hover:text-foreground">
-                  {t.faqTitle}
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-bold">{t.footerCourses}</h3>
-            <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-              {COURSES.map(course => (
-                <li key={course.slug}>
-                  <a href="#courses" className="transition-colors hover:text-foreground" dir="ltr">
-                    {course.title}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="text-sm font-bold">{t.footerContact}</h3>
-            <ul className="mt-4 space-y-2 text-sm text-muted-foreground">
-              <li>
-                <Link href="/student" className="transition-colors hover:text-foreground">
-                  {t.footerRegister}
-                </Link>
-              </li>
-              <li>
-                <a href={waLink} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-foreground">
-                  واتساب
-                </a>
-              </li>
-              <li>
-                <span>{ACADEMY_HOURS}</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div className="mx-auto mt-10 flex max-w-7xl flex-col gap-2 border-t border-border pt-6 text-xs text-muted-foreground md:flex-row md:items-center md:justify-between">
-          <div>© {new Date().getFullYear()} iDeveloper Academy. {t.rights}</div>
-          <div className="flex flex-wrap items-center gap-4">
-            <a
-              href="https://ideveloper-academy.com/terms%26conditions.html"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="transition-colors hover:text-foreground"
-            >
-              {t.terms}
-            </a>
-            <a
-              href="https://ideveloper-academy.com/privacypolicy.html"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="transition-colors hover:text-foreground"
-            >
-              {t.privacy}
-            </a>
-            <span>{t.credits}</span>
-          </div>
-        </div>
-      </footer>
-    </div>
+        <CourseWaitlistDialog
+          open={waitCourse !== null}
+          onOpenChange={open => {
+            if (!open) setWaitCourse(null);
+          }}
+          course={waitCourse}
+        />
+    </SiteLayout>
   );
 }
