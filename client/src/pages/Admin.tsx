@@ -21,12 +21,14 @@ import { toast } from "sonner";
 import { useLocation, useSearchParams } from "wouter";
 import { trpc, LIVE_REFETCH_INTERVAL } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { useDocumentLocale } from "@/hooks/useDocumentLocale";
 import { PHONE_VALIDATION_MESSAGE, validatePhone } from "@shared/validation";
 
 type Course = "Scratch" | "Robotics" | "Web" | "Python";
 const courses: Course[] = ["Scratch", "Robotics", "Web", "Python"];
 
 export default function Admin() {
+  useDocumentLocale("en", "ltr");
   const { user, loading } = useAuth();
   // Hooks must run unconditionally, so the admin queries below need this gate —
   // without it they fire while the login card is showing and log permission errors.

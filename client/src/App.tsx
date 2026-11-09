@@ -5,6 +5,7 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import AnnouncementPopup from "./components/AnnouncementPopup";
 import ErrorBoundary from "./components/ErrorBoundary";
+import RouteMetadata from "./components/RouteMetadata";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { registerPublicWebMcpTools } from "./lib/webmcp";
 import Home from "./pages/Home";
@@ -34,6 +35,7 @@ function RouteFallback() {
 function Router() {
   return (
     <Suspense fallback={<RouteFallback />}>
+      <RouteMetadata />
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/courses" component={CoursesPage} />

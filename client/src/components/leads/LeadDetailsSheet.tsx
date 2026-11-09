@@ -426,10 +426,18 @@ export default function LeadDetailsSheet({
                     }
                   />
                   {lead.notInterestedReason ? (
-                    <DataRow
-                      label="سبب عدم الإكمال"
-                      value={notInterestedReasonLabel(lead.notInterestedReason)}
-                    />
+                    <>
+                      <DataRow
+                        label="سبب عدم الإكمال"
+                        value={notInterestedReasonLabel(lead.notInterestedReason)}
+                      />
+                      {lead.notInterestedNote ? (
+                        <DataRow
+                          label="تفاصيل السبب"
+                          value={lead.notInterestedNote}
+                        />
+                      ) : null}
+                    </>
                   ) : null}
                 </div>
                 {lead.customerNotes ? (

@@ -1,10 +1,11 @@
-import { useEffect, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import { Link, useLocation } from "wouter";
 import { BarChart3, GraduationCap, Home, LogOut, Moon, ShieldAlert, Sun, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useDocumentLocale } from "@/hooks/useDocumentLocale";
 import { LoadingBlock } from "./shared";
 import InstructorGroups from "./InstructorGroups";
 import InstructorGroupDetail from "./InstructorGroupDetail";
@@ -28,19 +29,7 @@ export default function InstructorPortal() {
   const [location] = useLocation();
   const { theme, toggleTheme } = useTheme();
 
-  useEffect(() => {
-    const root = document.documentElement;
-    const previousDir = root.getAttribute("dir");
-    const previousLang = root.getAttribute("lang");
-    root.setAttribute("dir", "rtl");
-    root.setAttribute("lang", "ar");
-    return () => {
-      if (previousDir === null) root.removeAttribute("dir");
-      else root.setAttribute("dir", previousDir);
-      if (previousLang === null) root.removeAttribute("lang");
-      else root.setAttribute("lang", previousLang);
-    };
-  }, []);
+  useDocumentLocale("ar", "rtl");
 
   const isInstructor = user?.role === "instructor";
   const me = trpc.instructor.me.useQuery(undefined, {

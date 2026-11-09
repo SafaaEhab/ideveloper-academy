@@ -4,8 +4,10 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import LeadsManager from "@/components/leads/LeadsManager";
+import { useDocumentLocale } from "@/hooks/useDocumentLocale";
 
 export default function LeadsPage() {
+  useDocumentLocale("ar", "rtl");
   const { user, loading, logout } = useAuth();
 
   if (loading) {

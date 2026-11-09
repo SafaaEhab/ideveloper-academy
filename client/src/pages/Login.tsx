@@ -4,15 +4,17 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader } from "@/components/ui/card";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { API_BASE_URL } from "@/const";
+import { useDocumentLocale } from "@/hooks/useDocumentLocale";
 
 const MIN_PASSWORD_LENGTH = 8;
 
 type Mode = "login" | "signup";
 
 export default function Login() {
+  useDocumentLocale("en", "ltr");
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -85,7 +87,9 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center p-6">
       <Card className="w-full max-w-md rounded-3xl">
         <CardHeader>
-          <CardTitle>{isSignup ? "Create your account" : "Sign in"}</CardTitle>
+          <h1 className="leading-none font-semibold">
+            {isSignup ? "Create your account" : "Sign in"}
+          </h1>
           <CardDescription>
             {isSignup
               ? "Create an account to reach the student portal."

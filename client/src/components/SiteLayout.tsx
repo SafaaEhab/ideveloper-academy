@@ -2,6 +2,7 @@ import { useEffect, type ReactNode } from "react";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 import SocialLinksBar from "@/components/SocialLinksBar";
+import { useDocumentLocale } from "@/hooks/useDocumentLocale";
 
 /**
  * Shared public-page chrome: contact rail, sticky header, content, and footer.
@@ -10,19 +11,7 @@ import SocialLinksBar from "@/components/SocialLinksBar";
  * right-to-left instead of mirroring individual elements.
  */
 export default function SiteLayout({ children }: { children: ReactNode }) {
-  useEffect(() => {
-    const root = document.documentElement;
-    const previousDir = root.getAttribute("dir");
-    const previousLang = root.getAttribute("lang");
-    root.setAttribute("dir", "rtl");
-    root.setAttribute("lang", "ar");
-    return () => {
-      if (previousDir === null) root.removeAttribute("dir");
-      else root.setAttribute("dir", previousDir);
-      if (previousLang === null) root.removeAttribute("lang");
-      else root.setAttribute("lang", previousLang);
-    };
-  }, []);
+  useDocumentLocale("ar", "rtl");
 
   /**
    * The pages render client-side, so the browser's own fragment scroll runs

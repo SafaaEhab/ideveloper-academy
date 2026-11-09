@@ -25,6 +25,7 @@ import {
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -32,6 +33,7 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { trpc, LIVE_REFETCH_INTERVAL } from "@/lib/trpc";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useDocumentLocale } from "@/hooks/useDocumentLocale";
 import StudentPerformanceSection from "@/components/performance/StudentPerformanceSection";
 import StudentAssignments from "@/components/StudentAssignments";
 import {
@@ -131,6 +133,7 @@ const text = {
 };
 
 export default function StudentPortal() {
+  useDocumentLocale("ar", "rtl");
   const [code, setCode] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [track, setTrack] = useState<Track>("core");
@@ -400,8 +403,8 @@ export default function StudentPortal() {
 
   return (
     <div
-      dir={student ? undefined : "rtl"}
-      lang={student ? undefined : "ar"}
+      dir="rtl"
+      lang="ar"
       className="min-h-screen bg-background text-foreground"
     >
       <header dir="rtl" className="mx-auto mb-8 flex max-w-7xl flex-wrap items-center justify-between gap-x-4 gap-y-3 px-4 py-4 sm:px-5 sm:py-5 lg:px-8">
@@ -488,7 +491,11 @@ export default function StudentPortal() {
                 <h2 className="mt-4 text-2xl font-bold">دخول المشتركين</h2>
                 <p className="mt-2 text-sm text-muted-foreground">{text.sub}</p>
                 <form onSubmit={submit} className="mt-5 space-y-3">
+                  <Label htmlFor="student-access-code" className="sr-only">
+                    رمز دخول الطالب
+                  </Label>
                   <Input
+                    id="student-access-code"
                     value={code}
                     dir="ltr"
                     onChange={event =>
