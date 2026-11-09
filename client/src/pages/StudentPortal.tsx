@@ -491,7 +491,10 @@ export default function StudentPortal() {
                 <h2 className="mt-4 text-2xl font-bold">دخول المشتركين</h2>
                 <p className="mt-2 text-sm text-muted-foreground">{text.sub}</p>
                 <form onSubmit={submit} className="mt-5 space-y-3">
-                  <Label htmlFor="student-access-code" className="sr-only">
+                  <Label
+                    htmlFor="student-access-code"
+                    className="mb-1 block text-start text-sm font-medium"
+                  >
                     رمز دخول الطالب
                   </Label>
                   <Input
