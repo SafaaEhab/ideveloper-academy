@@ -129,10 +129,10 @@ SELECT
 		ELSE 'new'
 	END,
 	r.`createdAt`, r.`reviewedAt`,
-	'ØªÙ… Ø§Ø³ØªÙŠØ±Ø§Ø¯ Ù‡Ø°Ø§ Ø§Ù„Ø³Ø¬Ù„ Ù…Ù† Ø·Ù„Ø¨Ø§Øª Ø§Ù„ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ù‚Ø¯ÙŠÙ…Ø© Ø£Ø«Ù†Ø§Ø¡ ØªØ±Ù‚ÙŠØ© Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡ Ø§Ù„Ù…Ø­ØªÙ…Ù„ÙŠÙ†.',
+	'تم استيراد هذا السجل من طلبات التسجيل القديمة أثناء ترقية العملاء المحتملين.',
 	'legacy', 0, 'pending', 1, r.`studentId`, r.`reviewedAt`,
 	CASE WHEN r.`status` = 'rejected' THEN 'other' ELSE NULL END,
-	CASE WHEN r.`status` = 'rejected' THEN 'Ø³Ø¨Ø¨ Ù‚Ø¯ÙŠÙ… ØºÙŠØ± Ù…Ø³Ø¬Ù„' ELSE NULL END,
+	CASE WHEN r.`status` = 'rejected' THEN 'سبب قديم غير مسجل' ELSE NULL END,
 	r.`createdAt`, r.`updatedAt`
 FROM `academy_registration_requests` r
 WHERE NOT EXISTS (
