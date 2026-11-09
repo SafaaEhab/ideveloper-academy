@@ -1,8 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link } from "wouter";
-import { LogIn, Moon, Sun } from "lucide-react";
+import { LogIn, Menu, Moon, Sun } from "lucide-react";
 import AcademyLogo from "@/components/AcademyLogo";
 import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { useTheme } from "@/contexts/ThemeContext";
 import { NAV_ITEMS } from "@/data/academyContent";
 
@@ -15,6 +23,7 @@ export default function SiteHeader() {
   const { theme, toggleTheme } = useTheme();
   const [scrolled, setScrolled] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     let frame = 0;
@@ -61,6 +70,17 @@ export default function SiteHeader() {
         </nav>
 
         <div className="flex items-center gap-1.5 sm:gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            aria-label="فتح القائمة"
+            aria-expanded={menuOpen}
+            aria-controls="site-mobile-menu"
+            onClick={() => setMenuOpen(true)}
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
           <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="تبديل الوضع الليلي">
             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
@@ -81,6 +101,45 @@ export default function SiteHeader() {
           </Link>
         </div>
       </div>
+
+      <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+        <SheetContent
+          id="site-mobile-menu"
+          side="right"
+          dir="rtl"
+          closeLabel="إغلاق القائمة"
+          className="w-[min(20rem,85vw)]"
+        >
+          <SheetHeader>
+            <SheetTitle>القائمة</SheetTitle>
+            <SheetDescription>روابط الموقع والتسجيل</SheetDescription>
+          </SheetHeader>
+          <nav aria-label="قائمة الموقع" className="flex flex-col gap-1 px-4">
+            {NAV_ITEMS.map(item => (
+              <SheetClose asChild key={item.href}>
+                <a
+                  href={item.href}
+                  className="rounded-xl px-4 py-3 text-base font-medium text-foreground transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {item.label}
+                </a>
+              </SheetClose>
+            ))}
+          </nav>
+          <div className="mt-auto space-y-2 border-t border-border p-4">
+            <Link href="/student" onClick={() => setMenuOpen(false)}>
+              <Button variant="outline" className="w-full justify-center gap-2 rounded-full">
+                <LogIn className="h-4 w-4" />
+                للمشتركين
+              </Button>
+            </Link>
+            <Link href="/register" onClick={() => setMenuOpen(false)}>
+              <Button className="w-full justify-center rounded-full">اشترك الآن</Button>
+            </Link>
+          </div>
+        </SheetContent>
+      </Sheet>
 
       <div className="absolute inset-x-0 bottom-0 h-0.5 bg-transparent" aria-hidden>
         <div
