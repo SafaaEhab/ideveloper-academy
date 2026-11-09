@@ -27,6 +27,36 @@ export function createApp(): Express {
   const app = express();
   app.disable("x-powered-by");
 
+  // Conservative response headers for every API route. IIS/MonsterASP may add
+  // its own banner before Node sees the request; web.config removes that at the
+  // hosting layer, and this also strips it when Express itself set one.
+  app.use((req, res, next) => {
+    res.removeHeader("X-Powered-By");
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("X-Frame-Options", "DENY");
+    res.setHeader("Referrer-Policy", "no-referrer");
+    res.setHeader(
+      "Permissions-Policy",
+      "camera=(), microphone=(), geolocation=()",
+    );
+
+    // Trust the reverse proxy for the scheme: IIS and Vercel both forward the
+    // original protocol in X-Forwarded-Proto. HSTS is only meaningful over TLS,
+    // so local HTTP development does not receive it.
+    const forwarded = req.headers["x-forwarded-proto"];
+    const forwardedProto = Array.isArray(forwarded)
+      ? forwarded[0]
+      : forwarded?.split(",")[0]?.trim();
+    if (req.secure || forwardedProto === "https") {
+      res.setHeader(
+        "Strict-Transport-Security",
+        "max-age=31536000; includeSubDomains",
+      );
+    }
+
+    next();
+  });
+
   // Split deployment (static frontend on Vercel + API here):
   // allow the configured frontend origins to call /api/* cross-origin.
   // Set WEB_ORIGIN="https://your-site.vercel.app" (comma-separated for more).
@@ -78,6 +108,14 @@ export function createApp(): Express {
       createContext,
     })
   );
+
+  // Any /api path that no route above handled is a genuine 404, not a client
+  // route. Without this, the SPA fallback in serveStatic() would answer an
+  // unknown API path with 200 + index.html — which hides broken integrations
+  // from monitoring and returns the wrong content type.
+  app.use("/api", (_req, res) => {
+    res.status(404).json({ error: "Not found" });
+  });
 
   return app;
 }
