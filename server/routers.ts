@@ -47,6 +47,10 @@ import {
 } from "./leadSync";
 import { googleSheetsStatus } from "./googleSheets";
 import { LEAD_STATUSES, NOT_INTERESTED_REASONS } from "@shared/leads";
+import { messagingRouter } from "./messagingRouter";
+import { financeRouter } from "./financeRouter";
+import { resolvePhase2Actor, publicPhase2Permissions } from "./permissions";
+import { getStudentFinance } from "./finance";
 
 const courseSchema = z.enum(["Scratch", "Robotics", "Web", "Python"]);
 const PORTAL_MAX_ATTEMPTS = 30;
@@ -538,6 +542,8 @@ function parseDueAt(value: string | undefined): Date | null {
 
 export const appRouter = router({
   system: systemRouter,
+  messaging: messagingRouter,
+  finance: financeRouter,
   auth: router({
     // `isOwner` rides along so the panel can decide whether to show the admin
     // roster tab. It is only ever true for the single account pinned in the
@@ -546,11 +552,13 @@ export const appRouter = router({
       const user = opts.ctx.user;
       if (!user) return null;
       const leadActor = await resolveLeadActor(user);
+      const phase2Actor = await resolvePhase2Actor(user);
       return {
         ...user,
         isOwner: isOwnerUser(user),
         leadAccess: leadActor.leadAccess,
         canConvertLeads: leadActor.canConvert,
+        phase2: publicPhase2Permissions(phase2Actor),
       };
     }),
     logout: publicProcedure.mutation(({ ctx }) => {
@@ -636,6 +644,11 @@ export const appRouter = router({
           submittedAt: row.submittedAt,
         })),
       };
+    }),
+    // The student sees only their own subscriptions and ledger. The id comes
+    // from the signed portal cookie, never from the request.
+    finance: studentProcedure.query(async ({ ctx }) => {
+      return getStudentFinance(ctx.student.id);
     }),
     setLessonComplete: studentProcedure
       .input(lessonCompletionSchema)

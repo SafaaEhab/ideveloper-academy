@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Eye,
+  MessageSquare,
   RefreshCw,
   Search,
   Settings2,
@@ -24,6 +25,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -42,6 +44,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { trpc } from "@/lib/trpc";
+import { useLocation } from "wouter";
 import LeadDetailsSheet from "./LeadDetailsSheet";
 import LeadEmployeesDialog from "./LeadEmployeesDialog";
 import LeadStatusDialog from "./LeadStatusDialog";
@@ -108,6 +111,14 @@ export default function LeadsManager() {
     targetStatus: "needs_follow_up" | "not_interested";
   } | null>(null);
   const [employeesOpen, setEmployeesOpen] = useState(false);
+  // Selection is intentionally kept across pages and filter changes. "Select
+  // filtered" asks the server for every matching id; the messaging confirmation
+  // re-validates eligibility, so a stale selection can never bypass a rule.
+  const [selectedLeadIds, setSelectedLeadIds] = useState<Set<number>>(
+    () => new Set(),
+  );
+  const [selectingFiltered, setSelectingFiltered] = useState(false);
+  const [, setLocation] = useLocation();
 
   useEffect(() => {
     setPage(1);
@@ -143,7 +154,14 @@ export default function LeadsManager() {
 
   const list = trpc.leads.list.useQuery(filters, {
     retry: false,
-    refetchInterval: 30_000,
+    // While a row is waiting on Google Sheets, poll often enough for the badge
+    // to flip to "synced" without a manual refresh.
+    refetchInterval: query =>
+      (query.state.data?.items ?? []).some(
+        lead => lead.googleSheetSyncStatus === "pending",
+      )
+        ? 5_000
+        : 30_000,
   });
   const employees = trpc.leads.employees.useQuery(undefined, {
     enabled: Boolean(user?.leadAccess),
@@ -223,6 +241,56 @@ export default function LeadsManager() {
     setMine(false);
     setOverdueOnly(false);
     setPage(1);
+  };
+
+  const toggleLead = (id: number) => {
+    setSelectedLeadIds(current => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleCurrentPage = (checked: boolean) => {
+    setSelectedLeadIds(current => {
+      const next = new Set(current);
+      for (const lead of rows) {
+        if (checked) next.add(lead.id);
+        else next.delete(lead.id);
+      }
+      return next;
+    });
+  };
+
+  const selectAllFiltered = async () => {
+    setSelectingFiltered(true);
+    try {
+      const result = await utils.messaging.recipients.ids.fetch({
+        source: "leads",
+        search: deferredName.trim() || undefined,
+        status: statusFilter === "all" ? undefined : statusFilter,
+        course:
+          courseFilter === "all"
+            ? undefined
+            : (courseFilter as (typeof COURSES)[number]),
+        assignedEmployeeId:
+          employeeFilter === "all" ? undefined : Number(employeeFilter),
+      });
+      setSelectedLeadIds(new Set(result.ids));
+      toast.success(`تم تحديد ${result.total} عميلاً مطابقاً للفلاتر`);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "تعذر تحديد النتائج");
+    } finally {
+      setSelectingFiltered(false);
+    }
+  };
+
+  const startCampaign = () => {
+    if (!selectedLeadIds.size) return;
+    setLocation(
+      `/messaging?source=leads&ids=${Array.from(selectedLeadIds).join(",")}`,
+    );
   };
 
   const changeStatus = (lead: (typeof rows)[number], value: LeadStatus) => {
@@ -544,6 +612,41 @@ export default function LeadsManager() {
             <span>حد التنبيه: {list.data?.thresholdHours ?? 24} ساعة</span>
           </div>
 
+          <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-primary/20 bg-primary/5 p-3 text-sm">
+            <span className="font-semibold">
+              المحددون: {selectedLeadIds.size}
+            </span>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={selectingFiltered}
+              onClick={selectAllFiltered}
+            >
+              {selectingFiltered ? "جاري التحديد…" : "تحديد كل النتائج المصفاة"}
+            </Button>
+            <Button
+              size="sm"
+              className="gap-1"
+              disabled={!selectedLeadIds.size}
+              onClick={startCampaign}
+            >
+              <MessageSquare className="h-3.5 w-3.5" />
+              بدء رسالة جماعية
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              disabled={!selectedLeadIds.size}
+              onClick={() => setSelectedLeadIds(new Set())}
+            >
+              مسح التحديد
+            </Button>
+            <span className="text-xs text-muted-foreground">
+              التحديد يبقى مع تغيير الصفحة والفلاتر، ويُعاد التحقق منه قبل
+              الإرسال.
+            </span>
+          </div>
+
           {list.isLoading ? (
             <div className="space-y-2">
               {Array.from({ length: 6 }).map((_, index) => (
@@ -579,6 +682,18 @@ export default function LeadsManager() {
                 <Table className="min-w-[1050px]">
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-10 text-start">
+                        <Checkbox
+                          aria-label="تحديد كل العملاء في الصفحة"
+                          checked={
+                            rows.length > 0 &&
+                            rows.every(lead => selectedLeadIds.has(lead.id))
+                          }
+                          onCheckedChange={value =>
+                            toggleCurrentPage(Boolean(value))
+                          }
+                        />
+                      </TableHead>
                       <TableHead className="text-start">اسم العميل</TableHead>
                       <TableHead className="text-start">رقم الهاتف</TableHead>
                       <TableHead className="text-start">الكورس</TableHead>
@@ -600,6 +715,13 @@ export default function LeadsManager() {
                   <TableBody>
                     {rows.map(lead => (
                       <TableRow key={lead.id} className="align-top">
+                        <TableCell>
+                          <Checkbox
+                            aria-label={`تحديد ${lead.fullName}`}
+                            checked={selectedLeadIds.has(lead.id)}
+                            onCheckedChange={() => toggleLead(lead.id)}
+                          />
+                        </TableCell>
                         <TableCell className="whitespace-normal">
                           <div className="font-semibold">{lead.fullName}</div>
                           <div className="mt-1 flex flex-wrap gap-1">
@@ -706,13 +828,21 @@ export default function LeadsManager() {
                     className="rounded-2xl border border-border/70 p-4"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-2">
-                      <div>
-                        <div className="font-semibold">{lead.fullName}</div>
-                        <div
-                          className="mt-0.5 text-xs text-muted-foreground"
-                          dir="ltr"
-                        >
-                          {lead.studentPhone}
+                      <div className="flex items-start gap-2">
+                        <Checkbox
+                          className="mt-1"
+                          aria-label={`تحديد ${lead.fullName}`}
+                          checked={selectedLeadIds.has(lead.id)}
+                          onCheckedChange={() => toggleLead(lead.id)}
+                        />
+                        <div>
+                          <div className="font-semibold">{lead.fullName}</div>
+                          <div
+                            className="mt-0.5 text-xs text-muted-foreground"
+                            dir="ltr"
+                          >
+                            {lead.studentPhone}
+                          </div>
                         </div>
                       </div>
                       <Badge className={statusTone(lead.status)}>

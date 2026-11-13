@@ -45,7 +45,12 @@ function formatBytes(bytes: number): string {
 
 function formatDate(value: string): string {
   const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("ar-EG", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    numberingSystem: "latn",
+  }).format(date);
 }
 
 /**
@@ -64,10 +69,12 @@ export default function BackupManager() {
         credentials: "include",
         headers: authHeaders(),
       });
-      if (!response.ok) throw new Error("Could not load the backup list");
+      if (!response.ok) throw new Error("تعذر تحميل قائمة النسخ الاحتياطية");
       setData((await response.json()) as BackupList);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not load the backup list");
+      toast.error(
+        error instanceof Error ? error.message : "تعذر تحميل قائمة النسخ الاحتياطية",
+      );
     } finally {
       setLoading(false);
     }
@@ -87,12 +94,14 @@ export default function BackupManager() {
       });
       const payload = await response.json().catch(() => null);
       if (!response.ok) {
-        throw new Error(payload?.error ?? "The backup could not be created");
+        throw new Error(payload?.error ?? "تعذر إنشاء النسخة الاحتياطية");
       }
-      toast.success("A fresh Excel copy was created");
+      toast.success("تم إنشاء نسخة Excel جديدة");
       await refresh();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "The backup could not be created");
+      toast.error(
+        error instanceof Error ? error.message : "تعذر إنشاء النسخة الاحتياطية",
+      );
     } finally {
       setRunning(false);
     }
@@ -104,7 +113,7 @@ export default function BackupManager() {
         credentials: "include",
         headers: authHeaders(),
       });
-      if (!response.ok) throw new Error("The backup could not be downloaded");
+      if (!response.ok) throw new Error("تعذر تنزيل النسخة الاحتياطية");
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -115,31 +124,33 @@ export default function BackupManager() {
       link.remove();
       URL.revokeObjectURL(url);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "The backup could not be downloaded");
+      toast.error(
+        error instanceof Error ? error.message : "تعذر تنزيل النسخة الاحتياطية",
+      );
     }
   };
 
   return (
     <div className="space-y-6">
-      <Card className="rounded-3xl">
+      <Card className="admin-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <DatabaseBackup className="h-5 w-5" />
-            Excel safety copy
+            <DatabaseBackup className="h-5 w-5 text-primary" />
+            النسخة الاحتياطية من Excel
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-5">
-          <p className="max-w-3xl text-sm text-muted-foreground">
-            Every successful change in the panel is followed by an automatic Excel snapshot of the
-            database. The server also takes one every 30 minutes. If MySQL is ever unavailable or a
-            hosting account is suspended, the workbook is still on disk and the first copy of each
-            day is emailed to the owner when Gmail SMTP is configured.
+          <p className="max-w-3xl text-sm leading-8 text-muted-foreground">
+            بعد كل تغيير ناجح في لوحة الإدارة تُنشأ نسخة Excel تلقائية من قاعدة
+            البيانات، كما ينشئ السيرفر نسخة كل 30 دقيقة. إذا تعذر الوصول إلى
+            MySQL أو تم إيقاف استضافة الحساب، يظل ملف النسخة موجوداً على القرص،
+            وتُرسل أول نسخة من كل يوم إلى بريد المالك عند إعداد Gmail SMTP.
           </p>
 
           <div className="flex flex-wrap items-center gap-3">
             <Button className="rounded-2xl" onClick={runNow} disabled={running}>
               <RefreshCw className={`me-2 h-4 w-4 ${running ? "animate-spin" : ""}`} />
-              {running ? "Creating..." : "Create a copy now"}
+              {running ? "جارٍ الإنشاء…" : "إنشاء نسخة الآن"}
             </Button>
             <Button
               variant="outline"
@@ -148,53 +159,55 @@ export default function BackupManager() {
               onClick={() => void download(`${BACKUP_API}/latest`, "ideveloper-data-latest.xlsx")}
             >
               <Download className="me-2 h-4 w-4" />
-              Download latest
+              تنزيل أحدث نسخة
             </Button>
             {data.latest ? (
               <Badge variant="secondary" className="rounded-full">
-                Latest: {formatDate(data.latest.createdAt)} · {formatBytes(data.latest.bytes)}
+                الأحدث: {formatDate(data.latest.createdAt)} · {formatBytes(data.latest.bytes)}
               </Badge>
             ) : (
               <Badge variant="outline" className="rounded-full">
-                No copy yet
+                لا توجد نسخة بعد
               </Badge>
             )}
           </div>
 
-          <div className="flex items-start gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm text-emerald-800 dark:text-emerald-200">
+          <div className="flex items-start gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4 text-sm leading-7 text-emerald-800 dark:text-emerald-200">
             <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
             <span>
-              The workbook is stored in <code>App_Data/excel-backups</code>, which is outside the
-              public website folder and is kept across deployments. It contains one sheet per
-              database table plus a summary sheet.
+              يُخزَّن ملف النسخة في <code dir="ltr">App_Data/excel-backups</code> خارج
+              مجلد الموقع العام، ويبقى محفوظاً بين عمليات النشر. يحتوي الملف على
+              ورقة لكل جدول في قاعدة البيانات إضافة إلى ورقة ملخص.
             </span>
           </div>
         </CardContent>
       </Card>
 
-      <Card className="rounded-3xl">
+      <Card className="admin-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <FileSpreadsheet className="h-5 w-5" />
-            Recent copies
+            <FileSpreadsheet className="h-5 w-5 text-primary" />
+            النسخ الأخيرة
           </CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <p className="text-sm text-muted-foreground">Loading backups...</p>
+            <p className="text-sm text-muted-foreground">جارٍ تحميل النسخ الاحتياطية…</p>
           ) : data.backups.length === 0 ? (
             <p className="rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-              No Excel copies yet. Press “Create a copy now”.
+              لا توجد نسخ Excel بعد. اضغط «إنشاء نسخة الآن».
             </p>
           ) : (
-            <div className="space-y-2">
+            <div className="max-h-[520px] space-y-2 overflow-y-auto pe-1">
               {data.backups.map(file => (
                 <div
                   key={file.name}
                   className="flex flex-col gap-3 rounded-2xl border border-border/70 p-4 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div className="min-w-0">
-                    <div className="truncate font-mono text-sm font-semibold">{file.name}</div>
+                    <div className="truncate font-mono text-sm font-semibold" dir="ltr">
+                      {file.name}
+                    </div>
                     <div className="mt-1 text-xs text-muted-foreground">
                       {formatDate(file.createdAt)} · {formatBytes(file.bytes)}
                     </div>
@@ -208,7 +221,7 @@ export default function BackupManager() {
                     }
                   >
                     <Download className="me-2 h-4 w-4" />
-                    Download
+                    تنزيل
                   </Button>
                 </div>
               ))}

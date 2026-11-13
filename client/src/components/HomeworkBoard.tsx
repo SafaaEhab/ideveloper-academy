@@ -21,6 +21,8 @@ type Props = {
   editorLabel: string;
   runLabel: string;
   copyLabel: string;
+  /** Confirmation shown after copying; defaults to `copyLabel`. */
+  copiedLabel?: string;
   /**
    * The file the editor opens on.
    *
@@ -43,6 +45,7 @@ export default function HomeworkBoard({
   editorLabel,
   runLabel,
   copyLabel,
+  copiedLabel,
   starterCode = "",
   autoRun,
 }: Props) {
@@ -94,6 +97,7 @@ export default function HomeworkBoard({
         exampleLabel={editorLabel}
         runLabel={runLabel}
         copyLabel={copyLabel}
+        copiedLabel={copiedLabel}
         autoRun={autoRun}
       />
     </div>

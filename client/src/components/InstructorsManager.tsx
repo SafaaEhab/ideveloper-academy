@@ -17,7 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { trpc, LIVE_REFETCH_INTERVAL } from "@/lib/trpc";
 import { PHONE_VALIDATION_MESSAGE, validateOptionalPhone } from "@shared/validation";
-import { DAY_LABELS_SHORT, formatTimeRange } from "@/lib/schedule";
+import { DAY_LABELS_SHORT_AR, formatTimeRangeAr } from "@/lib/schedule";
 
 type InstructorRow = {
   id: number;
@@ -48,14 +48,8 @@ type Draft = {
 };
 
 const emptyDraft: Draft = { name: "", email: "", password: "", phone: "", title: "" };
-
 const MIN_PASSWORD_LENGTH = 8;
 
-/**
- * Admin → Instructors. Adding someone here creates their sign-in account as
- * well; the password the admin types is hashed server-side and never comes
- * back through any endpoint, so this screen only ever edits it (never shows it).
- */
 export default function InstructorsManager() {
   const utils = trpc.useUtils();
   const instructors = trpc.admin.instructors.useQuery(undefined, {
@@ -71,13 +65,12 @@ export default function InstructorsManager() {
 
   const refresh = () => {
     utils.admin.instructors.invalidate();
-    // The timetable blocks show instructor names, so they refresh with the roster.
     utils.admin.groupSessions.invalidate();
   };
 
   const createInstructor = trpc.admin.createInstructor.useMutation({
     onSuccess: () => {
-      toast.success("Instructor added — they can sign in at /login now");
+      toast.success("تمت إضافة المدرب — يمكنه تسجيل الدخول من صفحة الدخول الآن");
       setDraft(emptyDraft);
       refresh();
     },
@@ -86,7 +79,7 @@ export default function InstructorsManager() {
 
   const updateInstructor = trpc.admin.updateInstructor.useMutation({
     onSuccess: () => {
-      toast.success("Instructor updated");
+      toast.success("تم تحديث بيانات المدرب");
       setEditing(null);
       refresh();
     },
@@ -95,7 +88,7 @@ export default function InstructorsManager() {
 
   const deleteInstructor = trpc.admin.deleteInstructor.useMutation({
     onSuccess: () => {
-      toast.success("Instructor removed");
+      toast.success("تم حذف المدرب");
       setConfirmDelete(null);
       refresh();
     },
@@ -123,11 +116,11 @@ export default function InstructorsManager() {
   const saveEdit = () => {
     if (!editing) return;
     if (editDraft.name.trim().length < 2) {
-      toast.error("Write the instructor's name");
+      toast.error("اكتب اسم المدرب");
       return;
     }
     if (editDraft.password && editDraft.password.length < MIN_PASSWORD_LENGTH) {
-      toast.error(`The new password needs at least ${MIN_PASSWORD_LENGTH} characters`);
+      toast.error(`كلمة المرور الجديدة تحتاج ${MIN_PASSWORD_LENGTH} أحرف على الأقل`);
       return;
     }
     if (!validateOptionalPhone(editDraft.phone).ok) {
@@ -159,28 +152,31 @@ export default function InstructorsManager() {
   const rows = (instructors.data ?? []) as InstructorRow[];
 
   return (
-    <div className="grid gap-5 xl:grid-cols-[380px_1fr]">
-      <Card className="rounded-3xl">
+    <div className="grid gap-6 xl:grid-cols-[370px_1fr]">
+      <Card className="admin-card h-fit">
         <CardHeader>
-          <CardTitle>Add instructor</CardTitle>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <GraduationCap className="h-5 w-5 text-primary" />
+            إضافة مدرب جديد
+          </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div>
-              <Label className="mb-2 block text-sm" htmlFor="instructor-name">
-                Full name *
+              <Label className="mb-2 block text-sm font-semibold" htmlFor="instructor-name">
+                الاسم الكامل *
               </Label>
               <Input
                 id="instructor-name"
                 value={draft.name}
                 maxLength={160}
                 onChange={event => setDraft({ ...draft, name: event.target.value })}
-                placeholder="e.g. Ms Salma"
+                placeholder="مثال: أ. سلمى"
               />
             </div>
             <div>
-              <Label className="mb-2 block text-sm" htmlFor="instructor-email">
-                Email *
+              <Label className="mb-2 block text-sm font-semibold" htmlFor="instructor-email">
+                البريد الإلكتروني *
               </Label>
               <Input
                 id="instructor-email"
@@ -189,11 +185,12 @@ export default function InstructorsManager() {
                 value={draft.email}
                 onChange={event => setDraft({ ...draft, email: event.target.value })}
                 placeholder="teacher@example.com"
+                dir="ltr"
               />
             </div>
             <div>
-              <Label className="mb-2 block text-sm" htmlFor="instructor-password">
-                Password *
+              <Label className="mb-2 block text-sm font-semibold" htmlFor="instructor-password">
+                كلمة المرور *
               </Label>
               <Input
                 id="instructor-password"
@@ -201,44 +198,46 @@ export default function InstructorsManager() {
                 autoComplete="new-password"
                 value={draft.password}
                 onChange={event => setDraft({ ...draft, password: event.target.value })}
-                placeholder={`At least ${MIN_PASSWORD_LENGTH} characters`}
+                placeholder={`${MIN_PASSWORD_LENGTH} أحرف على الأقل`}
               />
-              <p className="mt-1.5 text-xs text-muted-foreground">
-                Used to sign in at /login. It is hashed and cannot be viewed again.
+              <p className="mt-1.5 text-[11px] leading-5 text-muted-foreground">
+                تُستخدم لتسجيل الدخول من صفحة الدخول، وتُشفّر ولا يمكن عرضها مرة أخرى.
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <Label className="mb-2 block text-sm" htmlFor="instructor-phone">
-                  Phone
+                <Label className="mb-2 block text-sm font-semibold" htmlFor="instructor-phone">
+                  الهاتف
                 </Label>
                 <Input
                   id="instructor-phone"
                   type="tel"
                   value={draft.phone}
                   onChange={event => setDraft({ ...draft, phone: event.target.value })}
-                  placeholder="Optional"
+                  placeholder="اختياري"
                   dir="ltr"
                   aria-invalid={!validateOptionalPhone(draft.phone).ok}
                 />
                 {!validateOptionalPhone(draft.phone).ok ? (
-                  <p className="mt-1.5 text-xs text-destructive">{PHONE_VALIDATION_MESSAGE}</p>
+                  <p className="mt-1.5 text-xs text-destructive">
+                    {PHONE_VALIDATION_MESSAGE}
+                  </p>
                 ) : null}
               </div>
               <div>
-                <Label className="mb-2 block text-sm" htmlFor="instructor-title">
-                  Teaches
+                <Label className="mb-2 block text-sm font-semibold" htmlFor="instructor-title">
+                  المادة التي يدرّسها
                 </Label>
                 <Input
                   id="instructor-title"
                   value={draft.title}
                   onChange={event => setDraft({ ...draft, title: event.target.value })}
-                  placeholder="Python, Robotics…"
+                  placeholder="بايثون، الروبوتات…"
                 />
               </div>
             </div>
             <Button
-              className="h-12 w-full rounded-2xl"
+              className="h-11 w-full rounded-xl"
               disabled={!canCreate || createInstructor.isPending}
               onClick={() =>
                 createInstructor.mutate({
@@ -251,58 +250,62 @@ export default function InstructorsManager() {
               }
             >
               <Plus className="me-2 h-4 w-4" />
-              {createInstructor.isPending ? "Adding…" : "Add instructor"}
+              {createInstructor.isPending ? "جارٍ الإضافة…" : "إضافة المدرب"}
             </Button>
           </div>
         </CardContent>
       </Card>
 
-      <Card className="rounded-3xl">
+      <Card className="admin-card min-w-0">
         <CardHeader>
-          <CardTitle>
-            Instructors{rows.length > 0 ? ` (${rows.length})` : ""}
+          <CardTitle className="text-base">
+            المدربون <span className="text-muted-foreground">({rows.length})</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
           {instructors.isLoading ? (
-            <div className="rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-              Loading instructors…
+            <div className="space-y-2">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className="h-24 animate-pulse rounded-2xl bg-muted/50" />
+              ))}
             </div>
           ) : rows.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-border p-10 text-center">
               <GraduationCap className="mx-auto h-8 w-8 text-muted-foreground" />
-              <p className="mt-3 font-semibold">No instructors yet</p>
+              <p className="mt-3 font-semibold">لا يوجد مدربون بعد</p>
               <p className="mt-1 text-sm text-muted-foreground">
-                Add the first one, then assign them to a session in the timetable.
+                أضف أول مدرب ثم أسنده إلى حصة من جدول المواعيد.
               </p>
             </div>
           ) : (
             <div className="space-y-3">
               {rows.map(instructor => (
-                <div
-                  key={instructor.id}
-                  className="rounded-2xl border border-border/70 p-4"
-                >
-                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="truncate font-semibold">{instructor.name}</span>
-                        <Badge variant={instructor.active ? "default" : "secondary"}>
-                          {instructor.active ? "Active" : "Inactive"}
-                        </Badge>
-                        {instructor.title ? (
-                          <Badge variant="outline">{instructor.title}</Badge>
-                        ) : null}
-                      </div>
-                      <div className="mt-1 truncate text-sm text-muted-foreground">
-                        {instructor.email}
-                        {instructor.phone ? ` · ${instructor.phone}` : ""}
-                      </div>
-                      <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <Users className="h-3.5 w-3.5" />
-                        {instructor.sessionCount === 0
-                          ? "No sessions assigned yet"
-                          : `${instructor.sessionCount} weekly session${instructor.sessionCount === 1 ? "" : "s"}`}
+                <div key={instructor.id} className="admin-card-soft p-4">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="flex min-w-0 items-start gap-3">
+                      <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-sm font-extrabold text-primary">
+                        {instructor.name.charAt(0)}
+                      </span>
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="truncate font-bold">{instructor.name}</span>
+                          <Badge variant={instructor.active ? "default" : "secondary"}>
+                            {instructor.active ? "نشط" : "موقوف"}
+                          </Badge>
+                          {instructor.title ? (
+                            <Badge variant="outline">{instructor.title}</Badge>
+                          ) : null}
+                        </div>
+                        <div className="mt-1 truncate text-sm text-muted-foreground" dir="ltr">
+                          {instructor.email}
+                          {instructor.phone ? ` · ${instructor.phone}` : ""}
+                        </div>
+                        <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <Users className="h-3.5 w-3.5" />
+                          {instructor.sessionCount === 0
+                            ? "لا توجد حصص مسندة بعد"
+                            : `${instructor.sessionCount} حصة أسبوعية`}
+                        </div>
                       </div>
                     </div>
                     <div className="flex shrink-0 items-center gap-2">
@@ -310,7 +313,7 @@ export default function InstructorsManager() {
                         checked={instructor.active}
                         disabled={updateInstructor.isPending}
                         onCheckedChange={active => toggleActive(instructor, active)}
-                        aria-label={`${instructor.active ? "Deactivate" : "Activate"} ${instructor.name}`}
+                        aria-label={`${instructor.active ? "إيقاف" : "تفعيل"} ${instructor.name}`}
                       />
                       <Button
                         variant="outline"
@@ -319,14 +322,14 @@ export default function InstructorsManager() {
                         onClick={() => startEdit(instructor)}
                       >
                         <Pencil className="me-1.5 h-3.5 w-3.5" />
-                        Edit
+                        تعديل
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
                         className="text-destructive"
                         onClick={() => setConfirmDelete(instructor)}
-                        aria-label={`Delete ${instructor.name}`}
+                        aria-label={`حذف ${instructor.name}`}
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -345,9 +348,9 @@ export default function InstructorsManager() {
                       ))}
                     </div>
                   ) : (
-                    <p className="mt-3 border-t border-border/60 pt-3 text-xs text-muted-foreground">
-                      Assignment comes from the timetable — open a session and pick this
-                      instructor. Their dashboard updates automatically.
+                    <p className="mt-3 border-t border-border/60 pt-3 text-xs leading-6 text-muted-foreground">
+                      الإسناد يتم من جدول المواعيد — افتح الحصة واختر المدرب.
+                      لوحة المدرب تتحدث تلقائياً.
                     </p>
                   )}
 
@@ -355,8 +358,8 @@ export default function InstructorsManager() {
                     <div className="mt-2 grid gap-1 text-xs text-muted-foreground sm:grid-cols-2">
                       {instructor.sessions.map(session => (
                         <div key={session.id} className="truncate">
-                          {session.groupName} · {DAY_LABELS_SHORT[session.dayOfWeek]}{" "}
-                          {formatTimeRange(session.startTime, session.endTime)}
+                          {session.groupName} · {DAY_LABELS_SHORT_AR[session.dayOfWeek]}{" "}
+                          {formatTimeRangeAr(session.startTime, session.endTime)}
                         </div>
                       ))}
                     </div>
@@ -371,15 +374,15 @@ export default function InstructorsManager() {
       <Dialog open={editing !== null} onOpenChange={open => !open && setEditing(null)}>
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Edit instructor</DialogTitle>
+            <DialogTitle>تعديل بيانات المدرب</DialogTitle>
             <DialogDescription>
-              Update the profile, reset the password, or switch the account off.
+              حدّث الملف الشخصي أو أعد تعيين كلمة المرور أو أوقف الحساب.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label className="mb-2 block text-sm" htmlFor="edit-name">
-                Full name *
+              <Label className="mb-2 block text-sm font-semibold" htmlFor="edit-name">
+                الاسم الكامل *
               </Label>
               <Input
                 id="edit-name"
@@ -388,19 +391,20 @@ export default function InstructorsManager() {
               />
             </div>
             <div>
-              <Label className="mb-2 block text-sm" htmlFor="edit-email">
-                Email *
+              <Label className="mb-2 block text-sm font-semibold" htmlFor="edit-email">
+                البريد الإلكتروني *
               </Label>
               <Input
                 id="edit-email"
                 type="email"
                 value={editDraft.email}
                 onChange={event => setEditDraft({ ...editDraft, email: event.target.value })}
+                dir="ltr"
               />
             </div>
             <div>
-              <Label className="mb-2 block text-sm" htmlFor="edit-password">
-                New password
+              <Label className="mb-2 block text-sm font-semibold" htmlFor="edit-password">
+                كلمة مرور جديدة
               </Label>
               <Input
                 id="edit-password"
@@ -408,13 +412,13 @@ export default function InstructorsManager() {
                 autoComplete="new-password"
                 value={editDraft.password}
                 onChange={event => setEditDraft({ ...editDraft, password: event.target.value })}
-                placeholder="Leave blank to keep the current password"
+                placeholder="اتركها فارغة للإبقاء على كلمة المرور الحالية"
               />
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <Label className="mb-2 block text-sm" htmlFor="edit-phone">
-                  Phone
+                <Label className="mb-2 block text-sm font-semibold" htmlFor="edit-phone">
+                  الهاتف
                 </Label>
                 <Input
                   id="edit-phone"
@@ -424,12 +428,14 @@ export default function InstructorsManager() {
                   aria-invalid={!validateOptionalPhone(editDraft.phone).ok}
                 />
                 {!validateOptionalPhone(editDraft.phone).ok ? (
-                  <p className="mt-1.5 text-xs text-destructive">{PHONE_VALIDATION_MESSAGE}</p>
+                  <p className="mt-1.5 text-xs text-destructive">
+                    {PHONE_VALIDATION_MESSAGE}
+                  </p>
                 ) : null}
               </div>
               <div>
-                <Label className="mb-2 block text-sm" htmlFor="edit-title">
-                  Teaches
+                <Label className="mb-2 block text-sm font-semibold" htmlFor="edit-title">
+                  المادة التي يدرّسها
                 </Label>
                 <Input
                   id="edit-title"
@@ -438,11 +444,11 @@ export default function InstructorsManager() {
                 />
               </div>
             </div>
-            <label className="flex cursor-pointer items-center justify-between rounded-2xl border border-border p-3 text-sm">
+            <label className="flex cursor-pointer items-center justify-between rounded-xl border border-border p-3 text-sm">
               <span>
-                <span className="block font-medium">Account active</span>
-                <span className="block text-xs text-muted-foreground">
-                  Off immediately closes their dashboard; their history stays intact.
+                <span className="block font-semibold">الحساب نشط</span>
+                <span className="block text-xs leading-5 text-muted-foreground">
+                  إيقافه يغلق لوحة المدرب فوراً مع الاحتفاظ بسجله.
                 </span>
               </span>
               <Switch checked={editActive} onCheckedChange={setEditActive} />
@@ -450,28 +456,31 @@ export default function InstructorsManager() {
           </div>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setEditing(null)}>
-              Cancel
+              إلغاء
             </Button>
             <Button disabled={updateInstructor.isPending} onClick={saveEdit}>
-              {updateInstructor.isPending ? "Saving…" : "Save changes"}
+              {updateInstructor.isPending ? "جارٍ الحفظ…" : "حفظ التعديلات"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      <Dialog open={confirmDelete !== null} onOpenChange={open => !open && setConfirmDelete(null)}>
+      <Dialog
+        open={confirmDelete !== null}
+        onOpenChange={open => !open && setConfirmDelete(null)}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Delete instructor?</DialogTitle>
+            <DialogTitle>حذف المدرب؟</DialogTitle>
             <DialogDescription>
               {confirmDelete
-                ? `"${confirmDelete.name}" loses dashboard access and their timetable slots become unassigned. Recorded evaluations are kept.`
+                ? `"${confirmDelete.name}" سيفقد الوصول إلى لوحة المدرب وستصبح حصصه غير مسندة. يتم الاحتفاظ بالتقييمات المسجلة.`
                 : ""}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setConfirmDelete(null)}>
-              Cancel
+              إلغاء
             </Button>
             <Button
               variant="destructive"
@@ -480,7 +489,7 @@ export default function InstructorsManager() {
                 confirmDelete && deleteInstructor.mutate({ id: confirmDelete.id })
               }
             >
-              {deleteInstructor.isPending ? "Deleting…" : "Delete instructor"}
+              {deleteInstructor.isPending ? "جارٍ الحذف…" : "حذف المدرب"}
             </Button>
           </DialogFooter>
         </DialogContent>

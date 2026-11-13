@@ -31,8 +31,8 @@ export default function AccessRequestForm({
       onSent?.(email.trim());
       toast.success(
         data.notified
-          ? "Request sent — you will get access once it is approved."
-          : "Request saved — the owner will see it in the admin panel.",
+          ? "تم إرسال الطلب — سيُفتح لك الوصول بعد الموافقة."
+          : "تم حفظ الطلب — سيراه المالك في لوحة الإدارة.",
       );
     },
     onError: error => toast.error(error.message),
@@ -41,10 +41,10 @@ export default function AccessRequestForm({
   if (sent) {
     return (
       <div className="rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-5 text-start">
-        <p className="font-semibold">Request received for {sent}</p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Keep the password you chose — it is what you sign in with once the request
-          is approved. Sign in again after you hear back.
+        <p className="font-semibold">تم استلام الطلب لـ {sent}</p>
+        <p className="mt-1 text-sm leading-7 text-muted-foreground">
+          احتفظ بكلمة المرور التي اخترتها — ستستخدمها لتسجيل الدخول بعد الموافقة
+          على الطلب. سجّل الدخول مجدداً بعد أن يصلك الرد.
         </p>
       </div>
     );
@@ -60,16 +60,16 @@ export default function AccessRequestForm({
       }}
     >
       <div className="space-y-2">
-        <Label htmlFor="access-name">Your name</Label>
+        <Label htmlFor="access-name">الاسم</Label>
         <Input
           id="access-name"
           value={name}
           onChange={event => setName(event.target.value)}
-          placeholder="Your name"
+          placeholder="اسمك"
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="access-email">Your email</Label>
+        <Label htmlFor="access-email">البريد الإلكتروني</Label>
         <Input
           id="access-email"
           type="email"
@@ -77,10 +77,11 @@ export default function AccessRequestForm({
           value={email}
           onChange={event => setEmail(event.target.value)}
           placeholder="you@example.com"
+          dir="ltr"
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="access-password">Choose a password</Label>
+        <Label htmlFor="access-password">اختر كلمة مرور</Label>
         <Input
           id="access-password"
           type="password"
@@ -89,7 +90,7 @@ export default function AccessRequestForm({
           autoComplete="new-password"
           value={password}
           onChange={event => setPassword(event.target.value)}
-          placeholder="At least 8 characters"
+          placeholder="8 أحرف على الأقل"
         />
       </div>
       <Button
@@ -97,10 +98,10 @@ export default function AccessRequestForm({
         className="h-12 w-full rounded-2xl"
         disabled={!email.trim() || password.length < 8 || request.isPending}
       >
-        {request.isPending ? "Sending..." : "Request access"}
+        {request.isPending ? "جارٍ الإرسال…" : "طلب صلاحية الوصول"}
       </Button>
-      <p className="text-center text-xs text-muted-foreground">
-        The owner reviews every request personally. Nothing is opened automatically.
+      <p className="text-center text-xs leading-6 text-muted-foreground">
+        يراجع المالك كل طلب بنفسه، ولا يُفتح أي وصول تلقائياً.
       </p>
     </form>
   );

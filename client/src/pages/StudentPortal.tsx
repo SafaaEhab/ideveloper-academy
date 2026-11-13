@@ -109,14 +109,15 @@ const text = {
   problemSub: "Applied challenges for the final month",
   roadmap: "Five-month roadmap",
   curriculum: "خريطة المنهج",
-  progress: "????? ?? ??????",
+  progress: "تقدمك في المنهج",
   phase: "Phase",
   lesson: "Session",
   read: "Lesson guide",
   topics: "Key ideas",
   example: "Try the example",
   run: "Run example",
-  copied: "Code copied",
+  copied: "تم نسخ الكود",
+  copy: "نسخ الكود",
   mission: "Your mission",
   complete: "Mark session complete",
   completed: "session completed",
@@ -844,7 +845,7 @@ export default function StudentPortal() {
                                           const trimmed = line.trim();
                                           if (!trimmed) return null;
                                           if (
-                                            trimmed.startsWith("â€¢") ||
+                                            trimmed.startsWith("•") ||
                                             trimmed.startsWith("-")
                                           )
                                             return (
@@ -853,11 +854,11 @@ export default function StudentPortal() {
                                                 className="flex gap-2.5 leading-7 text-muted-foreground"
                                               >
                                                 <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
-                                                  â€¢
+                                                  •
                                                 </span>
                                                 <span>
                                                   {trimmed.replace(
-                                                    /^[â€¢-]\s*/,
+                                                    /^[•-]\s*/,
                                                     ""
                                                   )}
                                                 </span>
@@ -933,7 +934,7 @@ export default function StudentPortal() {
                                           <div className="mb-2 text-sm font-bold">
                                             {isScratch
                                               ? "Try yourself"
-                                              : "Try yourself â€” empty interpreter"}
+                                              : "Try yourself — empty interpreter"}
                                           </div>
                                           {isScratch ? (
                                             <ScratchBlocks
@@ -942,7 +943,7 @@ export default function StudentPortal() {
                                                 "# Write your code here\n"
                                               }
                                               label="Try yourself"
-                                              copyLabel={text.copied}
+                                              copyLabel={text.copy} copiedLabel={text.copied}
                                             />
                                           ) : (
                                             <PythonRunner
@@ -950,29 +951,29 @@ export default function StudentPortal() {
                                                 section.starterCode ??
                                                 "# Write your code here\n"
                                               }
-                                              exampleLabel="Try yourself â€” empty interpreter"
+                                              exampleLabel="Try yourself — empty interpreter"
                                               runLabel={text.run}
-                                              copyLabel={text.copied}
+                                              copyLabel={text.copy} copiedLabel={text.copied}
                                             />
                                           )}
                                         </div>
                                         {section.solutionCode && (
                                           <div>
                                             <div className="mb-2 text-sm font-bold">
-                                              Solution â€” compare your answer
+                                              Solution — compare your answer
                                             </div>
                                             {isScratch ? (
                                               <ScratchBlocks
                                                 code={section.solutionCode}
-                                                label="Solution â€” compare your answer"
-                                                copyLabel={text.copied}
+                                                label="Solution — compare your answer"
+                                                copyLabel={text.copy} copiedLabel={text.copied}
                                               />
                                             ) : (
                                               <PythonRunner
                                                 code={section.solutionCode}
-                                                exampleLabel="Solution â€” compare your answer"
+                                                exampleLabel="Solution — compare your answer"
                                                 runLabel={text.run}
-                                                copyLabel={text.copied}
+                                                copyLabel={text.copy} copiedLabel={text.copied}
                                               />
                                             )}
                                           </div>
@@ -985,14 +986,14 @@ export default function StudentPortal() {
                                             <ScratchBlocks
                                               code={section.code}
                                               label={text.example}
-                                              copyLabel={text.copied}
+                                              copyLabel={text.copy} copiedLabel={text.copied}
                                             />
                                           ) : (
                                             <PythonRunner
                                               code={section.code}
                                               exampleLabel={text.example}
                                               runLabel={text.run}
-                                              copyLabel={text.copied}
+                                              copyLabel={text.copy} copiedLabel={text.copied}
                                             />
                                           )}
                                         </div>
@@ -1015,7 +1016,7 @@ export default function StudentPortal() {
                                       const trimmed = line.trim();
                                       if (!trimmed) return null;
                                       if (
-                                        trimmed.startsWith("â€¢") ||
+                                        trimmed.startsWith("•") ||
                                         trimmed.startsWith("-")
                                       )
                                         return (
@@ -1024,11 +1025,11 @@ export default function StudentPortal() {
                                             className="flex gap-2.5 leading-7 text-muted-foreground"
                                           >
                                             <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
-                                              â€¢
+                                              •
                                             </span>
                                             <span>
                                               {trimmed.replace(
-                                                /^[â€¢-]\s*/,
+                                                /^[•-]\s*/,
                                                 ""
                                               )}
                                             </span>
@@ -1065,9 +1066,9 @@ export default function StudentPortal() {
                                 <PythonRunner
                                   key={selectedLesson.id}
                                   code={"# Write your homework solution here\n"}
-                                  exampleLabel="Your code â€” write it and press Run"
+                                  exampleLabel="Your code — write it and press Run"
                                   runLabel="Run"
-                                  copyLabel={text.copied}
+                                  copyLabel={text.copy} copiedLabel={text.copied}
                                 />
                               </div>
                             )}
@@ -1180,7 +1181,7 @@ export default function StudentPortal() {
                                       {quizAnswers[index] === item.answer
                                         ? text.correct
                                         : text.tryAgain}{" "}
-                                      Â· {item.explanation}
+                                      · {item.explanation}
                                     </div>
                                   )}
                                 </div>
@@ -1280,7 +1281,7 @@ export default function StudentPortal() {
                   <Target className="h-6 w-6" />
                 </div>
                 <h2 className="mt-4 text-2xl font-bold">
-                  Robotics â€” coming soon
+                  Robotics — coming soon
                 </h2>
                 <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
                   This student is enrolled in Robotics. Lessons will appear here

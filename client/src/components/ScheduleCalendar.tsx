@@ -54,15 +54,15 @@ import { toast } from "sonner";
 import { normalizeWhatsAppGroupUrl } from "@shared/whatsapp";
 import { trpc, LIVE_REFETCH_INTERVAL } from "@/lib/trpc";
 import {
-  DAY_LABELS,
-  DAY_LABELS_SHORT,
+  DAY_LABELS_AR,
+  DAY_LABELS_SHORT_AR,
   buildColorMap,
   buildOccurrences,
   colorFor,
   findConflicts,
-  formatDuration,
-  formatTime,
-  formatTimeRange,
+  formatDurationAr,
+  formatTimeAr,
+  formatTimeRangeAr,
   fromDateKey,
   layoutOverlaps,
   minutesToTime,
@@ -241,7 +241,7 @@ export default function ScheduleCalendar() {
 
   const deleteGroup = trpc.admin.deleteGroup.useMutation({
     onSuccess: (_result, variables) => {
-      toast.success("Group deleted");
+      toast.success("تم حذف المجموعة");
       setGroupToDelete(null);
       utils.admin.groups.setData(undefined, rows =>
         rows?.filter(group => group.id !== variables.id),
@@ -260,7 +260,7 @@ export default function ScheduleCalendar() {
 
   const createSession = trpc.admin.createGroupSession.useMutation({
     onSuccess: () => {
-      toast.success("Session added to the timetable");
+      toast.success("تمت إضافة الحصة إلى الجدول");
       setEditor(null);
       refresh();
     },
@@ -269,7 +269,7 @@ export default function ScheduleCalendar() {
 
   const updateSession = trpc.admin.updateGroupSession.useMutation({
     onSuccess: () => {
-      toast.success("Timetable updated");
+      toast.success("تم تحديث الجدول");
       setEditor(null);
       setPendingMove(null);
       refresh();
@@ -279,7 +279,7 @@ export default function ScheduleCalendar() {
 
   const deleteSession = trpc.admin.deleteGroupSession.useMutation({
     onSuccess: () => {
-      toast.success("Session removed from the timetable");
+      toast.success("تمت إزالة الحصة من الجدول");
       setEditor(null);
       refresh();
     },
@@ -288,7 +288,7 @@ export default function ScheduleCalendar() {
 
   const saveException = trpc.admin.saveSessionException.useMutation({
     onSuccess: () => {
-      toast.success("That week only — the rest of the series is untouched");
+      toast.success("تم التعديل لهذا الأسبوع فقط — بقية الأسابيع دون تغيير");
       setEditor(null);
       setPendingMove(null);
       refresh();
@@ -309,9 +309,10 @@ export default function ScheduleCalendar() {
 
   const heading = useMemo(() => {
     if (view === "month") {
-      return anchor.toLocaleDateString("en-US", {
+      return anchor.toLocaleDateString("ar-EG", {
         month: "long",
         year: "numeric",
+        numberingSystem: "latn",
       });
     }
     const week = weekDays(anchor, weekStartsOn);
@@ -319,14 +320,16 @@ export default function ScheduleCalendar() {
     const last = week[6];
     // Always spell the month on both ends. Omitting `month` makes some ICU
     // builds fall back to "2026 (day: 10)", which reads as a bug to the admin.
-      return `${first.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      })} – ${last.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-      })}`;
+    return `${first.toLocaleDateString("ar-EG", {
+      month: "long",
+      day: "numeric",
+      numberingSystem: "latn",
+    })} – ${last.toLocaleDateString("ar-EG", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+      numberingSystem: "latn",
+    })}`;
   }, [anchor, view, weekStartsOn]);
 
   // ── Creating and editing ─────────────────────────────────────────────────
@@ -370,11 +373,11 @@ export default function ScheduleCalendar() {
 
   function editorPayload(form: EditorForm) {
     const groupName = form.groupName.trim();
-    if (!groupName) return { error: "Type or pick the group name" };
+    if (!groupName) return { error: "اكتب اسم المجموعة أو اخترها" };
     const start = timeToMinutes(form.startTime);
     const end = timeToMinutes(form.endTime);
-    if (start === null || end === null) return { error: "Enter the start and end time" };
-    if (end <= start) return { error: "The session has to end after it starts" };
+    if (start === null || end === null) return { error: "أدخل وقت البداية والنهاية" };
+    if (end <= start) return { error: "يجب أن تنتهي الحصة بعد بدايتها" };
     // An empty select String is "unassigned" — the slot waits for an instructor.
     return {
       values: {
@@ -400,7 +403,7 @@ export default function ScheduleCalendar() {
     const { groupName, instructorId, ...values } = parsed.values;
 
     if (instructorId !== null && !instructorOptions.some(item => item.id === instructorId)) {
-      toast.error("Pick an instructor from the list");
+      toast.error("اختر مدرباً من القائمة");
       return;
     }
 
@@ -610,8 +613,8 @@ export default function ScheduleCalendar() {
     if (pending.length === 0) {
       toast.error(
         skipped.length > 0
-          ? `Could not read a schedule from ${skipped.join(", ")} — check the day and time text.`
-          : "No groups have a day and time to import yet",
+          ? `تعذر قراءة الجدول من ${skipped.join("، ")} — تحقق من نص اليوم والوقت.`
+          : "لا توجد مجموعات لديها يوم ووقت لاستيرادهما بعد",
       );
       return;
     }
@@ -620,9 +623,9 @@ export default function ScheduleCalendar() {
       for (const values of pending) {
         await importSessions.mutateAsync(values as never);
       }
-      toast.success(`Imported ${pending.length} weekly session${pending.length === 1 ? "" : "s"}`);
+      toast.success(`تم استيراد ${pending.length} حصة أسبوعية`);
       if (skipped.length > 0) {
-        toast.warning(`Skipped ${skipped.join(", ")} — could not read the schedule`);
+        toast.warning(`تم تخطي ${skipped.join("، ")} — تعذر قراءة الجدول`);
       }
       refresh();
     } catch {
@@ -653,20 +656,20 @@ export default function ScheduleCalendar() {
             variant="outline"
             size="icon"
             onClick={() => step(-1)}
-            aria-label={view === "week" ? "Previous week" : "Previous month"}
+            aria-label={view === "week" ? "الأسبوع السابق" : "الشهر السابق"}
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronRight className="h-4 w-4" />
           </Button>
           <Button
             variant="outline"
             size="icon"
             onClick={() => step(1)}
-            aria-label={view === "week" ? "Next week" : "Next month"}
+            aria-label={view === "week" ? "الأسبوع التالي" : "الشهر التالي"}
           >
-            <ChevronRight className="h-4 w-4" />
+            <ChevronLeft className="h-4 w-4" />
           </Button>
           <Button variant="outline" onClick={() => setAnchor(new Date())}>
-            Today
+            اليوم
           </Button>
           <h2 className="ms-2 text-lg font-bold tracking-tight">{heading}</h2>
         </div>
@@ -676,13 +679,13 @@ export default function ScheduleCalendar() {
             value={String(weekStartsOn)}
             onValueChange={value => setWeekStartsOn(Number(value))}
           >
-            <SelectTrigger className="w-[168px]" aria-label="First day of the week">
+            <SelectTrigger className="w-[190px]" aria-label="أول يوم في الأسبوع">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="0">Week starts Sunday</SelectItem>
-              <SelectItem value="1">Week starts Monday</SelectItem>
-              <SelectItem value="6">Week starts Saturday</SelectItem>
+              <SelectItem value="0">الأسبوع يبدأ الأحد</SelectItem>
+              <SelectItem value="1">الأسبوع يبدأ الاثنين</SelectItem>
+              <SelectItem value="6">الأسبوع يبدأ السبت</SelectItem>
             </SelectContent>
           </Select>
           <div className="flex rounded-2xl border border-border p-1">
@@ -692,19 +695,19 @@ export default function ScheduleCalendar() {
                 type="button"
                 onClick={() => setView(mode)}
                 aria-pressed={view === mode}
-                className={`rounded-xl px-4 py-1.5 text-sm font-medium capitalize transition-colors ${
+                className={`rounded-xl px-4 py-1.5 text-sm font-semibold transition-colors ${
                   view === mode
                     ? "bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:bg-muted"
                 }`}
               >
-                {mode}
+                {mode === "week" ? "أسبوع" : "شهر"}
               </button>
             ))}
           </div>
           <Button onClick={() => openCreate(weekDays(anchor, weekStartsOn)[0])}>
             <Plus className="me-2 h-4 w-4" />
-            New session
+            حصة جديدة
           </Button>
         </div>
       </div>
@@ -712,20 +715,20 @@ export default function ScheduleCalendar() {
       {groupRows.length === 0 ? (
         <div className="rounded-3xl border border-dashed border-border p-12 text-center">
           <CalendarClock className="mx-auto h-8 w-8 text-muted-foreground" />
-          <p className="mt-4 font-semibold">No sessions yet</p>
+          <p className="mt-4 font-semibold">لا توجد حصص بعد</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            Create a session and type the group name; the group will be added with it.
+            أنشئ حصة واكتب اسم المجموعة؛ ستُضاف المجموعة معها تلقائياً.
           </p>
           <Button className="mt-4" onClick={() => openCreate(weekDays(anchor, weekStartsOn)[0])}>
             <Plus className="me-2 h-4 w-4" />
-            New session
+            حصة جديدة
           </Button>
         </div>
       ) : (
         <>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl border border-border bg-card px-4 py-3">
             <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-              {sessionRows.length} weekly session{sessionRows.length === 1 ? "" : "s"}
+              {sessionRows.length} حصة أسبوعية
             </span>
             {groupRows.map(group => (
               <span key={group.id} className="flex items-center gap-1.5 text-sm">
@@ -737,8 +740,8 @@ export default function ScheduleCalendar() {
                   type="button"
                   onClick={() => setGroupToDelete({ id: group.id, name: group.name })}
                   className="rounded-full p-1 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-                  aria-label={`Delete ${group.name}`}
-                  title={`Delete ${group.name}`}
+                  aria-label={`حذف ${group.name}`}
+                  title={`حذف ${group.name}`}
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -747,20 +750,20 @@ export default function ScheduleCalendar() {
             {clashCount > 0 && (
               <span className="ms-auto flex items-center gap-1.5 text-sm text-amber-600 dark:text-amber-400">
                 <TriangleAlert className="h-4 w-4" />
-                {clashCount} clash{clashCount === 1 ? "" : "es"}
+                {clashCount} تعارض
               </span>
             )}
           </div>
 
           {hasLegacyText && sessionRows.length === 0 && (
             <div className="flex flex-col justify-between gap-3 rounded-2xl border border-primary/30 bg-primary/5 p-4 sm:flex-row sm:items-center">
-              <p className="text-sm">
-                Your groups already have day and time text. Turn it into real
-                calendar events in one go.
+              <p className="text-sm leading-7">
+                مجموعاتك لديها بالفعل نص لليوم والوقت. حوّله إلى مواعيد حقيقية
+                في الجدول دفعة واحدة.
               </p>
               <Button variant="outline" disabled={importing} onClick={importFromGroups}>
                 <Wand2 className="me-2 h-4 w-4" />
-                {importing ? "Importing…" : "Import from groups"}
+                {importing ? "جارٍ الاستيراد…" : "استيراد من المجموعات"}
               </Button>
             </div>
           )}
@@ -794,7 +797,7 @@ export default function ScheduleCalendar() {
           {upcoming.length > 0 && (
             <div className="rounded-3xl border border-border bg-card p-5">
               <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                Coming up
+                الحصص القادمة
               </h3>
               <div className="grid gap-2 md:grid-cols-2 xl:grid-cols-3">
                 {upcoming.map(occurrence => (
@@ -814,12 +817,13 @@ export default function ScheduleCalendar() {
                         {occurrence.groupName}
                       </span>
                       <span className="block text-xs text-muted-foreground">
-                        {fromDateKey(occurrence.dateKey).toLocaleDateString("en-US", {
-                          weekday: "short",
-                          month: "short",
+                        {fromDateKey(occurrence.dateKey).toLocaleDateString("ar-EG", {
+                          weekday: "long",
+                          month: "long",
                           day: "numeric",
+                          numberingSystem: "latn",
                         })}
-                        {` · ${formatTimeRange(occurrence.startTime, occurrence.endTime)}`}
+                        {` · ${formatTimeRangeAr(occurrence.startTime, occurrence.endTime)}`}
                         {occurrence.instructorName ? ` · ${occurrence.instructorName}` : ""}
                       </span>
                     </span>
@@ -874,16 +878,16 @@ export default function ScheduleCalendar() {
       >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Delete group?</DialogTitle>
+            <DialogTitle>حذف المجموعة؟</DialogTitle>
             <DialogDescription>
               {groupToDelete
-                ? `"${groupToDelete.name}" and all of its sessions will be removed. Students in this group will become unassigned.`
+                ? `"${groupToDelete.name}" وجميع حصصها ستُحذف. الطلاب في هذه المجموعة سيصبحون بدون مجموعة.`
                 : ""}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setGroupToDelete(null)}>
-              Cancel
+              إلغاء
             </Button>
             <Button
               variant="destructive"
@@ -892,7 +896,7 @@ export default function ScheduleCalendar() {
                 groupToDelete && deleteGroup.mutate({ id: groupToDelete.id })
               }
             >
-              {deleteGroup.isPending ? "Deleting..." : "Delete group"}
+              {deleteGroup.isPending ? "جارٍ الحذف…" : "حذف المجموعة"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -943,39 +947,39 @@ function WeekGrid({
 
   return (
     <div className="overflow-hidden rounded-3xl border border-border bg-card">
-      <div
-        className="grid border-b border-border bg-muted/40"
-        style={{ gridTemplateColumns: `64px ${gridColumns}` }}
-      >
-        <div />
-        {days.map(day => {
-          const isToday = toDateKey(day) === today;
-          return (
-            <div key={day.getTime()} className="border-s border-border/60 px-2 py-2 text-center">
-              <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                {DAY_LABELS_SHORT[day.getDay()]}
-              </div>
-              <div
-                className={`mx-auto mt-0.5 flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${
-                  isToday ? "bg-primary text-primary-foreground" : ""
-                }`}
-              >
-                {day.getDate()}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
       <div className="overflow-x-auto">
-        <div className="min-w-[720px]">
+        <div className="min-w-[720px]" style={{ minWidth: 720 }}>
+          <div
+            className="grid border-b border-border bg-muted/40"
+            style={{ gridTemplateColumns: `64px ${gridColumns}` }}
+          >
+            <div />
+            {days.map(day => {
+              const isToday = toDateKey(day) === today;
+              return (
+                <div key={day.getTime()} className="border-s border-border/60 px-2 py-2 text-center">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    {DAY_LABELS_SHORT_AR[day.getDay()]}
+                  </div>
+                  <div
+                    className={`mx-auto mt-0.5 flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold ${
+                      isToday ? "bg-primary text-primary-foreground" : ""
+                    }`}
+                  >
+                    {day.getDate()}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
           <div ref={scrollRef} className="max-h-[640px] overflow-y-auto overscroll-contain">
             <div className="flex">
               <div className="w-16 shrink-0" style={{ height: GRID_HEIGHT }}>
                 {hours.map(hour => (
                   <div key={hour} className="relative" style={{ height: HOUR_HEIGHT }}>
-                    <span className="absolute -top-2 end-2 text-[11px] font-medium text-muted-foreground">
-                      {hour % 12 === 0 ? 12 : hour % 12} {hour < 12 ? "AM" : "PM"}
+                    <span className="absolute -top-2 end-2 text-[11px] font-medium text-muted-foreground" dir="ltr">
+                      {String(hour).padStart(2, "0")}:00
                     </span>
                   </div>
                 ))}
@@ -1019,7 +1023,7 @@ function WeekGrid({
                             key={hour}
                             type="button"
                             tabIndex={-1}
-                            aria-label={`Add a session on ${DAY_LABELS[day.getDay()]} ${day.getDate()} at ${formatTime(hourTime)}`}
+                            aria-label={`إضافة حصة يوم ${DAY_LABELS_AR[day.getDay()]} ${day.getDate()} الساعة ${formatTimeAr(hourTime)}`}
                             className="block w-full transition-colors hover:bg-primary/10"
                             style={{ height: HOUR_HEIGHT }}
                             onDoubleClick={() => onCreateSlot(day, hourTime)}
@@ -1068,7 +1072,7 @@ function WeekGrid({
         </div>
       </div>
       <p className="border-t border-border px-4 py-2 text-xs text-muted-foreground">
-        Double-click an empty slot to add a session, or drag a block to move it.
+        انقر نقراً مزدوجاً على خانة فارغة لإضافة حصة، أو اسحب الحصة لتغيير موعدها.
       </p>
     </div>
   );
@@ -1127,7 +1131,7 @@ function SessionBlock({
       </span>
       {height > 34 && (
         <span className="block truncate px-1.5 text-[11px] font-medium leading-tight">
-          {formatTimeRange(occurrence.startTime, occurrence.endTime)}
+          {formatTimeRangeAr(occurrence.startTime, occurrence.endTime)}
         </span>
       )}
       {height > 48 && occurrence.instructorName && (
@@ -1172,7 +1176,7 @@ function MonthGrid({
 }: MonthGridProps) {
   const today = toDateKey(new Date());
   const [expanded, setExpanded] = useState<string | null>(null);
-  const weekdayLabels = days.slice(0, 7).map(day => DAY_LABELS_SHORT[day.getDay()]);
+  const weekdayLabels = days.slice(0, 7).map(day => DAY_LABELS_SHORT_AR[day.getDay()]);
 
   return (
     <div className="overflow-hidden rounded-3xl border border-border bg-card">
@@ -1219,7 +1223,7 @@ function MonthGrid({
                 <button
                   type="button"
                   onClick={() => onSelectDay(day)}
-                  aria-label={`Add a session on ${DAY_LABELS[day.getDay()]} ${day.getDate()}`}
+                  aria-label={`إضافة حصة يوم ${DAY_LABELS_AR[day.getDay()]} ${day.getDate()}`}
                   className="rounded-md p-0.5 text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100"
                 >
                   <Plus className="h-3.5 w-3.5" />
@@ -1250,7 +1254,7 @@ function MonthGrid({
                     className="px-1 text-[11px] font-medium text-muted-foreground hover:text-foreground"
                     onClick={() => setExpanded(key)}
                   >
-                    +{hidden} more
+                    +{hidden} أخرى
                   </button>
                 )}
                 {isExpanded && occurrences.length > MONTH_CHIPS && (
@@ -1259,7 +1263,7 @@ function MonthGrid({
                     className="px-1 text-[11px] font-medium text-muted-foreground hover:text-foreground"
                     onClick={() => setExpanded(null)}
                   >
-                    Show less
+                    عرض أقل
                   </button>
                 )}
               </div>
@@ -1306,31 +1310,32 @@ function SessionDialog({
     onChange({ form: { ...form, ...patch } });
 
   const dateLabel = state.occurrence
-    ? fromDateKey(state.occurrence.dateKey).toLocaleDateString("en-US", {
+    ? fromDateKey(state.occurrence.dateKey).toLocaleDateString("ar-EG", {
         weekday: "long",
         month: "long",
         day: "numeric",
+        numberingSystem: "latn",
       })
-    : "Every week";
+    : "كل أسبوع";
 
   return (
     <Dialog open onOpenChange={open => !open && onClose()}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            {state.sessionId ? "Edit session" : "New session"}
+            {state.sessionId ? "تعديل الحصة" : "حصة جديدة"}
           </DialogTitle>
           <DialogDescription>
             {state.sessionId
-              ? `Weekly session · ${dateLabel}`
-              : "This becomes a weekly slot the calendar repeats for you."}
+              ? `حصة أسبوعية · ${dateLabel}`
+              : "ستصبح هذه حصة أسبوعية يكررها الجدول تلقائياً."}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div>
-            <Label className="mb-2 block text-sm" htmlFor="session-group">
-              Group
+            <Label className="mb-2 block text-sm font-semibold" htmlFor="session-group">
+              المجموعة
             </Label>
             <Input
               id="session-group"
@@ -1340,7 +1345,7 @@ function SessionDialog({
               maxLength={120}
               value={form.groupName}
               onChange={event => setForm({ groupName: event.target.value })}
-              placeholder="Type a group name"
+              placeholder="اكتب اسم المجموعة"
             />
             <datalist id="session-group-names">
               {groups.map(group => (
@@ -1365,24 +1370,24 @@ function SessionDialog({
                 ))}
               </div>
             )}
-            <p className="mt-1.5 text-xs text-muted-foreground">
-              Type a new name to create a group, or pick an existing one.
+            <p className="mt-1.5 text-xs leading-6 text-muted-foreground">
+              اكتب اسماً جديداً لإنشاء مجموعة، أو اختر مجموعة موجودة.
             </p>
           </div>
 
           <div>
-            <Label className="mb-2 block text-sm" htmlFor="session-instructor">
-              Instructor
+            <Label className="mb-2 block text-sm font-semibold" htmlFor="session-instructor">
+              المدرب
             </Label>
             <Select
               value={form.instructorId || "none"}
               onValueChange={value => setForm({ instructorId: value === "none" ? "" : value })}
             >
               <SelectTrigger id="session-instructor">
-                <SelectValue placeholder="Choose a instructor" />
+                <SelectValue placeholder="اختر المدرب" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">Unassigned — no instructor yet</SelectItem>
+                <SelectItem value="none">بدون إسناد — لا يوجد مدرب بعد</SelectItem>
                 {instructors.map(instructor => (
                   <SelectItem
                     key={instructor.id}
@@ -1390,22 +1395,22 @@ function SessionDialog({
                     disabled={!instructor.active && String(instructor.id) !== form.instructorId}
                   >
                     {instructor.name}
-                    {instructor.active ? "" : " (inactive)"}
+                    {instructor.active ? "" : " (موقوف)"}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <p className="mt-1.5 text-xs text-muted-foreground">
+            <p className="mt-1.5 text-xs leading-6 text-muted-foreground">
               {instructors.length === 0
-                ? "Add instructors from the Instructors tab — they choose from the existing list."
-                : "The chosen instructor sees this group on their dashboard automatically."}
+                ? "أضف المدربين من تبويب المدربين — ستختار من القائمة الموجودة."
+                : "المدرب المختار يرى هذه المجموعة في لوحته تلقائياً."}
             </p>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <Label className="mb-2 block text-sm" htmlFor="session-day">
-                Repeats every
+              <Label className="mb-2 block text-sm font-semibold" htmlFor="session-day">
+                تتكرر كل
               </Label>
               <Select
                 value={String(form.dayOfWeek)}
@@ -1415,7 +1420,7 @@ function SessionDialog({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {DAY_LABELS.map((label, index) => (
+                  {DAY_LABELS_AR.map((label, index) => (
                     <SelectItem key={label} value={String(index)}>
                       {label}
                     </SelectItem>
@@ -1424,17 +1429,18 @@ function SessionDialog({
               </Select>
             </div>
             <div>
-              <Label className="mb-2 block text-sm">Or pick that weekday</Label>
+              <Label className="mb-2 block text-sm font-semibold">أو اختر ذلك اليوم</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start font-normal">
                     <CalendarIcon className="me-2 h-4 w-4" />
                     {pickDate
-                      ? pickDate.toLocaleDateString("en-US", {
-                          month: "short",
+                      ? pickDate.toLocaleDateString("ar-EG", {
+                          month: "long",
                           day: "numeric",
+                          numberingSystem: "latn",
                         })
-                      : DAY_LABELS[form.dayOfWeek]}
+                      : DAY_LABELS_AR[form.dayOfWeek]}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -1459,25 +1465,31 @@ function SessionDialog({
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <Label className="mb-2 block text-sm" htmlFor="session-start">
-                Starts
+              <Label className="mb-2 block text-sm font-semibold" htmlFor="session-start">
+                تبدأ
               </Label>
               <Input
                 id="session-start"
-                type="time"
+                type="text"
+                inputMode="numeric"
                 dir="ltr"
+                maxLength={5}
+                placeholder="17:00"
                 value={form.startTime}
                 onChange={event => setForm({ startTime: event.target.value })}
               />
             </div>
             <div>
-              <Label className="mb-2 block text-sm" htmlFor="session-end">
-                Ends
+              <Label className="mb-2 block text-sm font-semibold" htmlFor="session-end">
+                تنتهي
               </Label>
               <Input
                 id="session-end"
-                type="time"
+                type="text"
+                inputMode="numeric"
                 dir="ltr"
+                maxLength={5}
+                placeholder="18:30"
                 value={form.endTime}
                 onChange={event => setForm({ endTime: event.target.value })}
               />
@@ -1486,33 +1498,36 @@ function SessionDialog({
 
           <p className="flex items-center gap-2 text-xs text-muted-foreground">
             <Clock className="h-3.5 w-3.5" />
-            {formatTimeRange(form.startTime, form.endTime)}
-            {formatDuration(form.startTime, form.endTime) &&
-              ` · ${formatDuration(form.startTime, form.endTime)}`}
+            {formatTimeRangeAr(form.startTime, form.endTime)}
+            {formatDurationAr(form.startTime, form.endTime) &&
+              ` · ${formatDurationAr(form.startTime, form.endTime)}`}
+          </p>
+          <p className="text-[11px] text-muted-foreground">
+            اكتب الوقت بصيغة 24 ساعة، مثال: 17:00
           </p>
 
           <div>
-            <Label className="mb-2 block text-sm" htmlFor="session-location">
-              Room or link
+            <Label className="mb-2 block text-sm font-semibold" htmlFor="session-location">
+              القاعة أو الرابط
             </Label>
             <Input
               id="session-location"
               value={form.location}
               onChange={event => setForm({ location: event.target.value })}
-              placeholder="Room A"
+              placeholder="قاعة A"
             />
           </div>
 
           <div>
-            <Label className="mb-2 block text-sm" htmlFor="session-notes">
-              Notes
+            <Label className="mb-2 block text-sm font-semibold" htmlFor="session-notes">
+              ملاحظات
             </Label>
             <Textarea
               id="session-notes"
               rows={2}
               value={form.notes}
               onChange={event => setForm({ notes: event.target.value })}
-              placeholder="Bring the robots kit"
+              placeholder="أحضر حقيبة الروبوتات"
             />
           </div>
 
@@ -1521,10 +1536,10 @@ function SessionDialog({
               open the WhatsApp link directly. */}
           <Separator />
           <div className="space-y-3 rounded-2xl border border-border bg-muted/20 p-4">
-            <h3 className="text-sm font-semibold">Group details</h3>
+            <h3 className="text-sm font-semibold">بيانات المجموعة</h3>
             <div>
               <Label className="mb-1.5 block text-xs text-muted-foreground" htmlFor="group-whatsapp">
-                WhatsApp group link
+                رابط مجموعة واتساب
               </Label>
               <div className="relative">
                 <Link2 className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -1543,16 +1558,16 @@ function SessionDialog({
                 const existing = fullGroups.find(g => g.name === form.groupName.trim());
                 if (existing?.whatsappUrl && !form.whatsappUrl) {
                   return (
-                    <p className="mt-1 text-[11px] text-emerald-700 dark:text-emerald-300">
-                      Currently linked: {existing.whatsappUrl}
+                    <p className="mt-1 text-[11px] text-emerald-700 dark:text-emerald-300" dir="ltr">
+                      مرتبط حالياً: {existing.whatsappUrl}
                     </p>
                   );
                 }
                 if (!form.whatsappUrl.trim()) {
                   return (
-                    <p className="mt-1 text-[11px] text-muted-foreground">
-                      Instructors will use this link when sharing the evaluation
-                      report. Leave empty to remove it.
+                    <p className="mt-1 text-[11px] leading-5 text-muted-foreground">
+                      يستخدم المدربون هذا الرابط عند مشاركة تقرير التقييم. اتركه
+                      فارغاً لإزالته.
                     </p>
                   );
                 }
@@ -1563,7 +1578,7 @@ function SessionDialog({
                 return (
                   <p className="mt-1 flex items-center gap-1 text-[11px] text-emerald-700 dark:text-emerald-300">
                     <CheckCircle2 className="h-3 w-3 shrink-0" />
-                    Valid group invite link
+                    رابط دعوة مجموعة صالح
                   </p>
                 );
               })()}
@@ -1574,7 +1589,7 @@ function SessionDialog({
             <>
               <Separator />
               <div>
-                <Label className="mb-2 block text-sm">Apply changes to</Label>
+                <Label className="mb-2 block text-sm font-semibold">تطبيق التغييرات على</Label>
                 <RadioGroup
                   value={state.scope}
                   onValueChange={value => onChange({ scope: value as "series" | "week" })}
@@ -1586,9 +1601,9 @@ function SessionDialog({
                   >
                     <RadioGroupItem value="series" id="scope-series" className="mt-0.5" />
                     <span>
-                      <span className="block text-sm font-medium">Every week</span>
-                      <span className="block text-xs text-muted-foreground">
-                        Moves the whole series, including weeks already passed.
+                      <span className="block text-sm font-medium">كل أسبوع</span>
+                      <span className="block text-xs leading-5 text-muted-foreground">
+                        ينقل السلسلة كاملة، بما يشمل الأسابيع الماضية.
                       </span>
                     </span>
                   </label>
@@ -1598,9 +1613,9 @@ function SessionDialog({
                   >
                     <RadioGroupItem value="week" id="scope-week" className="mt-0.5" />
                     <span>
-                      <span className="block text-sm font-medium">This week only</span>
-                      <span className="block text-xs text-muted-foreground">
-                        Only {dateLabel} changes; every other week stays put.
+                      <span className="block text-sm font-medium">هذا الأسبوع فقط</span>
+                      <span className="block text-xs leading-5 text-muted-foreground">
+                        يتغير {dateLabel} فقط، وتبقى بقية الأسابيع كما هي.
                       </span>
                     </span>
                   </label>
@@ -1610,9 +1625,9 @@ function SessionDialog({
               {state.occurrence.moved && (
                 <div className="flex items-start gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-xs">
                   <Repeat className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                  <span>
-                    This week was already moved once. Saving keeps the rest of the
-                    series intact.
+                  <span className="leading-6">
+                    تم نقل هذا الأسبوع مرة واحدة بالفعل. الحفظ يحافظ على بقية
+                    السلسلة دون تغيير.
                   </span>
                 </div>
               )}
@@ -1624,7 +1639,7 @@ function SessionDialog({
           <div className="flex gap-1">
             {onSkipWeek && (
               <Button variant="ghost" disabled={busy} onClick={onSkipWeek}>
-                Skip this week
+                تخطي هذا الأسبوع
               </Button>
             )}
             {onDelete && (
@@ -1635,16 +1650,16 @@ function SessionDialog({
                 onClick={onDelete}
               >
                 <Trash2 className="me-2 h-4 w-4" />
-                Delete
+                حذف
               </Button>
             )}
           </div>
           <div className="flex gap-2">
             <Button variant="outline" onClick={onClose}>
-              Cancel
+              إلغاء
             </Button>
             <Button disabled={busy} onClick={onSave}>
-              {busy ? "Saving…" : "Save"}
+              {busy ? "جارٍ الحفظ…" : "حفظ"}
             </Button>
           </div>
         </DialogFooter>
@@ -1665,10 +1680,11 @@ type MoveScopeDialogProps = {
 function MoveScopeDialog({ target, busy, onClose, onApply }: MoveScopeDialogProps) {
   if (!target) return null;
   const { occurrence, dateKey, startTime, endTime } = target;
-  const landing = fromDateKey(dateKey).toLocaleDateString("en-US", {
+  const landing = fromDateKey(dateKey).toLocaleDateString("ar-EG", {
     weekday: "long",
-    month: "short",
+    month: "long",
     day: "numeric",
+    numberingSystem: "latn",
   });
   const movedDay = dateKey !== occurrence.dateKey;
 
@@ -1676,19 +1692,19 @@ function MoveScopeDialog({ target, busy, onClose, onApply }: MoveScopeDialogProp
     <Dialog open onOpenChange={open => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Move {occurrence.groupName}</DialogTitle>
+          <DialogTitle>نقل {occurrence.groupName}</DialogTitle>
           <DialogDescription>
-            {formatTimeRange(startTime, endTime)} · {landing}
+            {formatTimeRangeAr(startTime, endTime)} · {landing}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
           <div className="flex items-start gap-3 rounded-xl border border-border p-4 text-sm">
             <Repeat className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-            <p className="text-muted-foreground">
-              This group meets every {DAY_LABELS[occurrence.dayOfWeek]} at{" "}
-              {formatTimeRange(occurrence.startTime, occurrence.endTime)}. How far
-              should the move go?
+            <p className="leading-6 text-muted-foreground">
+              تجتمع هذه المجموعة كل {DAY_LABELS_AR[occurrence.dayOfWeek]} الساعة{" "}
+              {formatTimeRangeAr(occurrence.startTime, occurrence.endTime)}. إلى أي
+              مدى تريد تطبيق النقل؟
             </p>
           </div>
 
@@ -1697,7 +1713,7 @@ function MoveScopeDialog({ target, busy, onClose, onApply }: MoveScopeDialogProp
             disabled={busy}
             onClick={() => onApply(target, "series")}
           >
-            Move every week
+            نقل كل أسبوع
             <Repeat className="h-4 w-4" />
           </Button>
           <Button
@@ -1706,7 +1722,7 @@ function MoveScopeDialog({ target, busy, onClose, onApply }: MoveScopeDialogProp
             disabled={busy}
             onClick={() => onApply(target, "week")}
           >
-            {movedDay ? `Only ${landing}` : "Only this week"}
+            {movedDay ? `فقط ${landing}` : "هذا الأسبوع فقط"}
             <CalendarClock className="h-4 w-4" />
           </Button>
         </div>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Copy, Loader2, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { formatPythonError } from "@/lib/pythonError";
 
 type Pyodide = {
   runPythonAsync: (code: string) => Promise<unknown>;
@@ -40,16 +41,24 @@ type Props = {
   exampleLabel: string;
   runLabel: string;
   copyLabel: string;
+  /** Confirmation shown after copying; defaults to `copyLabel`. */
+  copiedLabel?: string;
 };
 
-export default function PythonRunner({ code, exampleLabel, runLabel, copyLabel }: Props) {
+export default function PythonRunner({
+  code,
+  exampleLabel,
+  runLabel,
+  copyLabel,
+  copiedLabel,
+}: Props) {
   const [value, setValue] = useState(code);
   const [output, setOutput] = useState("");
   const [running, setRunning] = useState(false);
 
   const copy = async () => {
     await navigator.clipboard.writeText(value);
-    toast.success(copyLabel);
+    toast.success(copiedLabel ?? copyLabel);
   };
 
   const run = async () => {
@@ -64,8 +73,7 @@ export default function PythonRunner({ code, exampleLabel, runLabel, copyLabel }
       setOutput(captured || "Ran successfully with no printed output.");
       toast.success("Code ran successfully");
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      setOutput(message);
+      setOutput(formatPythonError(error));
       toast.error("Check the code and try again");
     } finally {
       setRunning(false);

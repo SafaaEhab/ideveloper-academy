@@ -91,6 +91,14 @@ export const students = mysqlTable("academy_students", {
   accessCode: varchar("accessCode", { length: 32 }).notNull().unique(),
   groupId: int("groupId"),
   status: mysqlEnum("status", ["active", "paused"]).default("active").notNull(),
+  // Phase 2 messaging consent / opt-out. Separate from `status`: pausing a
+  // student for academic reasons must never silently re-enable marketing.
+  whatsAppConsent: boolean("whatsAppConsent").default(false).notNull(),
+  whatsAppConsentAt: timestamp("whatsAppConsentAt"),
+  whatsAppConsentSource: varchar("whatsAppConsentSource", { length: 120 }),
+  whatsAppOptOut: boolean("whatsAppOptOut").default(false).notNull(),
+  whatsAppOptOutAt: timestamp("whatsAppOptOutAt"),
+  whatsAppOptOutByUserId: int("whatsAppOptOutByUserId"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -517,6 +525,13 @@ export const leads = mysqlTable(
     internalNotes: text("internalNotes"),
     source: varchar("source", { length: 32 }).default("website").notNull(),
     whatsAppOptOut: boolean("whatsAppOptOut").default(false).notNull(),
+    // Phase 2 consent provenance. Opt-out stays the hard exclusion; consent is
+    // an additional policy gate that administrators can require per campaign.
+    whatsAppConsent: boolean("whatsAppConsent").default(false).notNull(),
+    whatsAppConsentAt: timestamp("whatsAppConsentAt"),
+    whatsAppConsentSource: varchar("whatsAppConsentSource", { length: 120 }),
+    whatsAppOptOutAt: timestamp("whatsAppOptOutAt"),
+    whatsAppOptOutByUserId: int("whatsAppOptOutByUserId"),
     // One-way Google Sheets reporting state. The database remains the source
     // of truth; these fields only describe the reporting copy.
     googleSheetSyncStatus: mysqlEnum("googleSheetSyncStatus", [
@@ -649,6 +664,20 @@ export const leadStaff = mysqlTable(
     email: varchar("email", { length: 320 }).notNull().unique(),
     active: boolean("active").default(true).notNull(),
     canConvert: boolean("canConvert").default(false).notNull(),
+    // Phase 2 permissions. Defaults follow the requirements: reception can
+    // message and record payments, but cannot see reports, expenses,
+    // salaries or confidential finance settings until an admin grants it.
+    canMessaging: boolean("canMessaging").default(true).notNull(),
+    canRecordPayments: boolean("canRecordPayments").default(true).notNull(),
+    canManageSubscriptions: boolean("canManageSubscriptions")
+      .default(true)
+      .notNull(),
+    canViewReports: boolean("canViewReports").default(false).notNull(),
+    canManageExpenses: boolean("canManageExpenses").default(false).notNull(),
+    canViewSalaries: boolean("canViewSalaries").default(false).notNull(),
+    canManageFinanceSettings: boolean("canManageFinanceSettings")
+      .default(false)
+      .notNull(),
     createdBy: int("createdBy"),
     createdAt: timestamp("createdAt").defaultNow().notNull(),
     updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
@@ -681,3 +710,438 @@ export type QuizAttempt = typeof quizAttempts.$inferSelect;
 export type Assignment = typeof assignments.$inferSelect;
 export type AssignmentSubmission = typeof assignmentSubmissions.$inferSelect;
 export type AssignmentFile = typeof assignmentFiles.$inferSelect;
+
+// ── Phase 2 — Messaging, subscriptions, payments, expenses ──────────────────
+// Financial values are integers in piastres (EGP minor units). Dates that
+// describe a wall-clock obligation are stored as "YYYY-MM-DD" keys; real
+// instants (scheduled sends, payment timestamps) are stored as UTC timestamps.
+
+export const academySettings = mysqlTable("academy_settings", {
+  key: varchar("key", { length: 120 }).primaryKey(),
+  // JSON encoded. Never stores provider secrets — those stay in env vars.
+  value: text("value").notNull(),
+  updatedByUserId: int("updatedByUserId"),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const coursePlans = mysqlTable("academy_course_plans", {
+  id: int("id").autoincrement().primaryKey(),
+  course: mysqlEnum("course", ["Scratch", "Robotics", "Web", "Python"])
+    .notNull()
+    .unique(),
+  // Null means the owner has not configured a price yet; subscriptions then
+  // require an explicit amount instead of inventing one.
+  basePriceMinor: int("basePriceMinor"),
+  currency: varchar("currency", { length: 8 }).default("EGP").notNull(),
+  defaultSubscriptionType: mysqlEnum("defaultSubscriptionType", [
+    "monthly",
+    "two_months",
+    "one_time",
+  ])
+    .default("monthly")
+    .notNull(),
+  active: boolean("active").default(true).notNull(),
+  updatedByUserId: int("updatedByUserId"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export const subscriptions = mysqlTable(
+  "academy_subscriptions",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    studentId: int("studentId").notNull(),
+    course: mysqlEnum("course", ["Scratch", "Robotics", "Web", "Python"]).notNull(),
+    type: mysqlEnum("type", ["monthly", "two_months", "one_time"]).notNull(),
+    // The price the academy charged for this obligation, in piastres.
+    baseAmountMinor: int("baseAmountMinor").notNull(),
+    // Optional sibling linkage; the percentage is snapshotted so later policy
+    // changes never rewrite history.
+    siblingStudentId: int("siblingStudentId"),
+    siblingDiscountPercent: int("siblingDiscountPercent").default(0).notNull(),
+    siblingDiscountMinor: int("siblingDiscountMinor").default(0).notNull(),
+    manualDiscountMinor: int("manualDiscountMinor").default(0).notNull(),
+    // Mandatory when manualDiscountMinor > 0 (enforced by the service layer).
+    discountReason: varchar("discountReason", { length: 500 }),
+    finalAmountMinor: int("finalAmountMinor").notNull(),
+    paymentMethod: mysqlEnum("paymentMethod", [
+      "bank_transfer",
+      "instapay",
+      "cash",
+      "wallet",
+    ]).notNull(),
+    // The obligation's due date, "YYYY-MM-DD" in academy time. `recurringDueDay`
+    // is the day-of-month the plan repeats on (1–28) for monthly/two-month plans.
+    dueDateKey: varchar("dueDateKey", { length: 10 }).notNull(),
+    recurringDueDay: int("recurringDueDay"),
+    startDateKey: varchar("startDateKey", { length: 10 }).notNull(),
+    endDateKey: varchar("endDateKey", { length: 10 }),
+    status: mysqlEnum("status", ["active", "completed", "cancelled"])
+      .default("active")
+      .notNull(),
+    reminderEnabled: boolean("reminderEnabled").default(true).notNull(),
+    notes: varchar("notes", { length: 1000 }),
+    createdByUserId: int("createdByUserId"),
+    cancelledAt: timestamp("cancelledAt"),
+    cancelledByUserId: int("cancelledByUserId"),
+    cancelReason: varchar("cancelReason", { length: 500 }),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [
+    index("subscription_student").on(table.studentId),
+    index("subscription_status").on(table.status),
+    index("subscription_due").on(table.status, table.dueDateKey),
+    index("subscription_course").on(table.course),
+  ],
+);
+
+export const payments = mysqlTable(
+  "academy_payments",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    // Sequential, allocated inside the same transaction as the payment.
+    receiptSequence: int("receiptSequence").notNull().unique(),
+    receiptNumber: varchar("receiptNumber", { length: 40 }).notNull().unique(),
+    subscriptionId: int("subscriptionId").notNull(),
+    studentId: int("studentId").notNull(),
+    type: mysqlEnum("type", ["payment", "reversal"])
+      .default("payment")
+      .notNull(),
+    // Always positive; reversals subtract in balance calculations.
+    amountMinor: int("amountMinor").notNull(),
+    method: mysqlEnum("method", [
+      "bank_transfer",
+      "instapay",
+      "cash",
+      "wallet",
+    ]).notNull(),
+    paymentDate: timestamp("paymentDate").notNull(),
+    recordedByUserId: int("recordedByUserId"),
+    // Client-supplied idempotency key, unique across the ledger.
+    transactionReference: varchar("transactionReference", { length: 80 })
+      .notNull()
+      .unique(),
+    reversesPaymentId: int("reversesPaymentId").unique(),
+    reversalReason: varchar("reversalReason", { length: 500 }),
+    status: mysqlEnum("status", ["posted", "reversed"])
+      .default("posted")
+      .notNull(),
+    receiptImageDataBase64: longtext("receiptImageDataBase64"),
+    receiptImageMime: varchar("receiptImageMime", { length: 120 }),
+    receiptImageName: varchar("receiptImageName", { length: 255 }),
+    notes: varchar("notes", { length: 1000 }),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [
+    index("payment_subscription").on(table.subscriptionId),
+    index("payment_student").on(table.studentId),
+    index("payment_date").on(table.paymentDate),
+    index("payment_recorded_by").on(table.recordedByUserId),
+    index("payment_type_status").on(table.type, table.status),
+  ],
+);
+
+export const paymentReminders = mysqlTable(
+  "academy_payment_reminders",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    subscriptionId: int("subscriptionId").notNull(),
+    paymentId: int("paymentId"),
+    kind: mysqlEnum("kind", [
+      "before_due_3",
+      "due",
+      "overdue_2",
+      "overdue_7",
+      "manual",
+      "thank_you",
+    ]).notNull(),
+    dueDateKey: varchar("dueDateKey", { length: 10 }).notNull(),
+    scheduledFor: timestamp("scheduledFor").notNull(),
+    status: mysqlEnum("status", [
+      "pending",
+      "sending",
+      "sent",
+      "failed",
+      "cancelled",
+      "skipped",
+    ])
+      .default("pending")
+      .notNull(),
+    attempts: int("attempts").default(0).notNull(),
+    providerMessageId: varchar("providerMessageId", { length: 120 }),
+    error: varchar("error", { length: 1000 }),
+    // Snapshot of what was actually sent/attempted, for the audit trail.
+    messageBody: text("messageBody"),
+    templateName: varchar("templateName", { length: 120 }),
+    templateLanguage: varchar("templateLanguage", { length: 10 }),
+    cancellationReason: varchar("cancellationReason", { length: 500 }),
+    sentAt: timestamp("sentAt"),
+    lastAttemptAt: timestamp("lastAttemptAt"),
+    cancelledAt: timestamp("cancelledAt"),
+    createdByUserId: int("createdByUserId"),
+    // subscription + kind + obligation date (or payment id for thank-you).
+    dedupeKey: varchar("dedupeKey", { length: 160 }).notNull().unique(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [
+    index("reminder_due").on(table.status, table.scheduledFor),
+    index("reminder_subscription").on(table.subscriptionId, table.status),
+    index("reminder_provider").on(table.providerMessageId),
+  ],
+);
+
+export const expenses = mysqlTable(
+  "academy_expenses",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    amountMinor: int("amountMinor").notNull(),
+    category: mysqlEnum("category", [
+      "rent",
+      "trainer_salaries",
+      "equipment",
+      "other",
+    ]).notNull(),
+    expenseDateKey: varchar("expenseDateKey", { length: 10 }).notNull(),
+    description: varchar("description", { length: 1000 }).notNull(),
+    recordedByUserId: int("recordedByUserId"),
+    attachmentDataBase64: longtext("attachmentDataBase64"),
+    attachmentMime: varchar("attachmentMime", { length: 120 }),
+    attachmentName: varchar("attachmentName", { length: 255 }),
+    status: mysqlEnum("status", ["active", "archived"])
+      .default("active")
+      .notNull(),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [
+    index("expense_date").on(table.expenseDateKey),
+    index("expense_category").on(table.category),
+    index("expense_recorder").on(table.recordedByUserId),
+  ],
+);
+
+export const messageTemplates = mysqlTable(
+  "academy_message_templates",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    name: varchar("name", { length: 160 }).notNull(),
+    category: mysqlEnum("category", [
+      "welcome",
+      "class_reminder",
+      "payment_reminder",
+      "lead_follow_up",
+      "custom",
+    ]).notNull(),
+    body: text("body").notNull(),
+    // JSON array of variable names, e.g. ["student_name","course_name"].
+    variables: text("variables"),
+    metaTemplateName: varchar("metaTemplateName", { length: 120 }),
+    language: varchar("language", { length: 10 }).default("ar").notNull(),
+    metaCategory: mysqlEnum("metaCategory", [
+      "marketing",
+      "utility",
+      "authentication",
+    ]),
+    metaStatus: mysqlEnum("metaStatus", [
+      "draft",
+      "pending",
+      "approved",
+      "rejected",
+      "disabled",
+    ])
+      .default("draft")
+      .notNull(),
+    metaStatusCheckedAt: timestamp("metaStatusCheckedAt"),
+    active: boolean("active").default(true).notNull(),
+    createdByUserId: int("createdByUserId"),
+    updatedByUserId: int("updatedByUserId"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [
+    uniqueIndex("template_name_language").on(table.name, table.language),
+    index("template_category").on(table.category),
+    index("template_active").on(table.active),
+  ],
+);
+
+export const campaigns = mysqlTable(
+  "academy_campaigns",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    name: varchar("name", { length: 200 }).notNull(),
+    audience: mysqlEnum("audience", ["leads", "students", "mixed"]).notNull(),
+    messageType: mysqlEnum("messageType", ["marketing", "transactional"])
+      .default("marketing")
+      .notNull(),
+    templateId: int("templateId"),
+    body: text("body").notNull(),
+    status: mysqlEnum("status", [
+      "draft",
+      "scheduled",
+      "queued",
+      "sending",
+      "completed",
+      "cancelled",
+      "failed",
+    ])
+      .default("draft")
+      .notNull(),
+    scheduledAt: timestamp("scheduledAt"),
+    timezone: varchar("timezone", { length: 64 }).default("Africa/Cairo").notNull(),
+    batchSize: int("batchSize").default(25).notNull(),
+    delayMs: int("delayMs").default(1000).notNull(),
+    createdByUserId: int("createdByUserId"),
+    filtersJson: text("filtersJson"),
+    totalRecipients: int("totalRecipients").default(0).notNull(),
+    sentCount: int("sentCount").default(0).notNull(),
+    failedCount: int("failedCount").default(0).notNull(),
+    excludedCount: int("excludedCount").default(0).notNull(),
+    startedAt: timestamp("startedAt"),
+    completedAt: timestamp("completedAt"),
+    cancelledAt: timestamp("cancelledAt"),
+    cancelledByUserId: int("cancelledByUserId"),
+    lastError: varchar("lastError", { length: 1000 }),
+    lockedAt: timestamp("lockedAt"),
+    lockOwner: varchar("lockOwner", { length: 64 }),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [
+    index("campaign_status_schedule").on(table.status, table.scheduledAt),
+    index("campaign_created_by").on(table.createdByUserId),
+  ],
+);
+
+export const campaignRecipients = mysqlTable(
+  "academy_campaign_recipients",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    campaignId: int("campaignId").notNull(),
+    recipientType: mysqlEnum("recipientType", ["lead", "student"]).notNull(),
+    recipientId: int("recipientId").notNull(),
+    name: varchar("name", { length: 160 }).notNull(),
+    phone: varchar("phone", { length: 20 }).notNull(),
+    status: mysqlEnum("status", [
+      "queued",
+      "excluded",
+      "sending",
+      "sent",
+      "delivered",
+      "read",
+      "failed",
+      "cancelled",
+    ])
+      .default("queued")
+      .notNull(),
+    exclusionReason: varchar("exclusionReason", { length: 80 }),
+    messageBody: text("messageBody"),
+    variablesJson: text("variablesJson"),
+    providerMessageId: varchar("providerMessageId", { length: 120 }),
+    error: varchar("error", { length: 1000 }),
+    attempts: int("attempts").default(0).notNull(),
+    retryCount: int("retryCount").default(0).notNull(),
+    senderUserId: int("senderUserId"),
+    nextAttemptAt: timestamp("nextAttemptAt"),
+    lastAttemptAt: timestamp("lastAttemptAt"),
+    queuedAt: timestamp("queuedAt"),
+    sentAt: timestamp("sentAt"),
+    deliveredAt: timestamp("deliveredAt"),
+    readAt: timestamp("readAt"),
+    failedAt: timestamp("failedAt"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+  },
+  table => [
+    uniqueIndex("campaign_recipient_unique").on(
+      table.campaignId,
+      table.recipientType,
+      table.recipientId,
+    ),
+    index("campaign_recipient_status").on(table.campaignId, table.status),
+    index("campaign_recipient_provider").on(table.providerMessageId),
+    index("campaign_recipient_next").on(table.status, table.nextAttemptAt),
+  ],
+);
+
+export const whatsappWebhookEvents = mysqlTable(
+  "academy_whatsapp_webhook_events",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    eventKey: varchar("eventKey", { length: 128 }).notNull().unique(),
+    eventType: varchar("eventType", { length: 64 }).notNull(),
+    payload: longtext("payload").notNull(),
+    status: mysqlEnum("status", ["received", "processed", "ignored", "failed"])
+      .default("received")
+      .notNull(),
+    error: varchar("error", { length: 1000 }),
+    receivedAt: timestamp("receivedAt").defaultNow().notNull(),
+    processedAt: timestamp("processedAt"),
+  },
+  table => [index("webhook_status").on(table.status, table.receivedAt)],
+);
+
+export const messagingOptOuts = mysqlTable(
+  "academy_messaging_opt_outs",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    recipientType: mysqlEnum("recipientType", ["lead", "student"]).notNull(),
+    recipientId: int("recipientId").notNull(),
+    optedOut: boolean("optedOut").notNull(),
+    reason: varchar("reason", { length: 500 }),
+    changedByUserId: int("changedByUserId"),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => [
+    index("opt_out_recipient").on(table.recipientType, table.recipientId),
+    index("opt_out_created").on(table.createdAt),
+  ],
+);
+
+export const auditLogs = mysqlTable(
+  "academy_audit_logs",
+  {
+    id: int("id").autoincrement().primaryKey(),
+    actorUserId: int("actorUserId"),
+    action: varchar("action", { length: 120 }).notNull(),
+    entityType: varchar("entityType", { length: 64 }).notNull(),
+    entityId: int("entityId"),
+    metadata: text("metadata"),
+    ipAddress: varchar("ipAddress", { length: 64 }),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+  },
+  table => [
+    index("audit_entity").on(table.entityType, table.entityId),
+    index("audit_action").on(table.action),
+    index("audit_created").on(table.createdAt),
+  ],
+);
+
+export const academyCounters = mysqlTable("academy_counters", {
+  key: varchar("key", { length: 64 }).primaryKey(),
+  value: int("value").default(0).notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type AcademySetting = typeof academySettings.$inferSelect;
+export type CoursePlan = typeof coursePlans.$inferSelect;
+export type Subscription = typeof subscriptions.$inferSelect;
+export type InsertSubscription = typeof subscriptions.$inferInsert;
+export type Payment = typeof payments.$inferSelect;
+export type InsertPayment = typeof payments.$inferInsert;
+export type PaymentReminder = typeof paymentReminders.$inferSelect;
+export type InsertPaymentReminder = typeof paymentReminders.$inferInsert;
+export type Expense = typeof expenses.$inferSelect;
+export type MessageTemplate = typeof messageTemplates.$inferSelect;
+export type Campaign = typeof campaigns.$inferSelect;
+export type CampaignRecipient = typeof campaignRecipients.$inferSelect;
+export type WebhookEvent = typeof whatsappWebhookEvents.$inferSelect;
+export type MessagingOptOut = typeof messagingOptOuts.$inferSelect;
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type SubscriptionType = Subscription["type"];
+export type PaymentMethod = Subscription["paymentMethod"];
+export type SubscriptionLifecycleStatus = Subscription["status"];
+export type CampaignStatus = Campaign["status"];

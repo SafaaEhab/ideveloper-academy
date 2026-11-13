@@ -194,13 +194,18 @@ function duplicateCutoff(now: Date): Date {
 }
 
 function enqueueSyncJob(executor: DbTransaction, leadId: number, now: Date) {
+  // MySQL can round a timestamp with sub-second precision when storing it, so
+  // using exactly `now` can leave the row a fraction of a second in the future
+  // and make the immediate claim miss it. The badge then stays "pending" until
+  // the next scheduler tick even though the worker already ran.
+  const dueAt = new Date(now.getTime() - 1_000);
   return executor
     .insert(leadSyncJobs)
     .values({
       leadId,
       status: "pending",
       attempts: 0,
-      nextAttemptAt: now,
+      nextAttemptAt: dueAt,
       lockedAt: null,
       lastError: null,
       updatedAt: now,
@@ -209,7 +214,7 @@ function enqueueSyncJob(executor: DbTransaction, leadId: number, now: Date) {
       set: {
         status: "pending",
         attempts: 0,
-        nextAttemptAt: now,
+        nextAttemptAt: dueAt,
         lockedAt: null,
         lastError: null,
         updatedAt: now,

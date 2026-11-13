@@ -10,8 +10,8 @@ const DEFAULT_DESCRIPTION =
   "أكاديمية iDeveloper في بنها — كورسات برمجة وروبوتات للأطفال من 6 إلى 17 سنة: Scratch وRobotics وWeb وPython.";
 
 const NOT_FOUND_METADATA: PageMetadata = {
-  title: "Page not found | iDeveloper Academy",
-  description: "The page you requested could not be found.",
+  title: "الصفحة غير موجودة | iDeveloper Academy",
+  description: "تعذر العثور على الصفحة المطلوبة.",
   canonicalPath: "/404",
 };
 
@@ -77,8 +77,8 @@ export function metadataForPath(pathname: string): PageMetadata {
 
   if (path === "/login") {
     return {
-      title: "Sign in | iDeveloper Academy",
-      description: "Sign in to the iDeveloper Academy workspace.",
+      title: "تسجيل الدخول | iDeveloper Academy",
+      description: "سجّل الدخول إلى مساحة عمل أكاديمية iDeveloper.",
       canonicalPath: path,
     };
   }
@@ -94,8 +94,8 @@ export function metadataForPath(pathname: string): PageMetadata {
 
   if (path === "/admin") {
     return {
-      title: "Admin workspace | iDeveloper Academy",
-      description: "iDeveloper Academy admin workspace.",
+      title: "لوحة الإدارة | iDeveloper Academy",
+      description: "مساحة عمل إدارة أكاديمية iDeveloper.",
       canonicalPath: path,
     };
   }

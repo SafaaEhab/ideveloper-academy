@@ -45,7 +45,7 @@ export default function AdminGate() {
         body: JSON.stringify({ email: email.trim(), password }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.error || "Sign in failed");
+      if (!res.ok) throw new Error(data?.error || "تعذر تسجيل الدخول");
 
       // Mirror the session for browsers that block the cookie (Safari ITP,
       // private mode). The server accepts it as a Bearer token.
@@ -58,7 +58,7 @@ export default function AdminGate() {
         // sessionStorage unavailable — the cookie alone still works.
       }
 
-      toast.success("Signed in");
+      toast.success("تم تسجيل الدخول");
       const result = await refresh();
       // A successful sign-in that still lands on this page means the account has
       // no access yet, so send them to the request form rather than a dead end.
@@ -73,28 +73,30 @@ export default function AdminGate() {
         setMode("request");
       }
     } catch (error: unknown) {
-      toast.error(error instanceof Error ? error.message : "Sign in failed");
+      toast.error(error instanceof Error ? error.message : "تعذر تسجيل الدخول");
     } finally {
       setBusy(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-6">
-      <Card className="w-full max-w-md rounded-3xl">
+    <div dir="rtl" className="admin-shell flex min-h-screen items-center justify-center p-6">
+      <Card className="admin-card w-full max-w-md">
         <CardContent className="p-8">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
             <ShieldOff className="h-7 w-7 text-muted-foreground" />
           </div>
-          <h1 className="mt-5 text-center text-2xl font-bold">Admin workspace</h1>
-          <p className="mt-2 text-center text-sm text-muted-foreground">
-            Sign in if you already have an account, otherwise ask for one.
+          <h1 className="mt-5 text-center text-2xl font-extrabold">
+            مساحة عمل الإدارة
+          </h1>
+          <p className="mt-2 text-center text-sm leading-7 text-muted-foreground">
+            سجّل الدخول إن كان لديك حساب، أو اطلب صلاحية الوصول.
           </p>
 
           {user && (
-            <div className="mt-5 rounded-2xl border border-border bg-muted/40 px-4 py-3 text-center text-sm">
-              Signed in as <b>{user.email || user.name}</b> — this account has no
-              access yet.
+            <div className="mt-5 rounded-2xl border border-border bg-muted/40 px-4 py-3 text-center text-sm leading-7">
+              مسجّل الدخول باسم <b>{user.email || user.name}</b> — هذا الحساب
+              لا يملك صلاحية الوصول بعد.
             </div>
           )}
 
@@ -105,7 +107,8 @@ export default function AdminGate() {
               className="rounded-xl"
               onClick={() => setMode("signin")}
             >
-              <LogIn className="me-2 h-4 w-4" />I have an account
+              <LogIn className="me-2 h-4 w-4" />
+              لديّ حساب
             </Button>
             <Button
               type="button"
@@ -113,7 +116,8 @@ export default function AdminGate() {
               className="rounded-xl"
               onClick={() => setMode("request")}
             >
-              <UserPlus className="me-2 h-4 w-4" />Request access
+              <UserPlus className="me-2 h-4 w-4" />
+              طلب صلاحية
             </Button>
           </div>
 
@@ -121,7 +125,7 @@ export default function AdminGate() {
             {mode === "signin" ? (
               <form className="space-y-4 text-start" onSubmit={signIn}>
                 <div className="space-y-2">
-                  <Label htmlFor="gate-email">Email</Label>
+                  <Label htmlFor="gate-email">البريد الإلكتروني</Label>
                   <Input
                     id="gate-email"
                     type="email"
@@ -130,10 +134,11 @@ export default function AdminGate() {
                     value={email}
                     onChange={event => setEmail(event.target.value)}
                     placeholder="you@example.com"
+                    dir="ltr"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="gate-password">Password</Label>
+                  <Label htmlFor="gate-password">كلمة المرور</Label>
                   <Input
                     id="gate-password"
                     type="password"
@@ -141,7 +146,7 @@ export default function AdminGate() {
                     autoComplete="current-password"
                     value={password}
                     onChange={event => setPassword(event.target.value)}
-                    placeholder="Your password"
+                    placeholder="كلمة المرور"
                   />
                 </div>
                 <Button
@@ -149,7 +154,7 @@ export default function AdminGate() {
                   className="h-12 w-full rounded-2xl"
                   disabled={!email.trim() || !password || busy}
                 >
-                  {busy ? "Signing in..." : "Sign in"}
+                  {busy ? "جارٍ تسجيل الدخول…" : "تسجيل الدخول"}
                 </Button>
               </form>
             ) : (
@@ -165,7 +170,7 @@ export default function AdminGate() {
             className="mt-4 h-11 w-full rounded-2xl"
             onClick={() => (window.location.href = "/")}
           >
-            Back to the site
+            العودة إلى الموقع
           </Button>
         </CardContent>
       </Card>

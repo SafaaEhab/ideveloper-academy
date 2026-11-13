@@ -13,6 +13,7 @@ import { registerBackupRoutes } from "./backupRoutes";
 import { registerExcelBackupTriggers } from "./excelBackup";
 import { registerAgentMcpRoute } from "./agentMcp";
 import { registerUploadRoutes } from "./uploadRoutes";
+import { registerWhatsAppWebhook } from "../whatsappWebhook";
 
 /**
  * Builds the Express app shared by every deployment target:
@@ -75,6 +76,11 @@ export function createApp(): Express {
     }
     next();
   });
+
+  // WhatsApp webhooks need the raw body for HMAC verification, so they are
+  // registered before the global JSON parser. The route itself applies
+  // express.raw() and rejects unsigned requests when the app secret is absent.
+  registerWhatsAppWebhook(app);
 
   // Configure body parser with larger size limit for file uploads. The largest
   // legitimate payload is an achievement photo — 8 MB of bytes plus base64

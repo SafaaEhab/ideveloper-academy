@@ -41,6 +41,7 @@ const text = {
   example: "Try the example",
   run: "Run example",
   copied: "Code copied",
+  copy: "Copy code",
   activityBlank:
     "The picture for this activity has not been added yet. Build it in the editor below — it starts empty.",
   activityEditor: "Your code — the editor is empty",
@@ -670,7 +671,7 @@ export default function WebCourse({ studentName, accessCode }: WebCourseProps) {
                                 placeholder={text.activityBlank}
                                 editorLabel={text.activityEditor}
                                 runLabel={text.run}
-                                copyLabel={text.copied}
+                                copyLabel={text.copy} copiedLabel={text.copied}
                                 starterCode={board}
                                 autoRun={runsByItself(board)}
                               />
@@ -686,7 +687,7 @@ export default function WebCourse({ studentName, accessCode }: WebCourseProps) {
                                   code={starter}
                                   exampleLabel="Try yourself — empty editor"
                                   runLabel={text.run}
-                                  copyLabel={text.copied}
+                                  copyLabel={text.copy} copiedLabel={text.copied}
                                   autoRun={runsByItself(starter)}
                                 />
                               </div>
@@ -700,7 +701,7 @@ export default function WebCourse({ studentName, accessCode }: WebCourseProps) {
                                     code={section.solutionCode}
                                     exampleLabel="Solution — compare your answer"
                                     runLabel={text.run}
-                                    copyLabel={text.copied}
+                                    copyLabel={text.copy} copiedLabel={text.copied}
                                     autoRun={runsByItself(section.solutionCode)}
                                   />
                                 </div>
@@ -714,7 +715,7 @@ export default function WebCourse({ studentName, accessCode }: WebCourseProps) {
                                   code={section.code}
                                   exampleLabel={text.example}
                                   runLabel={text.run}
-                                  copyLabel={text.copied}
+                                  copyLabel={text.copy} copiedLabel={text.copied}
                                   autoRun={runsByItself(section.code)}
                                 />
                               </div>

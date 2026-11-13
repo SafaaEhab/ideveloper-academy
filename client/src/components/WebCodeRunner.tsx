@@ -502,6 +502,8 @@ type Props = {
   exampleLabel: string;
   runLabel: string;
   copyLabel: string;
+  /** Confirmation shown after copying; defaults to `copyLabel`. */
+  copiedLabel?: string;
   /** Words for the media button, so a course can say what a file is for. */
   addMediaLabel?: string;
   /**
@@ -522,6 +524,7 @@ export default function WebCodeRunner({
   exampleLabel,
   runLabel,
   copyLabel,
+  copiedLabel,
   addMediaLabel = "Add a picture, video or sound",
   autoRun = false,
 }: Props) {
@@ -690,7 +693,7 @@ export default function WebCodeRunner({
             variant="ghost"
             onClick={() => {
               navigator.clipboard.writeText(draft);
-              toast.success(copyLabel);
+              toast.success(copiedLabel ?? copyLabel);
             }}
           >
             <Copy className="me-2 h-4 w-4" />

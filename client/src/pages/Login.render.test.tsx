@@ -30,13 +30,13 @@ describe("Login page heading", () => {
     act(() => root.render(<Login />));
     const heading = container.querySelector("h1");
     expect(heading).not.toBeNull();
-    expect(heading?.textContent).toBe("Sign in");
+    expect(heading?.textContent).toBe("تسجيل الدخول");
   });
 
   it("keeps a single H1 when switching to signup", () => {
     act(() => root.render(<Login />));
     const signup = Array.from(container.querySelectorAll("button")).find(
-      button => button.textContent === "Create an account",
+      button => button.textContent === "إنشاء حساب",
     );
     expect(signup).toBeTruthy();
 
@@ -44,6 +44,6 @@ describe("Login page heading", () => {
 
     const headings = container.querySelectorAll("h1");
     expect(headings).toHaveLength(1);
-    expect(headings[0].textContent).toBe("Create your account");
+    expect(headings[0].textContent).toBe("إنشاء حسابك");
   });
 });

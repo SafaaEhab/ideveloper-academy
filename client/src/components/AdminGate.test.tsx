@@ -66,7 +66,7 @@ describe("AdminGate", () => {
     render();
     expect(host.querySelector("[data-testid='request-form']")).toBeNull();
 
-    click("Request access");
+    click("طلب صلاحية");
 
     expect(host.querySelector("[data-testid='request-form']")).not.toBeNull();
     expect(host.querySelector("#gate-password")).toBeNull();
@@ -78,13 +78,13 @@ describe("AdminGate", () => {
 
     // No point offering sign-in to someone already signed in.
     expect(host.querySelector("[data-testid='request-form']")).not.toBeNull();
-    expect(host.textContent).toContain("no access yet");
+    expect(host.textContent).toContain("لا يملك");
   });
 
   it("can go back from the request form to signing in", () => {
     render();
-    click("Request access");
-    click("I have an account");
+    click("طلب صلاحية");
+    click("لديّ حساب");
 
     expect(host.querySelector("#gate-password")).not.toBeNull();
     expect(host.querySelector("[data-testid='request-form']")).toBeNull();

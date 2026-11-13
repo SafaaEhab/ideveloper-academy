@@ -2,6 +2,11 @@ import { useCallback, useEffect, useState, type PointerEvent } from "react";
 import { ArrowUpLeft, Play, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Accordion,
   AccordionContent,
   AccordionItem,
@@ -79,6 +84,7 @@ export default function Home() {
     staleTime: 60_000,
   });
   const [waitCourse, setWaitCourse] = useState<string | null>(null);
+  const [activePhoto, setActivePhoto] = useState<(typeof STUDENT_PHOTOS)[number] | null>(null);
   const statusByCourse = new Map(
     (offerings.data ?? []).map(item => [item.course, item.status]),
   );
@@ -372,12 +378,19 @@ export default function Home() {
                   {STUDENT_PHOTOS.map((photo, index) => (
                     <Reveal key={photo.src} delay={(index % 5) * 60} y={20} className="h-full">
                       <figure className="h-full overflow-hidden rounded-2xl border border-border bg-background">
-                        <img
-                          src={photo.src}
-                          alt={photo.alt}
-                          loading="lazy"
-                          className="aspect-[4/5] w-full object-cover transition-transform duration-500 hover:scale-105"
-                        />
+                        <button
+                          type="button"
+                          onClick={() => setActivePhoto(photo)}
+                          aria-label={`عرض صورة ${photo.alt} بالحجم الكامل`}
+                          className="block h-full w-full cursor-zoom-in focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
+                        >
+                          <img
+                            src={photo.src}
+                            alt={photo.alt}
+                            loading="lazy"
+                            className="aspect-[4/5] w-full object-cover transition-transform duration-500 hover:scale-105"
+                          />
+                        </button>
                       </figure>
                     </Reveal>
                   ))}
@@ -513,6 +526,29 @@ export default function Home() {
           }}
           course={waitCourse}
         />
+
+        <Dialog
+          open={activePhoto !== null}
+          onOpenChange={open => {
+            if (!open) setActivePhoto(null);
+          }}
+        >
+          <DialogContent
+            aria-describedby={undefined}
+            className="max-w-5xl border-0 bg-transparent p-0 shadow-none [&>button]:rounded-full [&>button]:bg-background/90 [&>button]:p-2 [&>button]:text-foreground [&>button]:opacity-100 [&>button]:shadow-lg sm:max-w-5xl"
+          >
+            <DialogTitle className="sr-only">
+              {activePhoto?.alt ?? "صورة من مشاريع الطلاب"}
+            </DialogTitle>
+            {activePhoto ? (
+              <img
+                src={activePhoto.src}
+                alt={activePhoto.alt}
+                className="max-h-[82vh] w-full rounded-2xl bg-black object-contain shadow-2xl"
+              />
+            ) : null}
+          </DialogContent>
+        </Dialog>
     </SiteLayout>
   );
 }

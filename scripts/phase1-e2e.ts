@@ -136,7 +136,7 @@ async function login(page: Page, email: string) {
   });
   await page.locator("#login-email").fill(email);
   await page.locator("#login-password").fill(PASSWORD);
-  await page.getByRole("button", { name: "Sign in" }).click();
+  await page.getByRole("button", { name: /تسجيل الدخول|Sign in/ }).click();
   await page.waitForURL("**/leads", { timeout: 15_000 });
   await page
     .getByRole("heading", { name: "العملاء المحتملون" })

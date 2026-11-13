@@ -14,7 +14,7 @@ const MIN_PASSWORD_LENGTH = 8;
 type Mode = "login" | "signup";
 
 export default function Login() {
-  useDocumentLocale("en", "ltr");
+  useDocumentLocale("ar", "rtl");
   const [mode, setMode] = useState<Mode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -49,7 +49,7 @@ export default function Login() {
         }),
       });
       const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.error || "Something went wrong");
+      if (!res.ok) throw new Error(data?.error || "حدث خطأ ما");
 
       // Mirror the session for browsers that block the cookie (Safari ITP,
       // private mode). The server accepts it as a Bearer token.
@@ -78,41 +78,44 @@ export default function Login() {
               : returnTo);
       window.location.href = destination;
     } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Login failed");
+      toast.error(e instanceof Error ? e.message : "تعذر تسجيل الدخول");
       setBusy(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center p-6">
-      <Card className="w-full max-w-md rounded-3xl">
+    <div
+      dir="rtl"
+      className="admin-shell flex min-h-screen items-center justify-center bg-background p-6"
+    >
+      <Card className="admin-card w-full max-w-md">
         <CardHeader>
-          <h1 className="leading-none font-semibold">
-            {isSignup ? "Create your account" : "Sign in"}
+          <h1 className="leading-none font-extrabold">
+            {isSignup ? "إنشاء حسابك" : "تسجيل الدخول"}
           </h1>
-          <CardDescription>
+          <CardDescription className="leading-7">
             {isSignup
-              ? "Create an account to reach the student portal."
-              : "Welcome back — sign in to continue."}
+              ? "أنشئ حساباً للوصول إلى بوابة الطالب."
+              : "أهلاً بعودتك — سجّل الدخول للمتابعة."}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={submit} className="space-y-4">
             {isSignup && (
               <div className="space-y-2">
-                <Label htmlFor="login-name">Name</Label>
+                <Label htmlFor="login-name">الاسم</Label>
                 <Input
                   id="login-name"
                   autoComplete="name"
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  placeholder="Your name"
+                  placeholder="اسمك"
                 />
               </div>
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="login-email">Email</Label>
+              <Label htmlFor="login-email">البريد الإلكتروني</Label>
               <Input
                 id="login-email"
                 type="email"
@@ -121,11 +124,12 @@ export default function Login() {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="you@example.com"
+                dir="ltr"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="login-password">Password</Label>
+              <Label htmlFor="login-password">كلمة المرور</Label>
               <Input
                 id="login-password"
                 type="password"
@@ -134,32 +138,36 @@ export default function Login() {
                 autoComplete={isSignup ? "new-password" : "current-password"}
                 value={password}
                 onChange={e => setPassword(e.target.value)}
-                placeholder={isSignup ? "At least 8 characters" : "Your password"}
+                placeholder={isSignup ? "8 أحرف على الأقل" : "كلمة المرور"}
               />
             </div>
 
             <Button type="submit" className="h-12 w-full rounded-2xl" disabled={!canSubmit}>
-              {busy ? "Please wait..." : isSignup ? "Create account" : "Sign in"}
+              {busy
+                ? "جارٍ الانتظار…"
+                : isSignup
+                  ? "إنشاء الحساب"
+                  : "تسجيل الدخول"}
             </Button>
           </form>
 
           <p className="mt-6 text-center text-sm text-muted-foreground">
-            {isSignup ? "Already have an account?" : "New here?"}{" "}
+            {isSignup ? "لديك حساب بالفعل؟" : "أول مرة هنا؟"}{" "}
             <button
               type="button"
-              className="font-medium text-foreground underline-offset-4 hover:underline"
+              className="font-semibold text-primary underline-offset-4 hover:underline"
               onClick={() => {
                 setMode(isSignup ? "login" : "signup");
                 setPassword("");
               }}
             >
-              {isSignup ? "Sign in" : "Create an account"}
+              {isSignup ? "تسجيل الدخول" : "إنشاء حساب"}
             </button>
           </p>
 
           <p className="mt-4 text-center text-sm">
             <Link href="/" className="text-muted-foreground underline-offset-4 hover:underline">
-              Back to home
+              العودة إلى الرئيسية
             </Link>
           </p>
         </CardContent>

@@ -23,6 +23,8 @@ const StudentPortal = lazy(() => import("./pages/StudentPortal"));
 const InstructorPortal = lazy(() => import("./pages/instructor/InstructorPortal"));
 const Admin = lazy(() => import("./pages/Admin"));
 const LeadsPage = lazy(() => import("./pages/LeadsPage"));
+const MessagingPage = lazy(() => import("./pages/MessagingPage"));
+const AccountsPage = lazy(() => import("./pages/AccountsPage"));
 
 function RouteFallback() {
   return (
@@ -55,6 +57,8 @@ function Router() {
         <Route path="/instructor/" component={InstructorPortal} />
         <Route path="/admin" component={Admin} />
         <Route path="/leads" component={LeadsPage} />
+        <Route path="/messaging" component={MessagingPage} />
+        <Route path="/accounts" component={AccountsPage} />
         <Route path="/404" component={NotFound} />
         <Route component={NotFound} />
       </Switch>
@@ -68,7 +72,7 @@ export default function App() {
     <ErrorBoundary>
       <ThemeProvider defaultTheme="dark" switchable>
         <TooltipProvider>
-          <Toaster />
+          <Toaster containerAriaLabel="الإشعارات" />
           <Router />
           <AnnouncementPopup />
         </TooltipProvider>

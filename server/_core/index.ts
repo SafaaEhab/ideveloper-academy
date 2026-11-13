@@ -5,6 +5,7 @@ import { createApp } from "./app";
 import { setupVite } from "./vite";
 import { serveStatic } from "./static";
 import { startLeadSyncScheduler } from "../leadSync";
+import { startPhase2Worker } from "../phase2Worker";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -46,6 +47,7 @@ async function startServer() {
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
     startLeadSyncScheduler();
+    startPhase2Worker();
   });
 }
 

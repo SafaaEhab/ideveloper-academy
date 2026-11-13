@@ -43,7 +43,7 @@ describe("route metadata", () => {
 
   it("uses the unknown-route metadata (and keeps the path) for a miss", () => {
     const metadata = metadataForPath("/does-not-exist");
-    expect(metadata.title).toContain("Page not found");
+    expect(metadata.title).toContain("الصفحة غير موجودة");
     expect(metadata.canonicalPath).toBe("/does-not-exist");
   });
 

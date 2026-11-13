@@ -191,6 +191,72 @@ export const DAY_LABELS = [
 
 export const DAY_LABELS_SHORT = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+/** Arabic labels for the admin calendar; the English exports stay for tests. */
+export const DAY_LABELS_AR = [
+  "الأحد",
+  "الاثنين",
+  "الثلاثاء",
+  "الأربعاء",
+  "الخميس",
+  "الجمعة",
+  "السبت",
+] as const;
+
+export const DAY_LABELS_SHORT_AR = [
+  "الأحد",
+  "الاثنين",
+  "الثلاثاء",
+  "الأربعاء",
+  "الخميس",
+  "الجمعة",
+  "السبت",
+] as const;
+
+/** `"17:00"` → `"5:00 م"` for the Arabic admin screens. */
+export function formatTimeAr(time: string): string {
+  const minutes = timeToMinutes(time);
+  if (minutes === null) return time;
+  const hours24 = Math.floor(minutes / 60);
+  const suffix = hours24 < 12 ? "ص" : "م";
+  const hours12 = hours24 % 12 === 0 ? 12 : hours24 % 12;
+  return `${hours12}:${pad(minutes % 60)} ${suffix}`;
+}
+
+export function formatTimeRangeAr(startTime: string, endTime: string): string {
+  return startTime === endTime
+    ? formatTimeAr(startTime)
+    : `${formatTimeAr(startTime)} - ${formatTimeAr(endTime)}`;
+}
+
+/** Arabic duration for the admin schedule, e.g. `"1 ساعة و30 دقيقة"`. */
+export function formatDurationAr(startTime: string, endTime: string): string {
+  const start = timeToMinutes(startTime);
+  const end = timeToMinutes(endTime);
+  if (start === null || end === null || end <= start) return "";
+  const minutes = end - start;
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  const hourText =
+    hours === 0
+      ? ""
+      : hours === 1
+        ? "ساعة"
+        : hours === 2
+          ? "ساعتان"
+          : `${hours} ساعات`;
+  const minuteText =
+    rest === 0
+      ? ""
+      : rest === 1
+        ? "دقيقة"
+        : rest === 2
+          ? "دقيقتان"
+          : `${rest} دقائق`;
+  if (!hourText) return minuteText;
+  if (!minuteText) return hourText;
+  return `${hourText} و${minuteText}`;
+}
+
 /** The seven day columns of a week view, starting on `weekStartsOn`. */
 export function weekDays(anchor: Date, weekStartsOn = 0): Date[] {
   const start = startOfWeek(anchor, weekStartsOn);

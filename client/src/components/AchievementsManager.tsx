@@ -17,7 +17,10 @@ import { toast } from "sonner";
 import { trpc, LIVE_REFETCH_INTERVAL } from "@/lib/trpc";
 import { checkImageFile, prepareImageForUpload } from "@/lib/imageUpload";
 import SafeImage from "@/components/SafeImage";
-import { IMAGE_VALIDATION_MESSAGE, validateImageSource } from "@shared/validation";
+import { validateImageSource } from "@shared/validation";
+
+const IMAGE_VALIDATION_MESSAGE =
+  "أدخل رابط HTTPS صالحاً أو مساراً يبدأ بـ /images/";
 
 const emptyForm = { title: "", description: "", achievedOn: "", imageUrl: "", tag: "", sortOrder: 0 };
 
@@ -36,15 +39,15 @@ export default function AchievementsManager() {
 
   const uploadImage = trpc.admin.uploadAchievementImage.useMutation();
   const create = trpc.admin.createAchievement.useMutation({
-    onSuccess: () => { toast.success("Achievement published to the home page"); reset(); refresh(); },
+    onSuccess: () => { toast.success("تم نشر الإنجاز على الصفحة الرئيسية"); reset(); refresh(); },
     onError: error => toast.error(error.message),
   });
   const update = trpc.admin.updateAchievement.useMutation({
-    onSuccess: () => { toast.success("Achievement updated"); reset(); refresh(); },
+    onSuccess: () => { toast.success("تم تحديث الإنجاز"); reset(); refresh(); },
     onError: error => toast.error(error.message),
   });
   const remove = trpc.admin.deleteAchievement.useMutation({
-    onSuccess: () => { toast.success("Achievement removed"); reset(); refresh(); },
+    onSuccess: () => { toast.success("تم حذف الإنجاز"); reset(); refresh(); },
     onError: error => toast.error(error.message),
   });
 
@@ -64,9 +67,9 @@ export default function AchievementsManager() {
       const dataUrl = await prepareImageForUpload(file);
       const { url } = await uploadImage.mutateAsync({ dataUrl });
       setForm(current => ({ ...current, imageUrl: url }));
-      toast.success("Photo uploaded");
+      toast.success("تم رفع الصورة");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "That image could not be uploaded.");
+      toast.error(error instanceof Error ? error.message : "تعذر رفع الصورة.");
     }
   }
 
@@ -96,21 +99,21 @@ export default function AchievementsManager() {
 
   return (
     <div className="grid gap-5 xl:grid-cols-[380px_1fr]">
-      <Card className="rounded-3xl">
+      <Card className="admin-card">
         <CardHeader>
-          <CardTitle>{editingId ? "Edit achievement" : "Add achievement"}</CardTitle>
+          <CardTitle>{editingId ? "تعديل الإنجاز" : "إضافة إنجاز"}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>Photo</Label>
+              <Label>الصورة</Label>
               <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-dashed border-border bg-muted/40">
                 {form.imageUrl ? (
-                  <SafeImage src={form.imageUrl} alt="Preview" className="h-full w-full object-cover" />
+                  <SafeImage src={form.imageUrl} alt="معاينة الصورة" className="h-full w-full object-cover" />
                 ) : (
                   <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-xs text-muted-foreground">
                     <ImageOff className="h-6 w-6 opacity-40" />
-                    No photo selected
+                    لم يتم اختيار صورة
                   </div>
                 )}
               </div>
@@ -130,25 +133,25 @@ export default function AchievementsManager() {
                   onClick={() => fileRef.current?.click()}
                 >
                   <Upload className="me-2 h-4 w-4" />
-                  {uploadImage.isPending ? "Uploading…" : "Upload photo"}
+                  {uploadImage.isPending ? "جارٍ الرفع…" : "رفع صورة"}
                 </Button>
                 {form.imageUrl && (
-                  <Button type="button" variant="ghost" size="icon" className="h-10 w-10 rounded-xl" aria-label="Remove photo" onClick={() => setForm(current => ({ ...current, imageUrl: "" }))}>
+                  <Button type="button" variant="ghost" size="icon" className="h-10 w-10 rounded-xl" aria-label="إزالة الصورة" onClick={() => setForm(current => ({ ...current, imageUrl: "" }))}>
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
                 )}
               </div>
               {!canUpload && (
                 <p className="rounded-xl bg-muted/60 px-3 py-2 text-xs leading-5 text-muted-foreground">
-                  Uploading is off until the server environment has{" "}
-                  <b>{missingKeys.length > 0 ? missingKeys.join(", ") : "the Cloudinary keys"}</b>. You can still paste a
-                  link to an image below.
+                  الرفع متوقف حتى يتوفر على السيرفر:{" "}
+                  <b>{missingKeys.length > 0 ? missingKeys.join(", ") : "مفاتيح Cloudinary"}</b>. يمكنك لصق
+                  رابط صورة بالأسفل.
                 </p>
               )}
               <Input
                 value={form.imageUrl}
                 onChange={event => setForm({ ...form, imageUrl: event.target.value })}
-                placeholder="https://… or /images/…"
+                placeholder="https://… أو /images/…"
                 dir="ltr"
                 aria-invalid={!imageValidation.ok}
                 aria-describedby="achievement-image-error"
@@ -162,38 +165,38 @@ export default function AchievementsManager() {
             </div>
 
             <div>
-              <Label htmlFor="achievement-date" className="mb-2 block text-sm">Date shown on the card</Label>
+              <Label htmlFor="achievement-date" className="mb-2 block text-sm">التاريخ المعروض على البطاقة</Label>
               <Input
                 id="achievement-date"
                 value={form.achievedOn}
                 onChange={event => setForm({ ...form, achievedOn: event.target.value })}
-                placeholder="e.g. 28/3/2024 or 2024"
+                placeholder="مثال: 28/3/2024 أو 2024"
                 dir="ltr"
               />
             </div>
 
             <div>
-              <Label htmlFor="achievement-title" className="mb-2 block text-sm">Short title <span className="text-muted-foreground">(optional)</span></Label>
+              <Label htmlFor="achievement-title" className="mb-2 block text-sm">عنوان مختصر <span className="text-muted-foreground">(اختياري)</span></Label>
               <Input
                 id="achievement-title"
                 value={form.title}
                 onChange={event => setForm({ ...form, title: event.target.value })}
-                placeholder="e.g. Codeavour 5.0"
+                placeholder="مثال: Codeavour 5.0"
               />
             </div>
 
             <div>
-              <Label htmlFor="achievement-tag" className="mb-2 block text-sm">Corner label <span className="text-muted-foreground">(optional)</span></Label>
+              <Label htmlFor="achievement-tag" className="mb-2 block text-sm">شارة الزاوية <span className="text-muted-foreground">(اختياري)</span></Label>
               <Input
                 id="achievement-tag"
                 value={form.tag}
                 onChange={event => setForm({ ...form, tag: event.target.value })}
-                placeholder="e.g. Winner"
+                placeholder="مثال: الفائز"
               />
             </div>
 
             <div>
-              <Label htmlFor="achievement-description" className="mb-2 block text-sm">What happened *</Label>
+              <Label htmlFor="achievement-description" className="mb-2 block text-sm">ماذا حدث؟ *</Label>
               <Textarea
                 id="achievement-description"
                 rows={4}
@@ -205,7 +208,7 @@ export default function AchievementsManager() {
             </div>
 
             <div>
-              <Label htmlFor="achievement-order" className="mb-2 block text-sm">Order <span className="text-muted-foreground">(lower shows first)</span></Label>
+              <Label htmlFor="achievement-order" className="mb-2 block text-sm">الترتيب <span className="text-muted-foreground">(الأقل يظهر أولاً)</span></Label>
               <Input
                 id="achievement-order"
                 type="number"
@@ -216,21 +219,21 @@ export default function AchievementsManager() {
             </div>
 
             <Button className="h-12 w-full rounded-2xl" disabled={!canSave || saving} onClick={save}>
-              {saving ? "Saving…" : editingId ? "Save changes" : "Publish achievement"}
+              {saving ? "جارٍ الحفظ…" : editingId ? "حفظ التعديلات" : "نشر الإنجاز"}
             </Button>
-            {editingId && <Button variant="ghost" className="w-full" onClick={reset}>Cancel edit</Button>}
+            {editingId && <Button variant="ghost" className="w-full" onClick={reset}>إلغاء التعديل</Button>}
           </div>
         </CardContent>
       </Card>
 
-      <Card className="rounded-3xl">
+      <Card className="admin-card">
         <CardHeader>
-          <CardTitle>Published on the home page</CardTitle>
+          <CardTitle>المنشور على الصفحة الرئيسية</CardTitle>
         </CardHeader>
         <CardContent>
           {rows.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-              Nothing published yet. Fill in the form and it appears on the home page right away.
+              لا يوجد إنجاز منشور بعد. املأ النموذج وسيظهر على الصفحة الرئيسية فوراً.
             </div>
           ) : (
             <div className="grid gap-3">
@@ -250,10 +253,10 @@ export default function AchievementsManager() {
                     <p className="mt-1 line-clamp-2 text-sm text-muted-foreground" dir="auto">{item.description}</p>
                   </div>
                   <div className="flex shrink-0">
-                    <Button variant="ghost" size="icon" onClick={() => startEdit(item)} aria-label="Edit achievement">
+                    <Button variant="ghost" size="icon" onClick={() => startEdit(item)} aria-label="تعديل الإنجاز">
                       <Pencil className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" className="text-destructive" onClick={() => remove.mutate({ id: item.id })} aria-label="Delete achievement">
+                    <Button variant="ghost" size="icon" className="text-destructive" onClick={() => remove.mutate({ id: item.id })} aria-label="حذف الإنجاز">
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>

@@ -85,7 +85,7 @@ export function AttendanceHomeworkCards({
     <div className={cn("grid gap-3 sm:grid-cols-2", className)}>
       <MetricCard
         icon={<CalendarCheck2 className="h-4 w-4" />}
-        label={summary.attendanceSinceJoining ? "الحضور منذ الانضمام — Sessions since joining" : "الحضور"}
+        label={summary.attendanceSinceJoining ? "الحضور منذ الانضمام" : "الحضور"}
         available={summary.attendanceAvailable}
         value={summary.attendanceAttended}
         total={summary.attendanceEligible}

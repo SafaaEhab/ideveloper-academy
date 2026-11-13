@@ -6,12 +6,14 @@ type Props = {
   code: string;
   label: string;
   copyLabel: string;
+  /** Confirmation shown after copying; defaults to `copyLabel`. */
+  copiedLabel?: string;
 };
 
-export default function ScratchBlocks({ code, label, copyLabel }: Props) {
+export default function ScratchBlocks({ code, label, copyLabel, copiedLabel }: Props) {
   const copy = async () => {
     await navigator.clipboard.writeText(code);
-    toast.success(copyLabel);
+    toast.success(copiedLabel ?? copyLabel);
   };
 
   return (

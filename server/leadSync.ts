@@ -354,7 +354,11 @@ export async function retryLeadSync(
       leadId,
       status: "pending",
       attempts: 0,
-      nextAttemptAt: now,
+      // A manual retry must be claimable in this same call. MySQL can round a
+      // timestamp with sub-second precision when storing it, so using exactly
+      // `now` can leave the row a fraction of a second in the future and make
+      // the immediate claim miss it.
+      nextAttemptAt: new Date(now.getTime() - 1_000),
       lockedAt: null,
       lastError: null,
       updatedAt: now,
@@ -363,7 +367,7 @@ export async function retryLeadSync(
       set: {
         status: "pending",
         attempts: 0,
-        nextAttemptAt: now,
+        nextAttemptAt: new Date(now.getTime() - 1_000),
         lockedAt: null,
         lastError: null,
         updatedAt: now,
@@ -422,6 +426,7 @@ export async function reconcileLeadSync(): Promise<{
   const db = await getDb();
   if (!db) return { queued: 0, configured: false };
   const now = new Date();
+  const dueAt = new Date(now.getTime() - 1_000);
   const rows = await db
     .select({ id: leads.id })
     .from(leads)
@@ -440,7 +445,7 @@ export async function reconcileLeadSync(): Promise<{
         leadId: row.id,
         status: "pending",
         attempts: 0,
-        nextAttemptAt: now,
+        nextAttemptAt: dueAt,
         lockedAt: null,
         lastError: null,
         updatedAt: now,
@@ -449,7 +454,7 @@ export async function reconcileLeadSync(): Promise<{
         set: {
           status: "pending",
           attempts: 0,
-          nextAttemptAt: now,
+          nextAttemptAt: dueAt,
           lockedAt: null,
           lastError: null,
           updatedAt: now,

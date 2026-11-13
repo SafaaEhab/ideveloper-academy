@@ -5,6 +5,7 @@ import { ZodError } from "zod";
 import type { TrpcContext } from "./context";
 import { getInstructorByUserId, getStudentById, isOwnerEmail, type Instructor } from "../db";
 import { resolveLeadActor, type LeadActor } from "../leads";
+import { resolvePhase2Actor, type Phase2Actor } from "../permissions";
 import { readStudentSessionFromRequest } from "./studentSession";
 import { ENV } from "./env";
 
@@ -86,6 +87,52 @@ export const leadAccessProcedure = t.procedure.use(
     });
   }),
 );
+
+type Phase2Permission =
+  | "messaging"
+  | "payments"
+  | "subscriptions"
+  | "reports"
+  | "expenses"
+  | "financeSettings";
+
+/**
+ * Phase 2 gates. The permission is re-read from the database on every request,
+ * so revoking a reception permission closes access on the next call — even if
+ * the user still has an open tab with the old buttons.
+ *
+ * Salary visibility is deliberately separate from expense management and is
+ * checked again in the finance service when a salary row is read or written.
+ */
+export function phase2Procedure(permission: Phase2Permission) {
+  return t.procedure.use(
+    t.middleware(async opts => {
+      const { ctx, next } = opts;
+      if (!ctx.user) {
+        throw new TRPCError({ code: "UNAUTHORIZED", message: UNAUTHED_ERR_MSG });
+      }
+      const actor = await resolvePhase2Actor(ctx.user);
+      if (!actor[permission]) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "لا تملك صلاحية الوصول إلى هذا القسم المالي أو قسم الرسائل",
+        });
+      }
+      return next({
+        ctx: { ...ctx, user: ctx.user, phase2Actor: actor } as typeof ctx & {
+          phase2Actor: Phase2Actor;
+        },
+      });
+    }),
+  );
+}
+
+export const messagingProcedure = phase2Procedure("messaging");
+export const paymentsProcedure = phase2Procedure("payments");
+export const subscriptionsProcedure = phase2Procedure("subscriptions");
+export const reportsProcedure = phase2Procedure("reports");
+export const expensesProcedure = phase2Procedure("expenses");
+export const financeSettingsProcedure = phase2Procedure("financeSettings");
 
 /**
  * The owner is the single account pinned in the environment — `OWNER_EMAIL`, or

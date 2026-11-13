@@ -135,7 +135,7 @@ export default function AdminAnalytics() {
         </Button>
       </div>
 
-      <Card className="rounded-3xl">
+      <Card className="admin-card">
         <CardHeader className="flex flex-row items-center gap-2 pb-4">
           <Filter className="h-4 w-4 text-primary" />
           <CardTitle className="text-base">البحث والفلاتر</CardTitle>
@@ -233,8 +233,9 @@ export default function AdminAnalytics() {
             <div>
               <h3 className="text-lg font-bold">الطلاب</h3>
               <p className="mt-1 text-xs text-muted-foreground">
-                {data.studentsTotal} طالبًا مطابقًا · الفترة {data.range.from} ←{" "}
-                {data.range.to}
+                {data.studentsTotal} طالبًا مطابقًا · الفترة{" "}
+                <span className="admin-ltr">{data.range.from}</span> ←{" "}
+                <span className="admin-ltr">{data.range.to}</span>
               </p>
             </div>
             {totalPages > 1 ? (
@@ -320,13 +321,13 @@ export default function AdminAnalytics() {
                 <div className="rounded-2xl border border-border bg-card p-4 text-xs">
                   <div className="flex flex-wrap items-center gap-2">
                     <span className="rounded-full bg-primary/10 px-3 py-1 font-semibold text-primary">
-                      {drilldown.data.progress.completed} completed lessons
+                      {drilldown.data.progress.completed} درس مكتمل
                     </span>
                     <span className="rounded-full bg-muted px-3 py-1 font-semibold text-muted-foreground">
-                      {drilldown.data.progress.bestQuizzes.length} saved quizzes
+                      {drilldown.data.progress.bestQuizzes.length} اختبار محفوظ
                     </span>
                     <span className="rounded-full bg-muted px-3 py-1 font-semibold text-muted-foreground">
-                      {drilldown.data.progress.bestQuizzes.reduce((sum, quiz) => sum + quiz.score, 0)} quiz points
+                      {drilldown.data.progress.bestQuizzes.reduce((sum, quiz) => sum + quiz.score, 0)} نقطة اختبارات
                     </span>
                   </div>
                   {drilldown.data.progress.bestQuizzes.length > 0 ? (
