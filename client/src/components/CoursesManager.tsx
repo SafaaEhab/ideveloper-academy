@@ -35,24 +35,37 @@ export default function CoursesManager() {
   });
 
   return (
-    <Card className="admin-card">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <Layers className="h-5 w-5 text-primary" />
-          حالة الكورسات على الموقع
-        </CardTitle>
-        <p className="text-sm leading-7 text-muted-foreground">
-          هذه الحالة تحدد ما يظهر في بطاقات الموقع العام. «متاح للحجز» يفتح
-          التواصل، و«قريباً» و«قائمة انتظار» يعرضان الانضمام لقائمة الانتظار.
-        </p>
+    <Card className="admin-panel">
+      <CardHeader className="admin-panel-head">
+        <div>
+          <span className="admin-kicker">Course catalog</span>
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Layers className="h-5 w-5 text-primary" />
+            حالة الكورسات على الموقع
+          </CardTitle>
+          <p className="mt-1.5 max-w-2xl text-[13px] leading-6 text-muted-foreground">
+            هذه الحالة تحدد ما يظهر في بطاقات الموقع العام. «متاح للحجز» يفتح
+            التواصل، و«قريباً» و«قائمة انتظار» يعرضان الانضمام لقائمة الانتظار.
+          </p>
+        </div>
+        <Badge variant="outline">{offerings.data?.length ?? 0} كورسات</Badge>
       </CardHeader>
-      <CardContent className="grid gap-4 sm:grid-cols-2">
+      <CardContent className="grid gap-3 sm:grid-cols-2">
         {(offerings.data ?? []).map(offering => (
-          <div key={offering.id} className="admin-card-soft p-4">
-            <div className="flex items-center justify-between gap-3">
-              <span className="text-lg font-extrabold">
-                {COURSE_LABELS[offering.course] ?? offering.course}
+          <div
+            key={offering.id}
+            className={`admin-catalog-card admin-catalog-${offering.course.toLowerCase()}`}
+          >
+            <div className="admin-catalog-top">
+              <span className="admin-catalog-mark">
+                <Layers />
               </span>
+              <div className="min-w-0 flex-1">
+                <div className="admin-catalog-name">
+                  {COURSE_LABELS[offering.course] ?? offering.course}
+                </div>
+                <div className="admin-catalog-en">{offering.course}</div>
+              </div>
               <Badge
                 variant={offering.status === "live" ? "default" : "secondary"}
                 className="rounded-full"
@@ -72,7 +85,7 @@ export default function CoursesManager() {
                 disabled={update.isPending}
               >
                 <SelectTrigger
-                  className="h-11 rounded-xl"
+                  className="h-11 w-full"
                   aria-label={`حالة كورس ${COURSE_LABELS[offering.course] ?? offering.course}`}
                 >
                   <SelectValue />

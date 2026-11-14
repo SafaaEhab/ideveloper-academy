@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import MessagingManager from "@/components/messaging/MessagingManager";
 import { useDocumentLocale } from "@/hooks/useDocumentLocale";
+import "@/styles/admin.css";
 
 export default function MessagingPage() {
   useDocumentLocale("ar", "rtl");
@@ -20,7 +21,7 @@ export default function MessagingPage() {
 
   if (!user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-6" dir="rtl">
+      <div className="admin-app admin-gate flex min-h-screen items-center justify-center p-6" dir="rtl">
         <Card className="w-full max-w-md rounded-3xl">
           <CardContent className="p-8 text-center">
             <MessageSquare className="mx-auto h-10 w-10 text-muted-foreground" />
@@ -42,7 +43,7 @@ export default function MessagingPage() {
 
   if (!user.phase2?.messaging) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background p-6" dir="rtl">
+      <div className="admin-app admin-gate flex min-h-screen items-center justify-center p-6" dir="rtl">
         <Card className="w-full max-w-md rounded-3xl">
           <CardContent className="p-8 text-center">
             <ShieldAlert className="mx-auto h-10 w-10 text-rose-500" />
@@ -67,7 +68,7 @@ export default function MessagingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
+    <div className="admin-app admin-frame admin-legacy min-h-screen" dir="rtl">
       <header className="border-b border-border/60 bg-card/40">
         <div className="mx-auto flex max-w-7xl flex-col justify-between gap-3 px-4 py-4 sm:flex-row sm:items-center lg:px-8">
           <div>

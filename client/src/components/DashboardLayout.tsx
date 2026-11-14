@@ -190,7 +190,7 @@ export const ADMIN_PAGE_META: Record<
   },
 };
 
-const SIDEBAR_WIDTH = "282px";
+const SIDEBAR_WIDTH = "292px";
 
 export default function DashboardLayout({
   children,
@@ -210,7 +210,7 @@ export default function DashboardLayout({
 
   if (!user) {
     return (
-      <div className="admin-shell flex min-h-screen items-center justify-center bg-background p-6" dir="rtl">
+      <div className="admin-app flex min-h-screen items-center justify-center bg-background p-6" dir="rtl">
         <div className="flex w-full max-w-md flex-col items-center gap-6 text-center">
           <AcademyLogo className="h-16 w-16" />
           <div>
@@ -232,7 +232,7 @@ export default function DashboardLayout({
       defaultOpen
       style={{ "--sidebar-width": SIDEBAR_WIDTH } as React.CSSProperties}
     >
-      <div dir="rtl" className="admin-shell flex min-h-screen w-full bg-background">
+      <div dir="rtl" className="admin-app admin-frame flex min-h-screen w-full">
         <DashboardLayoutContent activeTab={activeTab} meta={meta}>
           {children}
         </DashboardLayoutContent>
@@ -297,27 +297,25 @@ function DashboardLayoutContent({
       <Sidebar
         side="right"
         collapsible="icon"
-        className="admin-sidebar border-none p-2 md:p-3"
+        className="admin-rail border-none p-2 md:p-3"
       >
-        <div className="admin-sidebar-panel flex h-full flex-col overflow-hidden rounded-[1.6rem]">
-          <SidebarHeader className="border-b border-white/10 px-4 py-5">
+        <div className="admin-rail-panel">
+          <SidebarHeader className="admin-brand">
             <div className="flex items-center gap-3">
-              <AcademyLogo className="h-11 w-11 shrink-0 ring-2 ring-white/10" />
+              <span className="admin-brand-logo">
+                <AcademyLogo className="h-10 w-10" />
+              </span>
               {!isCollapsed ? (
                 <div className="min-w-0 flex-1">
-                  <div className="truncate text-base font-extrabold text-white">
-                    iDeveloper
-                  </div>
-                  <div className="mt-0.5 text-[11px] font-medium text-white/55">
-                    لوحة إدارة الأكاديمية
-                  </div>
+                  <div className="admin-brand-name">iDeveloper</div>
+                  <div className="admin-brand-kicker">Academy OS</div>
                 </div>
               ) : null}
               {!isCollapsed ? (
                 <button
                   type="button"
                   onClick={toggleSidebar}
-                  className="flex h-8 w-8 items-center justify-center rounded-lg text-white/50 transition hover:bg-white/10 hover:text-white"
+                  className="admin-rail-collapse"
                   aria-label="طي القائمة الجانبية"
                 >
                   <PanelRightClose className="h-4 w-4" />
@@ -326,11 +324,11 @@ function DashboardLayoutContent({
             </div>
           </SidebarHeader>
 
-          <SidebarContent className="admin-sidebar-scroll px-2 py-3">
+          <SidebarContent className="admin-sidebar-scroll admin-nav px-2 py-2">
             {visibleGroups.map(group => (
-              <SidebarGroup key={group.label} className="py-1">
+              <SidebarGroup key={group.label} className="admin-nav-group py-1">
                 {!isCollapsed ? (
-                  <SidebarGroupLabel className="px-3 pb-1 text-[10px] font-bold uppercase tracking-[.14em] text-white/35">
+                  <SidebarGroupLabel className="admin-nav-label">
                     {group.label}
                   </SidebarGroupLabel>
                 ) : null}
@@ -345,17 +343,9 @@ function DashboardLayoutContent({
                             isActive={isActive}
                             onClick={() => navigate(item.tab)}
                             tooltip={item.label}
-                            className={`group h-10 rounded-xl px-3 text-[13px] font-medium transition ${
-                              isActive
-                                ? "bg-white text-slate-900 shadow-lg shadow-black/20 hover:bg-white"
-                                : "text-white/70 hover:bg-white/10 hover:text-white"
-                            }`}
+                            className="group"
                           >
-                            <item.icon
-                              className={`h-[18px] w-[18px] shrink-0 ${
-                                isActive ? "text-primary" : "text-white/45 group-hover:text-white/80"
-                              }`}
-                            />
+                            <item.icon className="shrink-0" />
                             {!isCollapsed ? <span>{item.label}</span> : null}
                           </SidebarMenuButton>
                         </SidebarMenuItem>
@@ -367,25 +357,25 @@ function DashboardLayoutContent({
             ))}
           </SidebarContent>
 
-          <SidebarFooter className="border-t border-white/10 p-3">
+          <SidebarFooter className="admin-rail-footer">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button
-                  className={`flex w-full items-center gap-3 rounded-2xl bg-white/[.06] p-2.5 text-start transition hover:bg-white/10 ${
+                  className={`admin-user-card ${
                     isCollapsed ? "justify-center" : ""
                   }`}
                 >
-                  <Avatar className="h-9 w-9 shrink-0 border border-white/15">
-                    <AvatarFallback className="bg-white/10 text-xs font-bold text-white">
+                  <Avatar className="h-9 w-9 shrink-0">
+                    <AvatarFallback className="text-xs">
                       {user?.name?.charAt(0)?.toUpperCase() || "أ"}
                     </AvatarFallback>
                   </Avatar>
                   {!isCollapsed ? (
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-semibold text-white">
+                      <p className="admin-user-name truncate">
                         {user?.name || "مستخدم"}
                       </p>
-                      <p className="mt-0.5 truncate text-[10px] text-white/45" dir="ltr">
+                      <p className="admin-user-email truncate" dir="ltr">
                         {user?.email || "-"}
                       </p>
                     </div>
@@ -407,46 +397,39 @@ function DashboardLayoutContent({
         </div>
       </Sidebar>
 
-      <SidebarInset className="min-w-0 bg-transparent">
-        <header className="sticky top-0 z-30 border-b border-border/60 bg-background/85 backdrop-blur-xl">
-          <div className="flex min-h-[74px] items-center justify-between gap-3 px-4 py-3 md:px-6 xl:px-8">
+      <SidebarInset className="admin-inset min-w-0 bg-transparent">
+        <header className="admin-topbar">
+          <div className="admin-topbar-inner">
             <div className="flex min-w-0 items-center gap-3">
               {isMobile ? (
-                <SidebarTrigger className="h-9 w-9 rounded-xl border border-border bg-card" />
+                <SidebarTrigger className="admin-icon-btn h-9 w-9" />
               ) : null}
               <div className="min-w-0">
-                <div className="flex items-center gap-2 text-[11px] font-semibold text-muted-foreground">
+                <div className="admin-crumb">
                   <span>لوحة الإدارة</span>
-                  <span className="text-border">/</span>
-                  <span className="text-primary">{meta.title}</span>
+                  <span className="admin-crumb-sep">/</span>
+                  <span className="admin-crumb-current">{meta.title}</span>
                 </div>
-                <h1 className="mt-1 truncate text-xl font-extrabold tracking-tight md:text-2xl">
-                  {meta.title}
-                </h1>
+                <h1 className="admin-title truncate">{meta.title}</h1>
+                <p className="admin-subtitle">{meta.description}</p>
               </div>
             </div>
-            <div className="flex shrink-0 items-center gap-1.5 md:gap-2">
+            <div className="admin-topbar-actions">
               {today ? (
-                <span className="hidden rounded-full border border-border/70 bg-card px-3 py-1.5 text-[11px] text-muted-foreground lg:inline-flex">
+                <span className="admin-date-chip">
+                  <CalendarClock className="h-3.5 w-3.5" />
                   {today}
                 </span>
               ) : null}
-              <Button
-                asChild
-                variant="outline"
-                size="sm"
-                className="hidden rounded-xl sm:inline-flex"
-              >
+              <Button asChild variant="outline" size="sm" className="admin-visit hidden rounded-xl sm:inline-flex">
                 <Link href="/">
                   <ExternalLink className="me-1.5 h-3.5 w-3.5" />
                   زيارة الموقع
                 </Link>
               </Button>
-              <Button
+              <button
                 type="button"
-                variant="outline"
-                size="icon"
-                className="h-9 w-9 rounded-xl"
+                className="admin-icon-btn"
                 onClick={toggleTheme}
                 aria-label={theme === "dark" ? "الوضع النهاري" : "الوضع الليلي"}
               >
@@ -455,18 +438,21 @@ function DashboardLayoutContent({
                 ) : (
                   <Moon className="h-4 w-4" />
                 )}
-              </Button>
-              <div className="hidden items-center gap-2 rounded-xl border border-border/70 bg-card px-2.5 py-1.5 md:flex">
-                <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                <span className="max-w-[150px] truncate text-xs font-semibold">
-                  {user?.name || user?.email}
-                </span>
+              </button>
+              <div className="admin-user-chip">
+                <Avatar className="h-[1.85rem] w-[1.85rem]">
+                  <AvatarFallback className="text-[10px]">
+                    {user?.name?.charAt(0)?.toUpperCase() || "أ"}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="admin-user-chip-name">{user?.name || user?.email}</span>
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
               </div>
             </div>
           </div>
         </header>
-        <main className="admin-content flex-1 px-4 py-5 md:px-6 md:py-6 xl:px-8">
-          <div className="mx-auto w-full max-w-[1500px]">{children}</div>
+        <main className="admin-main">
+          <div className="admin-page">{children}</div>
         </main>
       </SidebarInset>
     </>

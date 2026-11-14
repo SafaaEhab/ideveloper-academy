@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import LeadsManager from "@/components/leads/LeadsManager";
 import { useDocumentLocale } from "@/hooks/useDocumentLocale";
+import "@/styles/admin.css";
 
 export default function LeadsPage() {
   useDocumentLocale("ar", "rtl");
@@ -83,7 +84,7 @@ export default function LeadsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background" dir="rtl">
+    <div className="admin-app admin-frame admin-legacy min-h-screen" dir="rtl">
       <header className="border-b border-border/60 bg-card/40">
         <div className="mx-auto flex max-w-7xl flex-col justify-between gap-3 px-4 py-4 sm:flex-row sm:items-center lg:px-8">
           <div>

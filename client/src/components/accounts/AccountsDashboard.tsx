@@ -93,25 +93,25 @@ export default function AccountsDashboard() {
         <Metric
           label="المحصل هذا الشهر"
           value={money(data?.collectedThisMonthMinor ?? 0)}
-          tone="bg-emerald-500/10 text-emerald-600"
+          tone="admin-tone-navy"
           icon={Wallet}
         />
         <Metric
           label="إجمالي المتبقي"
           value={money(data?.outstandingMinor ?? 0)}
-          tone="bg-amber-500/10 text-amber-600"
+          tone="admin-tone-mist"
           icon={Wallet}
         />
         <Metric
           label="المتأخرات"
           value={money(data?.overdueMinor ?? 0)}
-          tone="bg-rose-500/10 text-rose-600"
+          tone="admin-tone-graphite"
           icon={AlertTriangle}
         />
         <Metric
           label="طلاب متأخرون"
           value={String(data?.overdueStudentCount ?? 0)}
-          tone="bg-sky-500/10 text-sky-600"
+          tone="admin-tone-azure"
           icon={AlertTriangle}
         />
       </div>

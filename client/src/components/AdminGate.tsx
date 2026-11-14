@@ -80,11 +80,11 @@ export default function AdminGate() {
   };
 
   return (
-    <div dir="rtl" className="admin-shell flex min-h-screen items-center justify-center p-6">
-      <Card className="admin-card w-full max-w-md">
+    <div dir="rtl" className="admin-app admin-gate flex min-h-screen items-center justify-center p-6">
+      <Card className="admin-gate-card w-full max-w-md">
         <CardContent className="p-8">
-          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-muted">
-            <ShieldOff className="h-7 w-7 text-muted-foreground" />
+          <div className="admin-gate-icon mx-auto flex h-14 w-14 items-center justify-center rounded-2xl">
+            <ShieldOff className="h-7 w-7" />
           </div>
           <h1 className="mt-5 text-center text-2xl font-extrabold">
             مساحة عمل الإدارة
@@ -100,7 +100,7 @@ export default function AdminGate() {
             </div>
           )}
 
-          <div className="mt-6 grid grid-cols-2 gap-2 rounded-2xl bg-muted/60 p-1">
+          <div className="admin-gate-tabs mt-6 grid grid-cols-2 gap-2 rounded-2xl p-1">
             <Button
               type="button"
               variant={mode === "signin" ? "default" : "ghost"}

@@ -9,7 +9,6 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -135,13 +134,30 @@ export default function AdminAnalytics() {
         </Button>
       </div>
 
-      <Card className="admin-card">
-        <CardHeader className="flex flex-row items-center gap-2 pb-4">
-          <Filter className="h-4 w-4 text-primary" />
-          <CardTitle className="text-base">البحث والفلاتر</CardTitle>
-        </CardHeader>
-        <CardContent className="grid gap-x-5 gap-y-4 sm:grid-cols-2 lg:grid-cols-4">
-          <label className="space-y-2 text-[13px] font-semibold leading-6 sm:col-span-2">
+      <div className="admin-filterbar">
+        <div className="admin-filterbar-head">
+          <span className="admin-kicker">
+            <Filter className="h-3.5 w-3.5" />
+            البحث والفلاتر
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground"
+            onClick={() => {
+              setDays("180");
+              setGroupId("all");
+              setSearchInput("");
+              setSearch("");
+              setPage(0);
+            }}
+          >
+            <X className="me-1.5 h-3.5 w-3.5" />
+            إعادة الضبط
+          </Button>
+        </div>
+        <div className="admin-filterbar-grid">
+          <label className="admin-filter-field admin-filter-search">
             <span>اسم الطالب</span>
             <span className="relative block">
               <Search className="pointer-events-none absolute start-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -155,7 +171,7 @@ export default function AdminAnalytics() {
             </span>
           </label>
 
-          <label className="space-y-2 text-[13px] font-semibold leading-6">
+          <label className="admin-filter-field">
             <span>المجموعة</span>
             <Select
               value={groupId}
@@ -164,7 +180,7 @@ export default function AdminAnalytics() {
                 setPage(0);
               }}
             >
-              <SelectTrigger className="h-11 rounded-xl">
+              <SelectTrigger className="h-11 w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -178,7 +194,7 @@ export default function AdminAnalytics() {
             </Select>
           </label>
 
-          <label className="space-y-2 text-[13px] font-semibold leading-6">
+          <label className="admin-filter-field">
             <span>الفترة</span>
             <Select
               value={days}
@@ -187,7 +203,7 @@ export default function AdminAnalytics() {
                 setPage(0);
               }}
             >
-              <SelectTrigger className="h-11 rounded-xl">
+              <SelectTrigger className="h-11 w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -199,25 +215,8 @@ export default function AdminAnalytics() {
               </SelectContent>
             </Select>
           </label>
-
-          <div className="flex items-end pt-1 sm:col-span-2 lg:col-span-4">
-            <Button
-              variant="ghost"
-              className="h-11 rounded-xl px-4"
-              onClick={() => {
-                setDays("180");
-                setGroupId("all");
-                setSearchInput("");
-                setSearch("");
-                setPage(0);
-              }}
-            >
-              <X className="me-2 h-4 w-4" />
-              إعادة ضبط البحث والفلاتر
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {analytics.isLoading ? (
         <div className="rounded-2xl border border-border bg-card p-10 text-center text-sm text-muted-foreground">

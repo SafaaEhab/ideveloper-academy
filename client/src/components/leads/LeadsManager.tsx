@@ -419,42 +419,42 @@ export default function LeadsManager() {
         <CounterCard
           label="جديد"
           value={counters?.new ?? 0}
-          tone="border-sky-500/30 bg-sky-500/10 text-sky-800 dark:text-sky-200"
+          tone="admin-tone-azure"
           active={activeQuick === "new"}
           onClick={() => applyQuick("new")}
         />
         <CounterCard
           label="يحتاج متابعة"
           value={counters?.needs_follow_up ?? 0}
-          tone="border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-200"
+          tone="admin-tone-mist"
           active={activeQuick === "needs_follow_up"}
           onClick={() => applyQuick("needs_follow_up")}
         />
         <CounterCard
           label="اشترك"
           value={counters?.subscribed ?? 0}
-          tone="border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-200"
+          tone="admin-tone-navy"
           active={activeQuick === "subscribed"}
           onClick={() => applyQuick("subscribed")}
         />
         <CounterCard
           label="غير راغب"
           value={counters?.not_interested ?? 0}
-          tone="border-rose-500/30 bg-rose-500/10 text-rose-800 dark:text-rose-200"
+          tone="admin-tone-graphite"
           active={activeQuick === "not_interested"}
           onClick={() => applyQuick("not_interested")}
         />
         <CounterCard
           label="متأخر في الاتصال"
           value={counters?.overdue ?? 0}
-          tone="border-red-500/40 bg-red-500/10 text-red-800 dark:text-red-200"
+          tone="admin-tone-mist"
           active={activeQuick === "overdue"}
           onClick={() => applyQuick("overdue")}
         />
         <CounterCard
           label="إجمالي العملاء"
           value={counters?.total ?? 0}
-          tone="border-border bg-muted/40 text-foreground"
+          tone="admin-tone-azure"
           active={activeQuick === "all"}
           onClick={() => applyQuick("all")}
         />

@@ -17,6 +17,12 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { trpc, LIVE_REFETCH_INTERVAL } from "@/lib/trpc";
 import { PHONE_VALIDATION_MESSAGE, validateOptionalPhone } from "@shared/validation";
+
+/** Admin phone inputs accept digits only; the shared validator still decides
+ *  whether the result is a real Egyptian number. */
+function digitsOnly(value: string): string {
+  return value.replace(/\D/g, "").slice(0, 13);
+}
 import { DAY_LABELS_SHORT_AR, formatTimeRangeAr } from "@/lib/schedule";
 
 type InstructorRow = {
@@ -212,13 +218,20 @@ export default function InstructorsManager() {
                 <Input
                   id="instructor-phone"
                   type="tel"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  autoComplete="tel"
                   value={draft.phone}
-                  onChange={event => setDraft({ ...draft, phone: event.target.value })}
-                  placeholder="اختياري"
+                  onChange={event =>
+                    setDraft({ ...draft, phone: digitsOnly(event.target.value) })
+                  }
+                  placeholder="اختياري — أرقام فقط"
                   dir="ltr"
-                  aria-invalid={!validateOptionalPhone(draft.phone).ok}
+                  aria-invalid={
+                    draft.phone.length > 0 && !validateOptionalPhone(draft.phone).ok
+                  }
                 />
-                {!validateOptionalPhone(draft.phone).ok ? (
+                {draft.phone.length > 0 && !validateOptionalPhone(draft.phone).ok ? (
                   <p className="mt-1.5 text-xs text-destructive">
                     {PHONE_VALIDATION_MESSAGE}
                   </p>
@@ -422,12 +435,25 @@ export default function InstructorsManager() {
                 </Label>
                 <Input
                   id="edit-phone"
+                  type="tel"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  autoComplete="tel"
                   value={editDraft.phone}
-                  onChange={event => setEditDraft({ ...editDraft, phone: event.target.value })}
+                  onChange={event =>
+                    setEditDraft({
+                      ...editDraft,
+                      phone: digitsOnly(event.target.value),
+                    })
+                  }
                   dir="ltr"
-                  aria-invalid={!validateOptionalPhone(editDraft.phone).ok}
+                  aria-invalid={
+                    editDraft.phone.length > 0 &&
+                    !validateOptionalPhone(editDraft.phone).ok
+                  }
                 />
-                {!validateOptionalPhone(editDraft.phone).ok ? (
+                {editDraft.phone.length > 0 &&
+                !validateOptionalPhone(editDraft.phone).ok ? (
                   <p className="mt-1.5 text-xs text-destructive">
                     {PHONE_VALIDATION_MESSAGE}
                   </p>

@@ -60,6 +60,14 @@ import { trpc, LIVE_REFETCH_INTERVAL } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useDocumentLocale } from "@/hooks/useDocumentLocale";
 import { PHONE_VALIDATION_MESSAGE, validatePhone } from "@shared/validation";
+import "@/styles/admin.css";
+
+/** Admin phone fields accept digits only; letters and punctuation never reach
+ *  the form state (the shared validator still decides whether the number is a
+ *  real Egyptian mobile/landline). Capped so a pasted +20 value fits too. */
+function digitsOnly(value: string, maxLength = 13): string {
+  return value.replace(/\D/g, "").slice(0, maxLength);
+}
 
 type Course = "Scratch" | "Robotics" | "Web" | "Python";
 type StudentStatus = "active" | "paused";
@@ -136,24 +144,18 @@ function StatCard({
   label: string;
   value: string | number;
   hint?: string;
-  tone: string;
+  tone: "navy" | "graphite" | "mist" | "azure";
 }) {
   return (
-    <Card className="admin-card overflow-hidden">
-      <CardContent className="flex items-center gap-4 p-5">
-        <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl ${tone}`}>
-          <Icon className="h-5 w-5" />
-        </div>
-        <div className="min-w-0">
-          <div className="admin-number text-3xl font-extrabold tracking-tight text-foreground">
-            {value}
-          </div>
-          <div className="mt-1 truncate text-sm font-semibold text-muted-foreground">
-            {label}
-          </div>
-          {hint ? <div className="mt-0.5 text-[11px] text-muted-foreground/80">{hint}</div> : null}
-        </div>
-      </CardContent>
+    <Card className="admin-kpi">
+      <div className="admin-kpi-top">
+        <span className={`admin-kpi-icon admin-tone-${tone}`}>
+          <Icon />
+        </span>
+        {hint ? <span className="admin-kpi-hint">{hint}</span> : null}
+      </div>
+      <div className="admin-kpi-value admin-number">{value}</div>
+      <div className="admin-kpi-label">{label}</div>
     </Card>
   );
 }
@@ -180,7 +182,7 @@ function Field({
 
 function Empty({ text }: { text: string }) {
   return (
-    <div className="rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
+    <div className="admin-empty">
       {text}
     </div>
   );
@@ -394,31 +396,26 @@ export default function Admin() {
   return (
     <DashboardLayout activeTab={tab}>
       {tab === "overview" && (
-        <div className="space-y-6">
-          <div className="relative overflow-hidden rounded-[1.8rem] border border-primary/20 bg-gradient-to-l from-primary/15 via-card to-card p-6 md:p-8">
-            <div className="absolute -left-16 -top-20 h-56 w-56 rounded-full bg-primary/10 blur-3xl" />
-            <div className="relative flex flex-col justify-between gap-5 md:flex-row md:items-center">
-              <div>
-                <div className="flex items-center gap-2 text-xs font-bold text-primary">
-                  <Sparkles className="h-4 w-4" />
-                  مساحة العمل
-                </div>
-                <h2 className="mt-3 text-2xl font-extrabold tracking-tight md:text-3xl">
-                  أهلاً بك، {user?.name || "مدير الأكاديمية"}
-                </h2>
-                <p className="mt-2 max-w-2xl text-sm leading-7 text-muted-foreground">
-                  نظرة سريعة على الطلاب والعملاء والمهام اليومية. كل ما تحتاجه
-                  لإدارة الأكاديمية من مكان واحد.
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Button className="gap-2 rounded-xl" onClick={() => setTab("students")}>
+        <div className="space-y-5">
+          <section className="admin-hero">
+            <div className="relative">
+              <span className="admin-hero-kicker">
+                <Sparkles className="h-3.5 w-3.5" />
+                Academy OS · مساحة العمل
+              </span>
+              <h2>أهلاً بك، {user?.name || "مدير الأكاديمية"}</h2>
+              <p>
+                نظرة سريعة على الطلاب والعملاء والمهام اليومية. كل ما تحتاجه
+                لإدارة الأكاديمية من مكان واحد.
+              </p>
+              <div className="admin-hero-actions">
+                <Button className="gap-2" onClick={() => setTab("students")}>
                   <Plus className="h-4 w-4" />
                   إضافة طالب
                 </Button>
                 <Button
                   variant="outline"
-                  className="gap-2 rounded-xl"
+                  className="gap-2"
                   onClick={() => setTab("leads")}
                 >
                   <ClipboardList className="h-4 w-4" />
@@ -426,13 +423,27 @@ export default function Admin() {
                 </Button>
               </div>
             </div>
-          </div>
+            <div className="admin-hero-aside">
+              <div className="admin-hero-stat">
+                <span>عملاء جدد</span>
+                <b className="admin-number">{stats.data?.newLeads ?? 0}</b>
+              </div>
+              <div className="admin-hero-stat">
+                <span>مجموعات نشطة</span>
+                <b className="admin-number">{stats.data?.groups ?? 0}</b>
+              </div>
+              <div className="admin-hero-stat">
+                <span>طلاب نشطون</span>
+                <b className="admin-number">{stats.data?.active ?? 0}</b>
+              </div>
+            </div>
+          </section>
 
           {(stats.data?.registrationPending ?? 0) > 0 ? (
             <button
               type="button"
               onClick={() => setTab("leads")}
-              className="flex w-full items-center justify-between gap-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-5 py-4 text-start text-sm font-semibold text-amber-800 transition hover:bg-amber-500/15 dark:text-amber-200"
+              className="admin-attention"
             >
               <span>
                 {stats.data?.newLeads ?? 0} عميل جديد بانتظار المتابعة
@@ -440,89 +451,95 @@ export default function Admin() {
                   ? ` — ${stats.data?.overdueLeads} متأخر في الاتصال`
                   : ""}
               </span>
-              <span className="rounded-full bg-amber-500 px-3 py-1 text-xs text-white">
-                مراجعة
-              </span>
+              <span className="admin-attention-pill">مراجعة</span>
             </button>
           ) : null}
 
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="admin-kpi-grid">
             <StatCard
               icon={Users}
               label="إجمالي الطلاب"
               value={stats.data?.students ?? "—"}
               hint="كل الطلاب المسجلين"
-              tone="bg-primary/10 text-primary"
+              tone="navy"
             />
             <StatCard
               icon={CalendarDays}
               label="المجموعات النشطة"
               value={stats.data?.groups ?? "—"}
               hint="مجموعات الجدول"
-              tone="bg-emerald-500/10 text-emerald-600 dark:text-emerald-300"
+              tone="graphite"
             />
             <StatCard
               icon={BarChart3}
               label="الطلاب النشطون"
               value={stats.data?.active ?? "—"}
               hint="حسابات مفتوحة"
-              tone="bg-violet-500/10 text-violet-600 dark:text-violet-300"
+              tone="mist"
             />
             <StatCard
               icon={ClipboardList}
               label="عملاء جدد"
               value={stats.data?.newLeads ?? 0}
               hint="بانتظار المتابعة"
-              tone="bg-amber-500/10 text-amber-600 dark:text-amber-300"
+              tone="azure"
             />
           </div>
 
-          <div className="grid gap-6 xl:grid-cols-[1.15fr_.85fr]">
-            <Card className="admin-card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <GraduationCap className="h-5 w-5 text-primary" />
-                  حالة الكورسات
-                </CardTitle>
+          <div className="grid gap-5 xl:grid-cols-[1.15fr_.85fr]">
+            <Card className="admin-panel">
+              <CardHeader className="admin-panel-head">
+                <div>
+                  <span className="admin-kicker">Live status</span>
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <GraduationCap className="h-5 w-5 text-primary" />
+                    حالة الكورسات
+                  </CardTitle>
+                </div>
+                <Badge variant="outline">٤ كورسات</Badge>
               </CardHeader>
-              <CardContent className="grid gap-3 sm:grid-cols-2">
+              <CardContent className="admin-course-list">
                 {COURSES.map(course => {
                   const status = offeringByCourse.get(course) ?? "coming_soon";
                   return (
-                    <div
-                      key={course}
-                      className="admin-card-soft p-4"
-                    >
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="font-bold">{COURSE_LABELS[course]}</span>
-                        <Badge
-                          variant={status === "live" ? "default" : "secondary"}
-                          className="rounded-full"
-                        >
-                          {COURSE_STATUS_LABELS[status] ?? "غير محدد"}
-                        </Badge>
+                    <div key={course} className="admin-course-row">
+                      <span className="admin-course-dot" data-status={status} />
+                      <div className="min-w-0">
+                        <div className="admin-course-name">{COURSE_LABELS[course]}</div>
+                        <div className="admin-course-meta">
+                          {status === "live"
+                            ? "متاح للحجز على الموقع"
+                            : status === "waiting_list"
+                              ? "قائمة انتظار مفعّلة"
+                              : "يظهر للزوار كقريباً"}
+                        </div>
                       </div>
-                      <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
-                        <div
-                          className={`h-full rounded-full ${
-                            status === "live" ? "w-full bg-primary" : "w-1/4 bg-muted-foreground/30"
-                          }`}
-                        />
-                      </div>
+                      <span className="admin-course-track">
+                        <i data-status={status} />
+                      </span>
+                      <Badge
+                        variant={status === "live" ? "default" : "secondary"}
+                        className="rounded-full"
+                      >
+                        {COURSE_STATUS_LABELS[status] ?? "غير محدد"}
+                      </Badge>
                     </div>
                   );
                 })}
               </CardContent>
             </Card>
 
-            <Card className="admin-card">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Sparkles className="h-5 w-5 text-primary" />
-                  إجراءات سريعة
-                </CardTitle>
+            <Card className="admin-panel">
+              <CardHeader className="admin-panel-head">
+                <div>
+                  <span className="admin-kicker">Shortcuts</span>
+                  <CardTitle className="flex items-center gap-2 text-base">
+                    <Sparkles className="h-5 w-5 text-primary" />
+                    إجراءات سريعة
+                  </CardTitle>
+                </div>
               </CardHeader>
-              <CardContent className="space-y-2">
+              <CardContent className="admin-quick-grid">
                 {[
                   { label: "إضافة طالب جديد", tab: "students" as const, icon: UserPlus },
                   { label: "فتح جدول الحصص", tab: "schedule" as const, icon: CalendarClock },
@@ -536,13 +553,13 @@ export default function Admin() {
                     key={action.tab + action.label}
                     type="button"
                     onClick={() => setTab(action.tab)}
-                    className="flex w-full items-center justify-between gap-3 rounded-xl border border-border/60 bg-background/60 px-3 py-2.5 text-sm font-semibold transition hover:border-primary/40 hover:bg-primary/5"
+                    className="admin-quick-item"
                   >
-                    <span className="flex items-center gap-2">
-                      <action.icon className="h-4 w-4 text-primary" />
-                      {action.label}
+                    <span className="admin-quick-icon">
+                      <action.icon />
                     </span>
-                    <span className="text-muted-foreground">←</span>
+                    <span>{action.label}</span>
+                    <span className="admin-quick-arrow">←</span>
                   </button>
                 ))}
               </CardContent>
@@ -577,21 +594,37 @@ export default function Admin() {
                     dir="ltr"
                   />
                 </Field>
-                <Field label="رقم الهاتف" hint="مطلوب">
+                <Field label="رقم الهاتف" hint="أرقام فقط">
                   <Input
                     required
                     type="tel"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    autoComplete="tel"
                     value={studentForm.phone}
-                    onChange={e => setStudentForm({ ...studentForm, phone: e.target.value })}
+                    onChange={e =>
+                      setStudentForm({
+                        ...studentForm,
+                        phone: digitsOnly(e.target.value),
+                      })
+                    }
                     placeholder="01012345678"
                     dir="ltr"
-                    aria-invalid={!validatePhone(studentForm.phone).ok}
+                    aria-invalid={
+                      studentForm.phone.length > 0 &&
+                      !validatePhone(studentForm.phone).ok
+                    }
                   />
-                  {!validatePhone(studentForm.phone).ok ? (
+                  {studentForm.phone.length > 0 &&
+                  !validatePhone(studentForm.phone).ok ? (
                     <p className="mt-1.5 text-xs text-destructive">
                       {PHONE_VALIDATION_MESSAGE}
                     </p>
-                  ) : null}
+                  ) : (
+                    <p className="mt-1.5 text-[11px] text-muted-foreground">
+                      يقبل الأرقام فقط — مثال: 01012345678
+                    </p>
+                  )}
                 </Field>
                 <Field label="المجموعة">
                   <Select
